@@ -1009,6 +1009,18 @@ netlifyIdentity.on('close', () => {
 });
 
 netlifyIdentity.on('logout', () => { nav.adminUnlocked = false; goHome(); });
+
+// Surface widget errors instead of failing silently. Without this, a bad or
+// expired recovery link just dumps you on the homepage with no explanation —
+// which looks identical to "nothing happened".
+netlifyIdentity.on('error', err => {
+  console.error('Netlify Identity error:', err);
+  transient.loadError = 'Login problem: ' + (err && err.message ? err.message : String(err)) +
+    ' — if this was a password reset link, request a fresh one from the login box.';
+  awaitingAuthFlow = false;
+  render();
+});
+
 netlifyIdentity.init();
 
 // Force the password box open when arriving from an email link. The widget
@@ -1018,7 +1030,19 @@ netlifyIdentity.init();
 // granting access. The 'close' handler still decides that, and only a
 // genuinely completed login unlocks anything.
 if (hasAuthToken){
-  setTimeout(function(){ netlifyIdentity.open(); }, 400);
+  setTimeout(function(){
+    netlifyIdentity.open();
+    // If after a moment there's still no visible widget dialog, say so plainly
+    // rather than leaving a blank-looking homepage.
+    setTimeout(function(){
+      const dialog = document.querySelector('#netlify-identity-widget, [id^="netlify-identity"]');
+      const visible = dialog && dialog.offsetParent !== null;
+      if (!visible && !nav.adminUnlocked){
+        transient.loadError = "That password link didn't open a password box — it may have expired or already been used. Request a fresh one from the Admin login screen.";
+        render();
+      }
+    }, 1500);
+  }, 400);
 }
 
 boot();
