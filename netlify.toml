@@ -1,0 +1,9 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+# Send every request that isn't a real file to index.html (single-page app)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
