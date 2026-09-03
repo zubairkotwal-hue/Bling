@@ -1032,18 +1032,44 @@ netlifyIdentity.init();
 if (hasAuthToken){
   setTimeout(function(){
     netlifyIdentity.open();
-    // If after a moment there's still no visible widget dialog, say so plainly
-    // rather than leaving a blank-looking homepage.
+    // The widget renders a full-screen overlay when opening. If it fails to
+    // actually show its dialog (expired/used token, or it just doesn't
+    // render), that invisible overlay stays on top and swallows every tap —
+    // the page looks frozen. So: check whether a real dialog appeared, and
+    // if not, forcibly remove the overlay so the page stays usable.
     setTimeout(function(){
-      const dialog = document.querySelector('#netlify-identity-widget, [id^="netlify-identity"]');
-      const visible = dialog && dialog.offsetParent !== null;
-      if (!visible && !nav.adminUnlocked){
-        transient.loadError = "That password link didn't open a password box — it may have expired or already been used. Request a fresh one from the Admin login screen.";
+      const container = document.querySelector('#netlify-identity-widget');
+      const hasVisibleDialog = !!(container && container.querySelector('form, input[type="password"], input[type="email"]'));
+
+      if (!hasVisibleDialog && !nav.adminUnlocked){
+        try { netlifyIdentity.close(); } catch (e) { /* ignore */ }
+        // Remove any leftover overlay/iframe the widget left behind.
+        document.querySelectorAll('#netlify-identity-widget, iframe[src*="netlify-identity"]').forEach(function(el){
+          el.remove();
+        });
+        document.body.style.overflow = '';
+        awaitingAuthFlow = false;
+        clearAuthTokenFromUrl();
+        transient.loadError = "That password link didn't open a password box — it may have expired or already been used. Tap Admin below and use Log in, or ask for a fresh invite.";
         render();
       }
-    }, 1500);
+    }, 2000);
   }, 400);
 }
+
+// Safety net: if the login overlay is ever present but not actually showing
+// a usable dialog, it silently blocks every tap on the page. This checks
+// periodically and clears any such dead overlay, so the site can never end
+// up frozen and unusable.
+setInterval(function(){
+  const container = document.querySelector('#netlify-identity-widget');
+  if (!container) return;
+  const hasUsableDialog = !!container.querySelector('form, input, button');
+  if (!hasUsableDialog){
+    container.remove();
+    document.body.style.overflow = '';
+  }
+}, 3000);
 
 boot();
 </script>
