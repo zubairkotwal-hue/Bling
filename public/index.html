@@ -956,6 +956,9 @@ netlifyIdentity.on('init', user => { if (user) onAdminLogin(); });
 netlifyIdentity.on('login', () => { netlifyIdentity.close(); onAdminLogin(); });
 netlifyIdentity.on('logout', () => { nav.adminUnlocked = false; goHome(); });
 netlifyIdentity.init();
+  if (/recovery_token=|invite_token=|confirmation_token=/.test(window.location.hash)) {
+  setTimeout(function(){ netlifyIdentity.open(); }, 300);
+}
 
 boot();
 </script>
