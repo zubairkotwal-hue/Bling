@@ -952,13 +952,59 @@ async function onAdminLogin(){
   render();
 }
 
-netlifyIdentity.on('init', user => { if (user) onAdminLogin(); });
-netlifyIdentity.on('login', () => { netlifyIdentity.close(); onAdminLogin(); });
+// ---- Admin login/recovery handling ----
+// Netlify's login widget auto-detects recovery/invite links in the URL and
+// shows its own "set a new password" box — we don't need to (and shouldn't)
+// force it open ourselves; doing that risked showing a second, wrong box
+// on top of it.
+//
+// The real bug: verifying a recovery link can itself create a session
+// before someone has actually finished setting a password, and refreshing
+// the same link re-processes the same token every time. So instead of
+// trusting 'init' or 'login' the instant they fire, we wait until the
+// widget's box actually closes, THEN decide whether there's a genuine,
+// completed login — and we strip the token out of the address bar so a
+// refresh can't replay this.
+const hasAuthToken = /recovery_token=|invite_token=|confirmation_token=/.test(window.location.hash);
+let awaitingAuthFlow = hasAuthToken;
+
+function clearAuthTokenFromUrl(){
+  if (window.history && window.history.replaceState){
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+}
+
+netlifyIdentity.on('init', user => {
+  if (user && !awaitingAuthFlow) onAdminLogin();
+});
+
+netlifyIdentity.on('login', () => {
+  // Only auto-close and grant access for a normal, direct login.
+  // For the recovery/invite flow, do NOT close it ourselves — that would
+  // immediately trigger 'close' and skip the wait entirely, which is
+  // exactly the bug this whole fix exists to prevent. Let the box stay
+  // open until the person genuinely finishes or dismisses it themselves.
+  if (!awaitingAuthFlow){
+    netlifyIdentity.close();
+    onAdminLogin();
+  }
+});
+
+netlifyIdentity.on('close', () => {
+  if (awaitingAuthFlow){
+    awaitingAuthFlow = false;
+    clearAuthTokenFromUrl();
+    if (netlifyIdentity.currentUser()){
+      nav.view = 'admin'; // came in via a direct email link — take them straight to admin, not the home page
+      onAdminLogin();
+    } else {
+      render(); // nothing completed — show the normal lock screen, no free access
+    }
+  }
+});
+
 netlifyIdentity.on('logout', () => { nav.adminUnlocked = false; goHome(); });
 netlifyIdentity.init();
-  if (/recovery_token=|invite_token=|confirmation_token=/.test(window.location.hash)) {
-  setTimeout(function(){ netlifyIdentity.open(); }, 300);
-}
 
 boot();
 </script>
