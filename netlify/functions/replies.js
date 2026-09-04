@@ -32,6 +32,14 @@ exports.handler = async (event, context) => {
       return json(200, { ok: true });
     }
 
+    if (event.httpMethod === 'DELETE'){
+      if (!admin) return json(401, { error: 'Admin login required' });
+      const { id } = JSON.parse(event.body || '{}');
+      if (!id) return json(400, { error: 'id is required' });
+      await pool.query('DELETE FROM replies WHERE id = $1', [id]);
+      return json(200, { ok: true });
+    }
+
     return json(405, { error: 'Method not allowed' });
   } catch (err) {
     console.error(err);
