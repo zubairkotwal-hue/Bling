@@ -648,8 +648,20 @@ function renderStory(){
     <div style="margin-top:26px">
       <h2 class="bh-serif" style="font-size:1.05rem;color:var(--plum);margin-bottom:12px">Replies</h2>
       ${storyReplies.length === 0 ? `<p class="bh-empty">No replies yet — be the first to respond.</p>` : ''}
-      ${storyReplies.map(r => `<div class="bh-reply"><span class="rt">Anonymous</span>${escapeHtml(r.text)}</div>`).join('')}
+      ${storyReplies.map(r => `
+        <div class="bh-reply">
+          <span class="rt">Anonymous</span>
+          ${escapeHtml(r.text)}
+          ${nav.adminUnlocked ? `<div style="margin-top:8px"><button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteReply('${r.id}')">Delete this reply</button></div>` : ''}
+        </div>`).join('')}
     </div>
+
+    ${nav.adminUnlocked ? `
+      <div class="bh-admin-strip">
+        <span class="bh-admin-strip-label">Admin only</span>
+        <button class="bh-btn-outline" style="font-size:.78rem;padding:8px 14px" onclick="unpublishStory('${story.id}')">Unpublish</button>
+        <button class="bh-btn-ghost" style="color:var(--risk);font-size:.78rem;font-weight:700" onclick="deleteStory('${story.id}')">Delete permanently</button>
+      </div>` : ''}
     <div class="bh-card" style="margin-top:20px;background:var(--blushp);border:none">
       <label class="bh-label">Add your reply</label>
       <textarea id="replyTextInput" class="bh-textarea" style="min-height:80px;margin-bottom:10px" placeholder="Type your reply…"></textarea>
@@ -975,6 +987,7 @@ function renderReviewQueue(){
         <span class="actions">
           <button class="bh-approve" onclick="approveStory('${s.id}')">✓ Approve</button>
           <button class="bh-reject" onclick="rejectStory('${s.id}')">✕ Reject</button>
+          <button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteStory('${s.id}')">Delete</button>
         </span>
       </div>
     `).join('')}
@@ -989,11 +1002,37 @@ function renderReviewQueue(){
           <span class="actions">
             <button class="bh-approve" onclick="approveReply('${r.id}')">✓ Approve</button>
             <button class="bh-reject" onclick="rejectReply('${r.id}')">✕ Reject</button>
+            <button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteReply('${r.id}')">Delete</button>
           </span>
         </div>
       `;
     }).join('')}
   `;
+}
+
+async function unpublishStory(id){
+  await apiFetch('/stories', { method: 'PATCH', body: JSON.stringify({ id, status: 'pending' }) });
+  await fetchStories();
+  alert('Taken off the site. It is back in your review queue if you want to put it up again.');
+  goHome();
+}
+
+async function deleteStory(id){
+  const story = stories.find(s => s.id === id);
+  const snippet = story ? story.text.slice(0, 60) + (story.text.length > 60 ? '…' : '') : 'this story';
+  if (!confirm('Permanently delete this story and all its replies?\n\n"' + snippet + '"\n\nThis cannot be undone.')) return;
+  await apiFetch('/stories', { method: 'DELETE', body: JSON.stringify({ id }) });
+  await Promise.all([fetchStories(), fetchReplies()]);
+  // If we were reading that story, there's nothing left to show.
+  if (nav.view === 'story' && nav.activeStoryId === id) goHome();
+  else render();
+}
+
+async function deleteReply(id){
+  if (!confirm('Permanently delete this reply? This cannot be undone.')) return;
+  await apiFetch('/replies', { method: 'DELETE', body: JSON.stringify({ id }) });
+  await fetchReplies();
+  render();
 }
 
 async function approveStory(id){ await apiFetch('/stories', { method: 'PATCH', body: JSON.stringify({ id, status: 'approved' }) }); await fetchStories(); render(); }
