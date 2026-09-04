@@ -292,7 +292,26 @@ function downloadCanvas(canvas, filename){
   });
 }
 
-async function drawOrderCard(canvas, order){
+function basketOf(order){
+  let basket = [];
+  try {
+    const parsed = typeof order.items === 'string' ? JSON.parse(order.items || 'null') : order.items;
+    if (Array.isArray(parsed)) basket = parsed;
+  } catch (e) {}
+  if (!basket.length){
+    basket = [{ qty: 1, name: order.item, size: order.size || '', price: order.price }];
+  }
+  return basket;
+}
+
+function orderTotal(order){
+  return order.total || basketOf(order)
+    .reduce((n, i) => n + (parseFloat(i.price) || 0) * (i.qty || 1), 0).toFixed(0);
+}
+
+// Shared renderer for all three document types.
+// kind: 'order' | 'receipt' | 'delivery'
+async function drawDocCard(canvas, order, kind){
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   await loadCanvasFonts();
@@ -307,32 +326,28 @@ async function drawOrderCard(canvas, order){
   const contentWidth = w - marginX * 2;
   ctx.textBaseline = 'alphabetic';
 
+  const titles = { order: 'Order confirmed', receipt: 'Receipt', delivery: 'Delivery note' };
   ctx.fillStyle = '#c9a15a';
   ctx.font = "700 58px Fraunces, Georgia, serif";
-  ctx.fillText('Order confirmed', marginX, 220);
+  ctx.fillText(titles[kind] || 'Order', marginX, 220);
 
   ctx.strokeStyle = '#e4c989';
   ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(marginX, 260);
-  ctx.lineTo(marginX + 60, 260);
-  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(marginX, 260); ctx.lineTo(marginX + 60, 260); ctx.stroke();
 
-  let y = 360;
+  // date
+  ctx.fillStyle = 'rgba(253,246,249,0.65)';
+  ctx.font = "400 26px 'Instrument Sans', sans-serif";
+  const when = order.created_at ? new Date(order.created_at) : new Date();
+  ctx.fillText(when.toLocaleDateString('en-ZA', { day:'numeric', month:'long', year:'numeric' }), marginX, 300);
+
+  let y = 390;
+  const basket = basketOf(order);
 
   ctx.fillStyle = '#e4c989';
   ctx.font = "700 26px 'Instrument Sans', sans-serif";
   ctx.fillText('ITEMS', marginX, y);
   y += 50;
-
-  let basket = [];
-  try {
-    const parsed = typeof order.items === 'string' ? JSON.parse(order.items || 'null') : order.items;
-    if (Array.isArray(parsed)) basket = parsed;
-  } catch (e) {}
-  if (!basket.length){
-    basket = [{ qty: 1, name: order.item, size: order.size || '', price: order.price }];
-  }
 
   basket.forEach(i => {
     const label = `${i.qty} x ${i.name}${i.size ? ' (' + i.size + ')' : ''}`;
@@ -342,7 +357,7 @@ async function drawOrderCard(canvas, order){
     const lines = wrapCanvasText(ctx, label, contentWidth - 220);
     lines.forEach((line, idx) => {
       ctx.fillText(line, marginX, y);
-      if (idx === 0){
+      if (idx === 0 && kind !== 'delivery'){
         ctx.textAlign = 'right';
         ctx.fillText(amount, w - marginX, y);
         ctx.textAlign = 'left';
@@ -352,36 +367,59 @@ async function drawOrderCard(canvas, order){
     y += 10;
   });
 
-  const grandTotal = order.total || basket.reduce((n, i) => n + (parseFloat(i.price)||0) * (i.qty||1), 0).toFixed(0);
-  y += 6;
-  ctx.strokeStyle = 'rgba(228,201,137,0.45)';
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(w - marginX, y); ctx.stroke();
-  y += 52;
-  ctx.fillStyle = '#e4c989';
-  ctx.font = "700 34px 'Instrument Sans', sans-serif";
-  ctx.fillText('TOTAL', marginX, y);
-  ctx.textAlign = 'right';
-  ctx.fillText('R' + grandTotal, w - marginX, y);
-  ctx.textAlign = 'left';
+  // totals (not shown on a delivery note — that's a packing document)
+  if (kind !== 'delivery'){
+    y += 6;
+    ctx.strokeStyle = 'rgba(228,201,137,0.45)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(w - marginX, y); ctx.stroke();
+    y += 52;
+    ctx.fillStyle = '#e4c989';
+    ctx.font = "700 34px 'Instrument Sans', sans-serif";
+    ctx.fillText(kind === 'receipt' ? 'PAID' : 'TOTAL', marginX, y);
+    ctx.textAlign = 'right';
+    ctx.fillText('R' + orderTotal(order), w - marginX, y);
+    ctx.textAlign = 'left';
+    y += 30;
+  }
+
+  const deliveryMethod = order.delivery_method || order.deliveryMethod || 'Collection';
+  const rows = [['For', order.buyer], ['Delivery', deliveryMethod]];
+  if (kind === 'delivery' && deliveryMethod === 'Shipping' && order.address){
+    rows.push(['Address', order.address]);
+  }
+  if (kind !== 'delivery' && order.phone) rows.push(['Contact', order.phone]);
+
+  rows.filter(r => r[1]).forEach(([label, value]) => {
+    y += 34;
+    ctx.fillStyle = '#e4c989';
+    ctx.font = "700 26px 'Instrument Sans', sans-serif";
+    ctx.fillText(label.toUpperCase(), marginX, y);
+    y += 44;
+    ctx.fillStyle = '#fdf6f9';
+    ctx.font = "italic 400 40px Fraunces, Georgia, serif";
+    wrapCanvasText(ctx, String(value), contentWidth).forEach(line => { ctx.fillText(line, marginX, y); y += 48; });
+  });
+
+  // footer note per document type
   y += 40;
-
-  [['For', order.buyer], ['Delivery', order.delivery_method || order.deliveryMethod || 'Collection']]
-    .filter(r => r[1]).forEach(([label, value]) => {
-      y += 34;
-      ctx.fillStyle = '#e4c989';
-      ctx.font = "700 26px 'Instrument Sans', sans-serif";
-      ctx.fillText(label.toUpperCase(), marginX, y);
-      y += 44;
-      ctx.fillStyle = '#fdf6f9';
-      ctx.font = "italic 400 40px Fraunces, Georgia, serif";
-      wrapCanvasText(ctx, String(value), contentWidth).forEach(line => { ctx.fillText(line, marginX, y); y += 48; });
-    });
-
-  ctx.fillStyle = '#e4c989';
   ctx.font = "700 24px 'Instrument Sans', sans-serif";
-  const bankLines = wrapCanvasText(ctx, 'PAYMENT: ' + BANK_DETAILS, contentWidth);
-  bankLines.forEach(line => { ctx.fillText(line, marginX, y); y += 32; });
+  ctx.fillStyle = '#e4c989';
+  if (kind === 'order'){
+    wrapCanvasText(ctx, 'PAYMENT: ' + BANK_DETAILS, contentWidth).forEach(line => { ctx.fillText(line, marginX, y); y += 32; });
+  } else if (kind === 'receipt'){
+    ctx.fillText('PAYMENT RECEIVED — THANK YOU', marginX, y);
+  } else {
+    // Wording depends on whether it has actually gone out yet, not just
+    // on the delivery method.
+    let deliveryNote;
+    if (order.status === 'Sent'){
+      deliveryNote = deliveryMethod === 'Shipping' ? 'PACKED AND ON ITS WAY' : 'COLLECTED';
+    } else {
+      deliveryNote = deliveryMethod === 'Shipping' ? 'PACKED AND READY TO SHIP' : 'READY FOR COLLECTION';
+    }
+    ctx.fillText(deliveryNote, marginX, y);
+  }
 
   ctx.fillStyle = '#e4c989';
   ctx.font = "700 22px 'Instrument Sans', sans-serif";
@@ -389,6 +427,8 @@ async function drawOrderCard(canvas, order){
 
   await drawWatermark(ctx, w, h);
 }
+
+async function drawOrderCard(canvas, order){ return drawDocCard(canvas, order, 'order'); }
 
 function cleanPhoneForWhatsApp(phone){
   return (phone || '').replace(/[^0-9]/g, '');
@@ -409,20 +449,39 @@ function leadItemList(lead){
   return `${lead.item}${lead.size ? ' (' + lead.size + ')' : ''}${lead.price ? ' — R' + lead.price : ''}`;
 }
 
-function buildLeadMessage(lead){
-  if (lead.status === 'Ready'){
-    return `Hi ${lead.buyer}! Your order (${lead.item}) is ready for ${lead.deliveryMethod === 'Shipping' ? 'shipping' : 'collection'}.`;
-  }
-  if (lead.status === 'Sent'){
-    return `Hi ${lead.buyer}! Your order (${lead.item}) is on its way. Thanks so much for your order!`;
-  }
-  if (lead.status === 'Paid'){
-    return `Hi ${lead.buyer}! We've received your payment for ${lead.item} — we'll let you know as soon as it's ready.`;
-  }
-  // Enquired / default: initial order confirmation
+// Three message types, matched to the three documents.
+// kind: 'order' | 'receipt' | 'delivery'  (defaults to the lead's status)
+function buildLeadMessage(lead, kind){
   const list = leadItemList(lead);
-  const total = lead.total ? `\n\nTotal: R${lead.total}` : '';
-  return `Hi ${lead.buyer}, thanks for your order!\n\n${list}${total}\n\nPlease pay via EFT:\n${BANK_DETAILS}\n\nWe'll confirm once payment reflects.`;
+  const total = lead.total || lead.price || '';
+  const deliveryMethod = lead.delivery_method || lead.deliveryMethod || 'Collection';
+
+  if (!kind){
+    if (lead.status === 'Paid') kind = 'receipt';
+    else if (lead.status === 'Ready' || lead.status === 'Sent') kind = 'delivery';
+    else kind = 'order';
+  }
+
+  if (kind === 'receipt'){
+    return `Hi ${lead.buyer}, we've received your payment - thank you!\n\n${list}` +
+      (total ? `\n\nPaid: R${total}` : '') +
+      `\n\nWe'll let you know as soon as your order is ready.`;
+  }
+
+  if (kind === 'delivery'){
+    if (lead.status === 'Sent'){
+      return `Hi ${lead.buyer}, your order is on its way!\n\n${list}` +
+        (deliveryMethod === 'Shipping' && lead.address ? `\n\nGoing to:\n${lead.address}` : '') +
+        `\n\nThank you so much for your order!`;
+    }
+    return `Hi ${lead.buyer}, your order is ready for ${deliveryMethod === 'Shipping' ? 'shipping' : 'collection'}!\n\n${list}` +
+      (deliveryMethod === 'Shipping' && lead.address ? `\n\nShipping to:\n${lead.address}` : '') +
+      `\n\nWe'll be in touch to arrange it.`;
+  }
+
+  return `Hi ${lead.buyer}, thanks for your order!\n\n${list}` +
+    (total ? `\n\nTotal: R${total}` : '') +
+    `\n\nPlease pay via EFT:\n${BANK_DETAILS}\n\nWe'll confirm once payment reflects.`;
 }
 
 function escapeHtml(str){
@@ -1179,13 +1238,19 @@ function renderLeadsManager(){
         ${l.phone ? `<br><span style="font-size:.78rem;color:var(--grey)">${escapeHtml(l.phone)} · ${escapeHtml(l.delivery_method || l.deliveryMethod || 'Collection')}</span>` : ''}
         ${l.address ? `<br><span style="font-size:.75rem;color:var(--grey)">${escapeHtml(l.address)}</span>` : ''}</span>
         <span class="bh-statuspill" onclick="cycleLeadStatus('${l.id}')" title="Tap to move to the next status">${escapeHtml(l.status)}</span>
-        ${l.phone ? `<button class="bh-wa-btn" style="padding:7px 14px;font-size:.75rem" onclick="sendLeadWhatsApp('${l.id}')">Send WhatsApp →</button>` : ''}
-        ${l.item ? `<button class="bh-btn-ghost" style="font-size:.75rem" onclick="downloadLeadCard('${l.id}')">Download card</button>` : ''}
-        <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeLead('${l.id}')">🗑</button>
+        <span class="bh-doc-actions">
+          ${['order','receipt','delivery'].map(k => `
+            <span class="bh-doc-group">
+              <span class="bh-doc-label">${k === 'order' ? 'Order' : (k === 'receipt' ? 'Receipt' : 'Delivery')}</span>
+              ${l.phone ? `<button class="bh-wa-mini" onclick="sendLeadWhatsApp('${l.id}','${k}')">Send</button>` : ''}
+              <button class="bh-doc-mini" onclick="downloadLeadCard('${l.id}','${k}')">↓</button>
+            </span>`).join('')}
+          <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeLead('${l.id}')">🗑</button>
+        </span>
       </div>
     `).join('')}
     <p style="font-size:.78rem;color:var(--ok);margin:4px 0 0">${escapeHtml(transient.leadDownloadStatus)}</p>
-    <p class="bh-note">Tap a status pill to move it to the next stage: Enquired → Paid → Ready → Sent. "Send WhatsApp" opens a chat with that lead's number, pre-filled with the right message for their current status — you still tap send yourself, and attach the order picture if you've downloaded one.</p>
+    <p class="bh-note">Tap a status pill to move it along: Enquired → Paid → Ready → Sent.<br><br>Each order has three documents. <strong>Send</strong> opens WhatsApp with that message already written — you just tap send. <strong>↓</strong> downloads the matching picture if you want to attach it.<br><br><strong>Order</strong> = what they bought, plus banking details. <strong>Receipt</strong> = send once their payment reflects. <strong>Delivery</strong> = ready for collection, or on its way.</p>
   `;
 }
 
@@ -1215,13 +1280,14 @@ function sendLeadWhatsApp(id){
   window.open(buildWhatsAppLink(lead.phone, message), '_blank');
 }
 
-async function downloadLeadCard(id){
+async function downloadLeadCard(id, kind){
   const lead = leads.find(l => l.id === id);
+  kind = kind || 'order';
   transient.leadDownloadStatus = 'Preparing image…';
   render();
   const canvas = document.getElementById('exportCanvas');
-  await drawOrderCard(canvas, lead);
-  await downloadCanvas(canvas, 'bling-happiness-order.jpg');
+  await drawDocCard(canvas, lead, kind);
+  await downloadCanvas(canvas, `bling-happiness-${kind}.jpg`);
   transient.leadDownloadStatus = 'Downloaded — attach it in WhatsApp before sending.';
   render();
 }
