@@ -430,8 +430,20 @@ async function drawDocCard(canvas, order, kind){
 
 async function drawOrderCard(canvas, order){ return drawDocCard(canvas, order, 'order'); }
 
+// WhatsApp needs a full international number. Customers type local SA
+// numbers (082..., 071...), so convert them: drop the leading 0 and put
+// 27 in front. Numbers already in international form are left alone.
 function cleanPhoneForWhatsApp(phone){
-  return (phone || '').replace(/[^0-9]/g, '');
+  let n = (phone || '').replace(/[^0-9+]/g, '');
+
+  if (n.startsWith('+')) n = n.slice(1);          // +27... -> 27...
+  if (n.startsWith('0027')) n = n.slice(2);       // 0027... -> 27...
+  if (n.startsWith('27') && n.length >= 11) return n;  // already international
+
+  if (n.startsWith('0')) return '27' + n.slice(1);     // 082... -> 2782...
+  if (n.length === 9) return '27' + n;                 // 82...  -> 2782...
+
+  return n; // anything else (already has another country code) passes through
 }
 
 function buildWhatsAppLink(phone, message){
