@@ -318,26 +318,65 @@ async function drawOrderCard(canvas, order){
   ctx.lineTo(marginX + 60, 260);
   ctx.stroke();
 
-  const rows = [
-    ['Item', order.item],
-    ['Price', 'R' + order.price],
-    ['Size', order.size || null],
-    ['For', order.buyer],
-    ['Delivery', order.deliveryMethod || 'Collection'],
-  ];
-
   let y = 360;
-  rows.filter(r => r[1]).forEach(([label, value]) => {
-    ctx.fillStyle = '#e4c989';
-    ctx.font = "700 26px 'Instrument Sans', sans-serif";
-    ctx.fillText(label.toUpperCase(), marginX, y);
-    y += 44;
+
+  ctx.fillStyle = '#e4c989';
+  ctx.font = "700 26px 'Instrument Sans', sans-serif";
+  ctx.fillText('ITEMS', marginX, y);
+  y += 50;
+
+  let basket = [];
+  try {
+    const parsed = typeof order.items === 'string' ? JSON.parse(order.items || 'null') : order.items;
+    if (Array.isArray(parsed)) basket = parsed;
+  } catch (e) {}
+  if (!basket.length){
+    basket = [{ qty: 1, name: order.item, size: order.size || '', price: order.price }];
+  }
+
+  basket.forEach(i => {
+    const label = `${i.qty} x ${i.name}${i.size ? ' (' + i.size + ')' : ''}`;
+    const amount = 'R' + ((parseFloat(i.price) || 0) * (i.qty || 1)).toFixed(0);
     ctx.fillStyle = '#fdf6f9';
-    ctx.font = "italic 400 40px Fraunces, Georgia, serif";
-    const lines = wrapCanvasText(ctx, String(value || '—'), contentWidth);
-    lines.forEach(line => { ctx.fillText(line, marginX, y); y += 48; });
-    y += 30;
+    ctx.font = "italic 400 36px Fraunces, Georgia, serif";
+    const lines = wrapCanvasText(ctx, label, contentWidth - 220);
+    lines.forEach((line, idx) => {
+      ctx.fillText(line, marginX, y);
+      if (idx === 0){
+        ctx.textAlign = 'right';
+        ctx.fillText(amount, w - marginX, y);
+        ctx.textAlign = 'left';
+      }
+      y += 46;
+    });
+    y += 10;
   });
+
+  const grandTotal = order.total || basket.reduce((n, i) => n + (parseFloat(i.price)||0) * (i.qty||1), 0).toFixed(0);
+  y += 6;
+  ctx.strokeStyle = 'rgba(228,201,137,0.45)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(w - marginX, y); ctx.stroke();
+  y += 52;
+  ctx.fillStyle = '#e4c989';
+  ctx.font = "700 34px 'Instrument Sans', sans-serif";
+  ctx.fillText('TOTAL', marginX, y);
+  ctx.textAlign = 'right';
+  ctx.fillText('R' + grandTotal, w - marginX, y);
+  ctx.textAlign = 'left';
+  y += 40;
+
+  [['For', order.buyer], ['Delivery', order.delivery_method || order.deliveryMethod || 'Collection']]
+    .filter(r => r[1]).forEach(([label, value]) => {
+      y += 34;
+      ctx.fillStyle = '#e4c989';
+      ctx.font = "700 26px 'Instrument Sans', sans-serif";
+      ctx.fillText(label.toUpperCase(), marginX, y);
+      y += 44;
+      ctx.fillStyle = '#fdf6f9';
+      ctx.font = "italic 400 40px Fraunces, Georgia, serif";
+      wrapCanvasText(ctx, String(value), contentWidth).forEach(line => { ctx.fillText(line, marginX, y); y += 48; });
+    });
 
   ctx.fillStyle = '#e4c989';
   ctx.font = "700 24px 'Instrument Sans', sans-serif";
@@ -360,6 +399,16 @@ function buildWhatsAppLink(phone, message){
   return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
 }
 
+function leadItemList(lead){
+  try {
+    const items = typeof lead.items === 'string' ? JSON.parse(lead.items || 'null') : lead.items;
+    if (Array.isArray(items) && items.length){
+      return items.map(i => `${i.qty} x ${i.name}${i.size ? ' (' + i.size + ')' : ''} — R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}`).join('\n');
+    }
+  } catch (e) {}
+  return `${lead.item}${lead.size ? ' (' + lead.size + ')' : ''}${lead.price ? ' — R' + lead.price : ''}`;
+}
+
 function buildLeadMessage(lead){
   if (lead.status === 'Ready'){
     return `Hi ${lead.buyer}! Your order (${lead.item}) is ready for ${lead.deliveryMethod === 'Shipping' ? 'shipping' : 'collection'}.`;
@@ -371,7 +420,9 @@ function buildLeadMessage(lead){
     return `Hi ${lead.buyer}! We've received your payment for ${lead.item} — we'll let you know as soon as it's ready.`;
   }
   // Enquired / default: initial order confirmation
-  return `Hi ${lead.buyer}, thanks for your order! ${lead.item}${lead.size ? ' (' + lead.size + ')' : ''}${lead.price ? ' — R' + lead.price : ''}. Please pay via EFT: ${BANK_DETAILS}. We'll confirm once payment reflects.`;
+  const list = leadItemList(lead);
+  const total = lead.total ? `\n\nTotal: R${lead.total}` : '';
+  return `Hi ${lead.buyer}, thanks for your order!\n\n${list}${total}\n\nPlease pay via EFT:\n${BANK_DETAILS}\n\nWe'll confirm once payment reflects.`;
 }
 
 function escapeHtml(str){
@@ -416,6 +467,8 @@ let nav = { view: 'home', activeFolder: null, activeStoryId: null, adminUnlocked
 let transient = {
   submitSent: false,
   viewingProductId: null,
+  viewingCart: false,
+  checkingOut: false,
   orderingProductId: null,
   chosenSize: '',
   sizeType: 'clothing',
@@ -430,6 +483,35 @@ let transient = {
   loadError: '',
 };
 
+let cart = (function(){
+  try { return JSON.parse(localStorage.getItem('bh_cart') || '[]'); }
+  catch (e) { return []; }
+})();
+
+function saveCart(){
+  try { localStorage.setItem('bh_cart', JSON.stringify(cart)); } catch (e) {}
+}
+function cartCount(){ return cart.reduce((n, i) => n + i.qty, 0); }
+function cartTotal(){ return cart.reduce((n, i) => n + (parseFloat(i.price) || 0) * i.qty, 0); }
+
+function addToCart(productId, size){
+  const p = products.find(x => x.id === productId);
+  if (!p) return;
+  const existing = cart.find(i => i.productId === productId && i.size === (size || ''));
+  if (existing) existing.qty += 1;
+  else cart.push({ productId, name: p.name, price: p.price, size: size || '', qty: 1 });
+  saveCart();
+}
+function changeQty(idx, delta){
+  if (!cart[idx]) return;
+  cart[idx].qty += delta;
+  if (cart[idx].qty < 1) cart.splice(idx, 1);
+  saveCart();
+  render();
+}
+function removeFromCart(idx){ cart.splice(idx, 1); saveCart(); render(); }
+function clearCart(){ cart = []; saveCart(); }
+
 function productSizes(p){
   try {
     const raw = typeof p.sizes === 'string' ? JSON.parse(p.sizes || '[]') : (p.sizes || []);
@@ -442,7 +524,7 @@ const LEAD_STATUSES = ['Enquired', 'Paid', 'Ready', 'Sent'];
 // ---- Navigation ----
 function goHome(){ nav.view = 'home'; nav.activeFolder = null; nav.activeStoryId = null; render(); }
 function goSubmit(){ nav.view = 'submit'; transient.submitSent = false; render(); }
-function goShop(){ nav.view = 'shop'; transient.orderingProductId = null; transient.orderSent = false; render(); }
+function goShop(){ nav.view = 'shop'; transient.viewingProductId = null; transient.viewingCart = false; transient.checkingOut = false; transient.orderSent = false; render(); }
 async function goAdmin(){
   nav.view = 'admin';
   render();
@@ -481,7 +563,7 @@ function render(){
         <div class="bh-navlinks">
           <button class="${['home','folder','story'].includes(nav.view) ? 'on' : ''}" onclick="goHome()">Library</button>
           <button class="${nav.view === 'submit' ? 'on' : ''}" onclick="goSubmit()">Share your story</button>
-          <button class="${nav.view === 'shop' ? 'on' : ''}" onclick="goShop()">Shop</button>
+          <button class="${nav.view === 'shop' ? 'on' : ''}" onclick="goShop()">Shop${cartCount() ? `<span class="bh-cart-badge">${cartCount()}</span>` : ''}</button>
           <button class="${nav.view === 'admin' ? 'on' : ''}" onclick="goAdmin()">🔒 Admin</button>
         </div>
       </nav>
@@ -637,11 +719,8 @@ async function submitStory(){
 
 // ---- Shop front (public) ----
 function renderShop(){
-  // 1. ORDER FORM
-  if (transient.orderingProductId){
-    const product = products.find(p => p.id === transient.orderingProductId);
-    if (!product){ transient.orderingProductId = null; return renderShop(); }
-
+  // 1. CHECKOUT
+  if (transient.checkingOut){
     if (transient.orderSent){
       return `
         <div class="bh-card" style="text-align:center;padding:40px 24px">
@@ -649,23 +728,18 @@ function renderShop(){
           <h2 class="bh-serif" style="font-size:1.2rem;color:var(--plum);margin:10px 0">Order placed.</h2>
           <p style="font-size:.88rem;color:var(--grey);max-width:40ch;margin:0 auto 16px">We'll be in touch on WhatsApp shortly with payment details.</p>
           <button class="bh-btn-outline" onclick="goShop()">Back to the shop</button>
-        </div>
-      `;
+        </div>`;
     }
+    if (cart.length === 0){ transient.checkingOut = false; return renderShop(); }
 
-    const sizes = productSizes(product);
     return `
+      <button class="bh-btn-ghost" onclick="viewCart()" style="margin-bottom:14px">← Back to basket</button>
       <div class="bh-card">
-        <button class="bh-btn-ghost" onclick="viewProduct('${product.id}')" style="margin-bottom:16px">← Back</button>
-        <h2 class="bh-serif" style="font-size:1.1rem;color:var(--plum);margin-bottom:4px">${escapeHtml(product.name)}</h2>
-        <p style="color:var(--gold);font-weight:700;margin-bottom:6px">R${escapeHtml(product.price)}</p>
-        ${transient.chosenSize ? `<p style="font-size:.85rem;color:var(--grey);margin-bottom:16px">Size: <strong>${escapeHtml(transient.chosenSize)}</strong></p>` : ''}
-
-        ${sizes.length > 0 && !transient.chosenSize ? `
-          <label class="bh-label">Choose a size</label>
-          <div class="bh-size-grid" style="margin-bottom:16px">
-            ${sizes.map(s => `<button class="bh-size-opt" onclick="chooseSize('${escapeHtml(s)}')">${escapeHtml(s)}</button>`).join('')}
-          </div>` : ''}
+        <h2 class="bh-serif" style="font-size:1.2rem;color:var(--plum);margin:0 0 14px">Your details</h2>
+        <div class="bh-cart-summary">
+          ${cart.map(i => `<div class="bh-cart-line"><span>${i.qty} × ${escapeHtml(i.name)}${i.size ? ' (' + escapeHtml(i.size) + ')' : ''}</span><span>R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}</span></div>`).join('')}
+          <div class="bh-cart-line bh-cart-total"><span>Total</span><span>R${cartTotal().toFixed(0)}</span></div>
+        </div>
 
         <label class="bh-label">Your name</label>
         <input id="orderBuyer" class="bh-input" placeholder="Full name" style="margin-bottom:14px">
@@ -682,12 +756,38 @@ function renderShop(){
         </div>
         <p class="bh-note">Payment is by EFT — we'll send banking details and confirm your order over WhatsApp.</p>
         <p id="orderError" style="color:var(--risk);font-size:.8rem;min-height:1.1em;margin:8px 0 0"></p>
-        <button class="bh-btn" onclick="submitOrder()" style="margin-top:6px">Place order →</button>
-      </div>
-    `;
+        <button class="bh-btn" onclick="submitOrder()" style="width:100%;margin-top:6px">Place order →</button>
+      </div>`;
   }
 
-  // 2. PRODUCT DETAIL
+  // 2. BASKET
+  if (transient.viewingCart){
+    return `
+      <button class="bh-btn-ghost" onclick="goShop()" style="margin-bottom:14px">← Keep shopping</button>
+      <h2 class="bh-serif" style="font-size:1.3rem;color:var(--plum);margin-bottom:14px">Your basket</h2>
+      ${cart.length === 0 ? `<p class="bh-empty">Your basket is empty.</p>` : `
+        ${cart.map((i, idx) => `
+          <div class="bh-cart-item">
+            <div class="bh-cart-info">
+              <div class="bh-cart-name">${escapeHtml(i.name)}</div>
+              ${i.size ? `<div class="bh-cart-size">Size ${escapeHtml(i.size)}</div>` : ''}
+              <div class="bh-cart-price">R${escapeHtml(i.price)} each</div>
+            </div>
+            <div class="bh-qty">
+              <button onclick="changeQty(${idx}, -1)">−</button>
+              <span>${i.qty}</span>
+              <button onclick="changeQty(${idx}, 1)">+</button>
+            </div>
+            <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeFromCart(${idx})">🗑</button>
+          </div>`).join('')}
+        <div class="bh-cart-line bh-cart-total" style="margin-top:16px">
+          <span>Total</span><span>R${cartTotal().toFixed(0)}</span>
+        </div>
+        <button class="bh-btn" style="width:100%;margin-top:16px" onclick="startCheckout()">Checkout →</button>
+      `}`;
+  }
+
+  // 3. PRODUCT DETAIL
   if (transient.viewingProductId){
     const product = products.find(p => p.id === transient.viewingProductId);
     if (!product){ transient.viewingProductId = null; return renderShop(); }
@@ -702,21 +802,28 @@ function renderShop(){
           <h2 class="bh-serif" style="font-size:1.4rem;color:var(--plum);margin:0 0 4px">${escapeHtml(product.name)}</h2>
           <p style="color:var(--gold);font-weight:700;font-size:1.15rem;margin:0 0 14px">R${escapeHtml(product.price)}</p>
           ${product.description ? `<p style="font-size:.9rem;color:var(--grey);margin-bottom:16px">${escapeHtml(product.description)}</p>` : ''}
-          ${sizes.length > 0 ? `
-            <label class="bh-label">Available sizes</label>
-            <div class="bh-size-grid" style="margin-bottom:18px">
-              ${sizes.map(s => `<span class="bh-size-tag">${escapeHtml(s)}</span>`).join('')}
-            </div>` : ''}
-          <button class="bh-btn" style="width:100%" onclick="startOrder('${product.id}')">Order this →</button>
+          ${sizes.length > 1 ? `
+            <label class="bh-label">Choose a size</label>
+            <div class="bh-size-grid" id="detailSizeGrid" style="margin-bottom:18px">
+              ${sizes.map(s => `<button class="bh-size-opt ${transient.chosenSize === s ? 'on' : ''}" onclick="chooseSize('${escapeHtml(s)}', this)">${escapeHtml(s)}</button>`).join('')}
+            </div>` : (sizes.length === 1 ? `
+            <label class="bh-label">Size</label>
+            <div class="bh-size-grid" style="margin-bottom:18px"><span class="bh-size-tag">${escapeHtml(sizes[0])}</span></div>` : '')}
+          <p id="detailError" style="color:var(--risk);font-size:.8rem;min-height:1.1em;margin:0 0 6px"></p>
+          <button class="bh-btn" style="width:100%" onclick="addToCartFromDetail('${product.id}')">Add to basket →</button>
         </div>
-      </div>
-    `;
+      </div>`;
   }
 
-  // 3. THUMBNAIL GRID
+  // 4. THUMBNAIL GRID
   return `
-    <h2 class="bh-serif" style="font-size:1.3rem;color:var(--plum);margin-bottom:4px">Shop</h2>
-    <p style="font-size:.85rem;color:var(--grey);margin-bottom:6px">Kept separate from the stories, on purpose.</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+      <div>
+        <h2 class="bh-serif" style="font-size:1.3rem;color:var(--plum);margin:0 0 2px">Shop</h2>
+        <p style="font-size:.85rem;color:var(--grey);margin:0">Kept separate from the stories, on purpose.</p>
+      </div>
+      <button class="bh-btn-outline" onclick="viewCart()">Basket${cartCount() ? ` (${cartCount()})` : ''}</button>
+    </div>
     ${products.length === 0 ? `<p class="bh-empty">Nothing in the shop yet — check back soon.</p>` : ''}
     <div class="bh-shop-grid">
       ${products.map(p => {
@@ -731,30 +838,59 @@ function renderShop(){
           </div>
         </div>`;
       }).join('')}
-    </div>
-  `;
+    </div>`;
 }
 
 function viewProduct(id){
   transient.viewingProductId = id;
-  transient.orderingProductId = null;
+  transient.viewingCart = false;
+  transient.checkingOut = false;
   transient.chosenSize = '';
   nav.view = 'shop';
   render();
 }
-function chooseSize(s){ transient.chosenSize = s; render(); }
+function viewCart(){
+  transient.viewingCart = true;
+  transient.viewingProductId = null;
+  transient.checkingOut = false;
+  nav.view = 'shop';
+  render();
+}
+function startCheckout(){
+  if (cart.length === 0) return;
+  transient.checkingOut = true;
+  transient.viewingCart = false;
+  transient.orderSent = false;
+  render();
+}
+
+// Highlight the chosen size without re-rendering (which would lose scroll position)
+function chooseSize(s, btn){
+  transient.chosenSize = s;
+  const grid = document.getElementById('detailSizeGrid');
+  if (grid) grid.querySelectorAll('.bh-size-opt').forEach(b => b.classList.toggle('on', b === btn));
+  const err = document.getElementById('detailError');
+  if (err) err.textContent = '';
+}
+
+function addToCartFromDetail(productId){
+  const product = products.find(p => p.id === productId);
+  const sizes = productSizes(product);
+  const err = document.getElementById('detailError');
+  if (sizes.length > 1 && !transient.chosenSize){
+    if (err) err.textContent = 'Please choose a size first.';
+    return;
+  }
+  const size = transient.chosenSize || (sizes.length === 1 ? sizes[0] : '');
+  addToCart(productId, size);
+  transient.chosenSize = '';
+  viewCart();
+}
 
 function toggleShippingField(){
   const method = document.querySelector('input[name=deliveryMethod]:checked').value;
   document.getElementById('shippingAddressWrap').style.display = method === 'Shipping' ? 'block' : 'none';
 }
-function startOrder(id){
-  transient.orderingProductId = id;
-  transient.viewingProductId = null;
-  transient.orderSent = false;
-  render();
-}
-function cancelOrder(){ transient.orderingProductId = null; render(); }
 
 async function submitOrder(){
   const buyer = document.getElementById('orderBuyer').value.trim();
@@ -762,22 +898,27 @@ async function submitOrder(){
   const deliveryMethod = document.querySelector('input[name=deliveryMethod]:checked').value;
   const address = deliveryMethod === 'Shipping' ? document.getElementById('orderAddress').value.trim() : '';
   const errEl = document.getElementById('orderError');
-  const product = products.find(p => p.id === transient.orderingProductId);
-  const sizes = productSizes(product);
 
   if (!buyer || !phone){ errEl.textContent = 'Please add your name and WhatsApp number.'; return; }
-  if (sizes.length > 1 && !transient.chosenSize){ errEl.textContent = 'Please choose a size.'; return; }
-  const size = transient.chosenSize || (sizes.length === 1 ? sizes[0] : '');
+  if (deliveryMethod === 'Shipping' && !address){ errEl.textContent = 'Please add a shipping address.'; return; }
+  if (cart.length === 0){ errEl.textContent = 'Your basket is empty.'; return; }
 
+  errEl.textContent = 'Sending…';
   try {
     await apiFetch('/leads', {
       method: 'POST',
-      body: JSON.stringify({ buyer, phone, item: product.name, price: product.price, deliveryMethod, address, size }),
+      body: JSON.stringify({
+        buyer, phone, deliveryMethod, address,
+        items: cart,
+        total: cartTotal().toFixed(0),
+      }),
     });
+    clearCart();
     transient.orderSent = true;
     transient.loadError = '';
   } catch (e) {
-    transient.loadError = "Couldn't place that order — please try again in a moment.";
+    errEl.textContent = "Couldn't place that order — please try again in a moment.";
+    return;
   }
   render();
 }
@@ -994,9 +1135,10 @@ function renderLeadsManager(){
     ${leads.length === 0 ? `<p class="bh-empty">No leads yet — they'll show up here as they come in, including orders placed through the shop.</p>` : ''}
     ${leads.map(l => `
       <div class="bh-lead">
-        <span class="who"><strong>${escapeHtml(l.buyer)}</strong> — ${escapeHtml(l.item)}${l.price ? ` (R${escapeHtml(l.price)})` : ''}
-        ${l.size ? ` · <strong>${escapeHtml(l.size)}</strong>` : ''}
-        ${l.phone ? `<br><span style="font-size:.78rem;color:var(--grey)">${escapeHtml(l.phone)} · ${escapeHtml(l.delivery_method || l.deliveryMethod || 'Collection')}</span>` : ''}</span>
+        <span class="who"><strong>${escapeHtml(l.buyer)}</strong>${l.total ? ` — R${escapeHtml(l.total)}` : (l.price ? ` — R${escapeHtml(l.price)}` : '')}
+        <br><span style="font-size:.8rem;color:var(--ink)">${escapeHtml(leadItemList(l)).replace(/\n/g, '<br>')}</span>
+        ${l.phone ? `<br><span style="font-size:.78rem;color:var(--grey)">${escapeHtml(l.phone)} · ${escapeHtml(l.delivery_method || l.deliveryMethod || 'Collection')}</span>` : ''}
+        ${l.address ? `<br><span style="font-size:.75rem;color:var(--grey)">${escapeHtml(l.address)}</span>` : ''}</span>
         <span class="bh-statuspill" onclick="cycleLeadStatus('${l.id}')" title="Tap to move to the next status">${escapeHtml(l.status)}</span>
         ${l.phone ? `<button class="bh-wa-btn" style="padding:7px 14px;font-size:.75rem" onclick="sendLeadWhatsApp('${l.id}')">Send WhatsApp →</button>` : ''}
         ${l.item ? `<button class="bh-btn-ghost" style="font-size:.75rem" onclick="downloadLeadCard('${l.id}')">Download card</button>` : ''}
