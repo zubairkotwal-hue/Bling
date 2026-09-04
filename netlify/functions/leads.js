@@ -16,12 +16,20 @@ exports.handler = async (event, context) => {
     // Placing an order (from the storefront, or added manually by the admin)
     // is the one write anyone can do without being logged in.
     if (event.httpMethod === 'POST'){
-      const { buyer, phone, item, price, deliveryMethod, address, size } = JSON.parse(event.body || '{}');
-      if (!buyer || !item) return json(400, { error: 'buyer and item are required' });
+      const { buyer, phone, item, price, deliveryMethod, address, size, items, total } = JSON.parse(event.body || '{}');
+      if (!buyer) return json(400, { error: 'buyer is required' });
+      if (!item && !(Array.isArray(items) && items.length)) return json(400, { error: 'at least one item is required' });
+
+      // A basket order arrives as `items`. We also store a short readable
+      // summary in `item` so older screens and messages still make sense.
+      const basket = Array.isArray(items) ? items : [];
+      const summary = item || (basket.length === 1
+        ? basket[0].name + (basket[0].size ? ' (' + basket[0].size + ')' : '')
+        : basket.length + ' items');
       const id = newId();
       await pool.query(
-        'INSERT INTO leads (id, buyer, phone, item, price, delivery_method, address, status, size) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
-        [id, buyer, phone || null, item, price || null, deliveryMethod || 'Collection', address || null, 'Enquired', size || null]
+        'INSERT INTO leads (id, buyer, phone, item, price, delivery_method, address, status, size, items, total) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',
+        [id, buyer, phone || null, summary, price || null, deliveryMethod || 'Collection', address || null, 'Enquired', size || null, basket.length ? JSON.stringify(basket) : null, total || null]
       );
       return json(201, { id });
     }
