@@ -117,6 +117,67 @@
 </noscript>
 
 <script>
+// Everything here can be changed from Admin -> Settings, at any time,
+// without touching this file. These are only the starting values used
+// before anything has been saved.
+const DEFAULT_SETTINGS = {
+  shippingCost: '99',
+
+  bankDetails: 'Bling Happiness \u00b7 FNB/RMB \u00b7 Acc 62727946181 \u00b7 Branch 250655 \u00b7 Reference: your full name',
+
+  collectionDetails:
+    'Collection times\n' +
+    'Mon to Friday: 9am to 6pm\n' +
+    'Saturday: before 12\n' +
+    'Sunday and public holidays: unavailable\n' +
+    '\n' +
+    'Ormonde Close\n' +
+    'Upavon Road\n' +
+    'House 33\n' +
+    'Ormonde\n' +
+    '\n' +
+    'On Google Maps it pins 35 Upavon Road \u2014 the house is number 33, not 35.\n' +
+    '\n' +
+    'Kindly contact Nontle directly as she handles collections\n' +
+    '+27 68 022 5954\n' +
+    '\n' +
+    'WhatsApp messages \u2611\ufe0f\n' +
+    'WhatsApp calls \u2611\ufe0f\n' +
+    'Regular calls \u2611\ufe0f\n' +
+    '\n' +
+    '*Please call the number above for the main gate to be opened*',
+
+  orderMessage:
+    'Hi {name}, thanks for your order!\n\n{items}{totals}\n\nPlease pay via EFT:\n{bank}\n\nWe\u2019ll confirm once payment reflects.',
+
+  receiptMessage:
+    'Hi {name}, we\u2019ve received your payment \u2014 thank you!\n\n{items}\n\nPaid: R{total}\n\nWe\u2019ll let you know as soon as your order is ready.',
+
+  shippingMessage:
+    'Hi {name}, your order is ready for shipping!\n\n{items}\n\nShipping to:\n{address}\n\nYou will receive a notification when your order is dispatched.',
+
+  collectionMessage:
+    'Hi there\n\nPopping in to let you know that your item is ready for collection \ud83d\udc83\n\n{items}\n\n{collection}',
+};
+
+let settings = Object.assign({}, DEFAULT_SETTINGS);
+
+function setting(key){
+  const v = settings[key];
+  return (v === undefined || v === null || v === '') ? DEFAULT_SETTINGS[key] : v;
+}
+function shippingCost(){
+  const n = parseFloat(setting('shippingCost'));
+  return isNaN(n) ? 0 : n;
+}
+
+// Fills {name}, {items}, {total} etc. into a message template.
+function fillTemplate(tpl, vars){
+  return String(tpl).replace(/\{(\w+)\}/g, (m, key) =>
+    vars[key] !== undefined && vars[key] !== null ? String(vars[key]) : ''
+  );
+}
+
 const SIZE_PRESETS = {
   clothing: { label: 'Clothing (XS–XXL)', options: ['XS','S','M','L','XL','XXL'] },
   bra: { label: 'Bra sizes', options: (function(){
@@ -131,10 +192,6 @@ const SIZE_PRESETS = {
 
 const CATEGORIES = ['Relationships', 'Intimacy', 'Friendships', 'Family', 'Work & Money', 'Self & Growth'];
 
-// Shown to customers on order confirmations (both the picture and the
-// WhatsApp message). REPLACE THIS with the real banking details before
-// taking real orders.
-const BANK_DETAILS = 'Bling Happiness · FNB/RMB · Acc 62727946181 · Branch 250655 · Reference: your full name';
 function wrapCanvasText(ctx, text, maxWidth){
   const words = text.split(' ');
   const lines = [];
@@ -406,7 +463,7 @@ async function drawDocCard(canvas, order, kind){
   ctx.font = "700 24px 'Instrument Sans', sans-serif";
   ctx.fillStyle = '#e4c989';
   if (kind === 'order'){
-    wrapCanvasText(ctx, 'PAYMENT: ' + BANK_DETAILS, contentWidth).forEach(line => { ctx.fillText(line, marginX, y); y += 32; });
+    wrapCanvasText(ctx, 'PAYMENT: ' + setting('bankDetails'), contentWidth).forEach(line => { ctx.fillText(line, marginX, y); y += 32; });
   } else if (kind === 'receipt'){
     ctx.fillText('PAYMENT RECEIVED — THANK YOU', marginX, y);
   } else {
@@ -433,6 +490,269 @@ async function drawOrderCard(canvas, order){ return drawDocCard(canvas, order, '
 // WhatsApp needs a full international number. Customers type local SA
 // numbers (082..., 071...), so convert them: drop the leading 0 and put
 // 27 in front. Numbers already in international form are left alone.
+// Minimal PDF writer — no external library needed.
+// Produces a real, valid PDF with selectable text using the fonts that
+// every PDF reader has built in (Helvetica), so nothing is embedded and
+// nothing is downloaded.
+function createPDF(){
+  const objects = [];   // each entry is a string body
+  const pages = [];
+  let current = [];     // content stream operators for the page being built
+
+  const PT = 2.834645669; // mm -> points
+  const PAGE_W = 210, PAGE_H = 297; // A4 in mm
+
+  function esc(s){
+    return String(s).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+  }
+  const mmX = (x) => (x * PT).toFixed(2);
+  const mmY = (y) => ((PAGE_H - y) * PT).toFixed(2);
+
+  const api = {
+    setColor(r, g, b){
+      current.push(`${(r/255).toFixed(3)} ${(g/255).toFixed(3)} ${(b/255).toFixed(3)} rg`);
+      return api;
+    },
+    setStroke(r, g, b){
+      current.push(`${(r/255).toFixed(3)} ${(g/255).toFixed(3)} ${(b/255).toFixed(3)} RG`);
+      return api;
+    },
+    text(str, x, y, opts){
+      opts = opts || {};
+      const size = opts.size || 10;
+      const font = opts.bold ? '/F2' : '/F1';
+      let tx = x;
+      if (opts.align === 'right' || opts.align === 'center'){
+        const width = api.textWidth(str, size, opts.bold);
+        tx = opts.align === 'right' ? x - width : x - width / 2;
+      }
+      current.push(`BT ${font} ${size} Tf ${mmX(tx)} ${mmY(y)} Td (${esc(str)}) Tj ET`);
+      return api;
+    },
+    // Approximate width in mm. Helvetica averages ~0.5 em, bold ~0.55.
+    textWidth(str, size, bold){
+      const factor = bold ? 0.55 : 0.5;
+      return (String(str).length * size * factor) / PT;
+    },
+    // Wrap text to a max width (mm), returns an array of lines.
+    wrap(str, maxWidthMm, size, bold){
+      const words = String(str).split(/\s+/);
+      const lines = [];
+      let line = '';
+      words.forEach(word => {
+        const test = line ? line + ' ' + word : word;
+        if (api.textWidth(test, size, bold) > maxWidthMm && line){
+          lines.push(line);
+          line = word;
+        } else {
+          line = test;
+        }
+      });
+      if (line) lines.push(line);
+      return lines;
+    },
+    rect(x, y, w, h, fill){
+      current.push(`${mmX(x)} ${mmY(y + h)} ${(w * PT).toFixed(2)} ${(h * PT).toFixed(2)} re ${fill ? 'f' : 'S'}`);
+      return api;
+    },
+    line(x1, y1, x2, y2, width){
+      current.push(`${((width || 0.3) * PT).toFixed(2)} w ${mmX(x1)} ${mmY(y1)} m ${mmX(x2)} ${mmY(y2)} l S`);
+      return api;
+    },
+    endPage(){
+      pages.push(current.join('\n'));
+      current = [];
+      return api;
+    },
+    build(){
+      if (current.length) api.endPage();
+
+      const fontObjs = [
+        '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>',
+        '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',
+      ];
+
+      // Object numbering: 1 catalog, 2 pages, then per page (page + content), then fonts
+      const pageCount = pages.length;
+      const firstPageObj = 3;
+      const fontStart = firstPageObj + pageCount * 2;
+
+      const kids = [];
+      for (let i = 0; i < pageCount; i++) kids.push(`${firstPageObj + i * 2} 0 R`);
+
+      objects[1] = `<< /Type /Catalog /Pages 2 0 R >>`;
+      objects[2] = `<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${pageCount} >>`;
+
+      pages.forEach((content, i) => {
+        const pageObj = firstPageObj + i * 2;
+        const contentObj = pageObj + 1;
+        objects[pageObj] =
+          `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] ` +
+          `/Resources << /Font << /F1 ${fontStart} 0 R /F2 ${fontStart + 1} 0 R >> >> ` +
+          `/Contents ${contentObj} 0 R >>`;
+        objects[contentObj] = `<< /Length ${content.length} >>\nstream\n${content}\nendstream`;
+      });
+
+      objects[fontStart] = fontObjs[0];
+      objects[fontStart + 1] = fontObjs[1];
+
+      // Assemble
+      let out = '%PDF-1.4\n';
+      const offsets = [];
+      for (let i = 1; i < objects.length; i++){
+        if (objects[i] === undefined) continue;
+        offsets[i] = out.length;
+        out += `${i} 0 obj\n${objects[i]}\nendobj\n`;
+      }
+      const xrefPos = out.length;
+      const maxObj = objects.length;
+      out += `xref\n0 ${maxObj}\n0000000000 65535 f \n`;
+      for (let i = 1; i < maxObj; i++){
+        const off = offsets[i] === undefined ? 0 : offsets[i];
+        out += String(off).padStart(10, '0') + ' 00000 n \n';
+      }
+      out += `trailer\n<< /Size ${maxObj} /Root 1 0 R >>\nstartxref\n${xrefPos}\n%%EOF`;
+      return out;
+    },
+    save(filename){
+      const pdf = api.build();
+      const bytes = new Uint8Array(pdf.length);
+      for (let i = 0; i < pdf.length; i++) bytes[i] = pdf.charCodeAt(i) & 0xff;
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+  };
+
+  api.PAGE_W = PAGE_W;
+  api.PAGE_H = PAGE_H;
+  return api;
+}
+
+// Proper structured PDF for an order, receipt or delivery note.
+async function makeOrderPDF(order, kind){
+  const doc = createPDF();
+  const W = doc.PAGE_W, H = doc.PAGE_H;
+  const M = 18;
+  const PLUM = [61, 30, 58], GOLD = [201, 161, 90], GREY = [107, 90, 103], INK = [30, 20, 28];
+  const titles = { order: 'ORDER CONFIRMATION', receipt: 'RECEIPT', delivery: 'DELIVERY NOTE' };
+
+  // Header band
+  doc.setColor(...PLUM).rect(0, 0, W, 40, true);
+  doc.setColor(255, 255, 255).text('BLING HAPPINESS', M, 18, { size: 18, bold: true });
+  doc.setColor(...GOLD).text('EMBRACE YOUR CONFIDENCE', M, 25, { size: 8 });
+  doc.setColor(255, 255, 255).text(titles[kind] || 'ORDER', W - M, 18, { size: 11, bold: true, align: 'right' });
+  const when = order.created_at ? new Date(order.created_at) : new Date();
+  doc.text(when.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }), W - M, 25, { size: 8, align: 'right' });
+
+  let y = 56;
+  const deliveryMethod = order.delivery_method || order.deliveryMethod || 'Collection';
+
+  // Customer / delivery blocks
+  doc.setColor(...GREY);
+  doc.text('CUSTOMER', M, y, { size: 7.5, bold: true });
+  doc.text(deliveryMethod === 'Shipping' ? 'SHIPPING TO' : 'COLLECTION FROM', W / 2, y, { size: 7.5, bold: true });
+  y += 6;
+  doc.setColor(...INK);
+  doc.text(String(order.buyer || ''), M, y, { size: 10 });
+  if (order.phone) doc.text(String(order.phone), M, y + 5, { size: 10 });
+
+  const rightLines = deliveryMethod === 'Shipping'
+    ? doc.wrap(String(order.address || '(address to confirm)'), W / 2 - M - 4, 10, false)
+    : ['Ormonde Close, Upavon Road', 'House 33, Ormonde'];
+  rightLines.forEach((l, i) => doc.text(l, W / 2, y + i * 5, { size: 10 }));
+  y += Math.max(14, rightLines.length * 5 + 8);
+
+  // Items table
+  doc.setStroke(...GOLD).line(M, y, W - M, y, 0.5);
+  y += 6;
+  doc.setColor(...GREY);
+  doc.text('ITEM', M, y, { size: 7.5, bold: true });
+  doc.text('SIZE', W - M - 60, y, { size: 7.5, bold: true });
+  doc.text('QTY', W - M - 32, y, { size: 7.5, bold: true, align: 'right' });
+  if (kind !== 'delivery') doc.text('AMOUNT', W - M, y, { size: 7.5, bold: true, align: 'right' });
+  y += 3;
+  doc.setStroke(215, 205, 210).line(M, y, W - M, y, 0.2);
+  y += 7;
+
+  doc.setColor(...INK);
+  basketOf(order).forEach(i => {
+    const nameLines = doc.wrap(String(i.name || ''), W - M - 95, 10, false);
+    nameLines.forEach((l, idx) => doc.text(l, M, y + idx * 5, { size: 10 }));
+    doc.text(String(i.size || '-'), W - M - 60, y, { size: 10 });
+    doc.text(String(i.qty || 1), W - M - 32, y, { size: 10, align: 'right' });
+    if (kind !== 'delivery'){
+      doc.text('R' + ((parseFloat(i.price) || 0) * (i.qty || 1)).toFixed(2), W - M, y, { size: 10, align: 'right' });
+    }
+    y += Math.max(7, nameLines.length * 5 + 2);
+  });
+
+  // Totals
+  if (kind !== 'delivery'){
+    y += 3;
+    doc.setStroke(215, 205, 210).line(W / 2, y, W - M, y, 0.2);
+    y += 7;
+    const ship = parseFloat(order.shipping || 0);
+    if (order.subtotal){
+      doc.setColor(...GREY).text('Subtotal', W - M - 38, y, { size: 10, align: 'right' });
+      doc.setColor(...INK).text('R' + parseFloat(order.subtotal).toFixed(2), W - M, y, { size: 10, align: 'right' });
+      y += 6;
+      doc.setColor(...GREY).text(ship > 0 ? 'Shipping' : 'Collection', W - M - 38, y, { size: 10, align: 'right' });
+      doc.setColor(...INK).text(ship > 0 ? 'R' + ship.toFixed(2) : 'Free', W - M, y, { size: 10, align: 'right' });
+      y += 8;
+    }
+    doc.setColor(...PLUM);
+    doc.text(kind === 'receipt' ? 'PAID' : 'TOTAL', W - M - 38, y, { size: 12, bold: true, align: 'right' });
+    doc.text('R' + parseFloat(orderTotal(order)).toFixed(2), W - M, y, { size: 12, bold: true, align: 'right' });
+    y += 16;
+  } else {
+    // Delivery notes skip the totals block, so add the spacing here instead
+    y += 14;
+  }
+
+  // Footer block per document type
+  if (kind === 'order'){
+    doc.setColor(...PLUM).text('PAYMENT \u2014 EFT', M, y, { size: 9, bold: true }); y += 6;
+    doc.setColor(...INK);
+    setting('bankDetails').split(' \u00b7 ').forEach(part => { doc.text(part, M, y, { size: 10 }); y += 5; });
+    y += 3;
+    doc.setColor(...GREY).text("We'll confirm your order as soon as the payment reflects.", M, y, { size: 9 });
+  } else if (kind === 'receipt'){
+    doc.setColor(...PLUM).text('PAYMENT RECEIVED \u2014 THANK YOU', M, y, { size: 10, bold: true }); y += 7;
+    doc.setColor(...GREY).text("We'll let you know as soon as your order is ready.", M, y, { size: 9 });
+  } else if (deliveryMethod === 'Collection'){
+    doc.setColor(...PLUM).text('COLLECTION DETAILS', M, y, { size: 9, bold: true }); y += 7;
+    doc.setColor(...INK);
+    // Uses whatever is saved in Settings, line for line.
+    String(setting('collectionDetails')).split('\n').forEach(raw => {
+      const line = raw.replace(/\*/g, '').trim();
+      if (!line){ y += 3; return; }
+      const bold = /^(collection times|address)/i.test(line) || /gate/i.test(line);
+      doc.wrap(line, W - M * 2, 9.5, bold).forEach(l => {
+        doc.text(l, M, y, { size: 9.5, bold: bold });
+        y += 5;
+      });
+    });
+  } else {
+    doc.setColor(...PLUM).text(order.status === 'Sent' ? 'ON ITS WAY' : 'PACKED AND READY TO SHIP', M, y, { size: 10, bold: true }); y += 7;
+    doc.setColor(...GREY).text('You will receive a notification when your order is dispatched.', M, y, { size: 9 });
+  }
+
+  // Footer bar
+  doc.setStroke(...GOLD).line(M, H - 20, W - M, H - 20, 0.4);
+  doc.setColor(...GREY);
+  doc.text('Bling Happiness', M, H - 14, { size: 8 });
+  doc.text('Thank you for your support', W - M, H - 14, { size: 8, align: 'right' });
+
+  doc.save('bling-happiness-' + kind + '.pdf');
+}
+
 function cleanPhoneForWhatsApp(phone){
   let n = (phone || '').replace(/[^0-9+]/g, '');
 
@@ -474,26 +794,29 @@ function buildLeadMessage(lead, kind){
     else kind = 'order';
   }
 
-  if (kind === 'receipt'){
-    return `Hi ${lead.buyer}, we've received your payment - thank you!\n\n${list}` +
-      (total ? `\n\nPaid: R${total}` : '') +
-      `\n\nWe'll let you know as soon as your order is ready.`;
-  }
+  const ship = parseFloat(lead.shipping || 0);
+  const totals = ship > 0
+    ? `\n\nSubtotal: R${lead.subtotal || ''}\nShipping: R${ship.toFixed(0)}\nTotal: R${total}`
+    : (total ? `\n\nTotal: R${total}` : '');
 
-  if (kind === 'delivery'){
-    if (lead.status === 'Sent'){
-      return `Hi ${lead.buyer}, your order is on its way!\n\n${list}` +
-        (deliveryMethod === 'Shipping' && lead.address ? `\n\nGoing to:\n${lead.address}` : '') +
-        `\n\nThank you so much for your order!`;
-    }
-    return `Hi ${lead.buyer}, your order is ready for ${deliveryMethod === 'Shipping' ? 'shipping' : 'collection'}!\n\n${list}` +
-      (deliveryMethod === 'Shipping' && lead.address ? `\n\nShipping to:\n${lead.address}` : '') +
-      `\n\nWe'll be in touch to arrange it.`;
-  }
+  const vars = {
+    name: lead.buyer || '',
+    items: list,
+    total: total,
+    subtotal: lead.subtotal || '',
+    shipping: ship ? ship.toFixed(0) : '0',
+    totals: totals,
+    address: lead.address || '(address to confirm)',
+    bank: setting('bankDetails'),
+    collection: setting('collectionDetails'),
+  };
 
-  return `Hi ${lead.buyer}, thanks for your order!\n\n${list}` +
-    (total ? `\n\nTotal: R${total}` : '') +
-    `\n\nPlease pay via EFT:\n${BANK_DETAILS}\n\nWe'll confirm once payment reflects.`;
+  let tpl;
+  if (kind === 'receipt') tpl = setting('receiptMessage');
+  else if (kind === 'delivery') tpl = deliveryMethod === 'Shipping' ? setting('shippingMessage') : setting('collectionMessage');
+  else tpl = setting('orderMessage');
+
+  return fillTemplate(tpl, vars);
 }
 
 function escapeHtml(str){
@@ -528,6 +851,10 @@ async function fetchStories(){ stories = await apiFetch('/stories'); }
 async function fetchReplies(){ replies = await apiFetch('/replies'); }
 async function fetchProducts(){ products = await apiFetch('/products'); }
 async function fetchLeads(){ leads = await apiFetch('/leads'); }
+async function fetchSettings(){
+  const saved = await apiFetch('/settings');
+  settings = Object.assign({}, DEFAULT_SETTINGS, saved || {});
+}
 
 // ---- State ----
 let stories = [];
@@ -540,6 +867,7 @@ let transient = {
   viewingProductId: null,
   viewingCart: false,
   checkingOut: false,
+  deliveryMethod: 'Collection',
   orderingProductId: null,
   chosenSize: '',
   sizeType: 'clothing',
@@ -563,7 +891,9 @@ function saveCart(){
   try { localStorage.setItem('bh_cart', JSON.stringify(cart)); } catch (e) {}
 }
 function cartCount(){ return cart.reduce((n, i) => n + i.qty, 0); }
-function cartTotal(){ return cart.reduce((n, i) => n + (parseFloat(i.price) || 0) * i.qty, 0); }
+function cartSubtotal(){ return cart.reduce((n, i) => n + (parseFloat(i.price) || 0) * i.qty, 0); }
+function shippingFor(method){ return method === 'Shipping' ? shippingCost() : 0; }
+function cartTotal(method){ return cartSubtotal() + shippingFor(method || transient.deliveryMethod); }
 
 function addToCart(productId, size){
   const p = products.find(x => x.id === productId);
@@ -819,9 +1149,8 @@ function renderShop(){
       <button class="bh-btn-ghost" onclick="viewCart()" style="margin-bottom:14px">← Back to basket</button>
       <div class="bh-card">
         <h2 class="bh-serif" style="font-size:1.2rem;color:var(--plum);margin:0 0 14px">Your details</h2>
-        <div class="bh-cart-summary">
-          ${cart.map(i => `<div class="bh-cart-line"><span>${i.qty} × ${escapeHtml(i.name)}${i.size ? ' (' + escapeHtml(i.size) + ')' : ''}</span><span>R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}</span></div>`).join('')}
-          <div class="bh-cart-line bh-cart-total"><span>Total</span><span>R${cartTotal().toFixed(0)}</span></div>
+        <div class="bh-cart-summary" id="checkoutSummary">
+          ${renderCheckoutSummary()}
         </div>
 
         <label class="bh-label">Your name</label>
@@ -830,8 +1159,8 @@ function renderShop(){
         <input id="orderPhone" class="bh-input" placeholder="e.g. 082 123 4567" style="margin-bottom:14px">
         <label class="bh-label">Collection or shipping?</label>
         <div class="bh-radio-row">
-          <label><input type="radio" name="deliveryMethod" value="Collection" checked onchange="toggleShippingField()"> Collection</label>
-          <label><input type="radio" name="deliveryMethod" value="Shipping" onchange="toggleShippingField()"> Shipping</label>
+          <label><input type="radio" name="deliveryMethod" value="Collection" ${transient.deliveryMethod !== 'Shipping' ? 'checked' : ''} onchange="toggleShippingField()"> Collection <span style="color:var(--grey);font-size:.78rem">(free)</span></label>
+          <label><input type="radio" name="deliveryMethod" value="Shipping" ${transient.deliveryMethod === 'Shipping' ? 'checked' : ''} onchange="toggleShippingField()"> Shipping <span style="color:var(--grey);font-size:.78rem">(+R${shippingCost()})</span></label>
         </div>
         <div id="shippingAddressWrap" style="display:none">
           <label class="bh-label">Shipping address</label>
@@ -864,8 +1193,9 @@ function renderShop(){
             <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeFromCart(${idx})">🗑</button>
           </div>`).join('')}
         <div class="bh-cart-line bh-cart-total" style="margin-top:16px">
-          <span>Total</span><span>R${cartTotal().toFixed(0)}</span>
+          <span>Subtotal</span><span>R${cartSubtotal().toFixed(0)}</span>
         </div>
+        <p style="font-size:.78rem;color:var(--grey);margin:6px 0 0">Shipping is R${shippingCost()} if you choose delivery. Collection is free.</p>
         <button class="bh-btn" style="width:100%;margin-top:16px" onclick="startCheckout()">Checkout →</button>
       `}`;
   }
@@ -941,6 +1271,7 @@ function viewCart(){
 }
 function startCheckout(){
   if (cart.length === 0) return;
+  transient.deliveryMethod = 'Collection';
   transient.checkingOut = true;
   transient.viewingCart = false;
   transient.orderSent = false;
@@ -970,9 +1301,24 @@ function addToCartFromDetail(productId){
   viewCart();
 }
 
+function renderCheckoutSummary(){
+  const method = transient.deliveryMethod;
+  const ship = shippingFor(method);
+  return `
+    ${cart.map(i => `<div class="bh-cart-line"><span>${i.qty} \u00d7 ${escapeHtml(i.name)}${i.size ? ' (' + escapeHtml(i.size) + ')' : ''}</span><span>R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}</span></div>`).join('')}
+    <div class="bh-cart-line"><span>Subtotal</span><span>R${cartSubtotal().toFixed(0)}</span></div>
+    <div class="bh-cart-line"><span>${method === 'Shipping' ? 'Shipping' : 'Collection'}</span><span>${ship ? 'R' + ship.toFixed(0) : 'Free'}</span></div>
+    <div class="bh-cart-line bh-cart-total"><span>Total</span><span>R${cartTotal(method).toFixed(0)}</span></div>`;
+}
+
 function toggleShippingField(){
   const method = document.querySelector('input[name=deliveryMethod]:checked').value;
-  document.getElementById('shippingAddressWrap').style.display = method === 'Shipping' ? 'block' : 'none';
+  transient.deliveryMethod = method;
+  const wrap = document.getElementById('shippingAddressWrap');
+  if (wrap) wrap.style.display = method === 'Shipping' ? 'block' : 'none';
+  // Update the totals in place so typed details aren't lost.
+  const summary = document.getElementById('checkoutSummary');
+  if (summary) summary.innerHTML = renderCheckoutSummary();
 }
 
 async function submitOrder(){
@@ -993,7 +1339,9 @@ async function submitOrder(){
       body: JSON.stringify({
         buyer, phone, deliveryMethod, address,
         items: cart,
-        total: cartTotal().toFixed(0),
+        subtotal: cartSubtotal().toFixed(0),
+        shipping: shippingFor(deliveryMethod).toFixed(0),
+        total: cartTotal(deliveryMethod).toFixed(0),
       }),
     });
     clearCart();
@@ -1032,11 +1380,13 @@ function renderAdmin(){
       <button class="bh-tab ${nav.adminTab === 'post' ? 'on' : ''}" onclick="setAdminTab('post')">Post</button>
       <button class="bh-tab ${nav.adminTab === 'shop' ? 'on' : ''}" onclick="setAdminTab('shop')">Shop</button>
       <button class="bh-tab ${nav.adminTab === 'leads' ? 'on' : ''}" onclick="setAdminTab('leads')">Leads</button>
+      <button class="bh-tab ${nav.adminTab === 'settings' ? 'on' : ''}" onclick="setAdminTab('settings')">Settings</button>
     </div>
     ${nav.adminTab === 'queue' ? renderReviewQueue() : ''}
     ${nav.adminTab === 'post' ? renderPostManager() : ''}
     ${nav.adminTab === 'shop' ? renderShopManager() : ''}
     ${nav.adminTab === 'leads' ? renderLeadsManager() : ''}
+    ${nav.adminTab === 'settings' ? renderSettings() : ''}
   `;
 }
 
@@ -1255,14 +1605,15 @@ function renderLeadsManager(){
             <span class="bh-doc-group">
               <span class="bh-doc-label">${k === 'order' ? 'Order' : (k === 'receipt' ? 'Receipt' : 'Delivery')}</span>
               ${l.phone ? `<button class="bh-wa-mini" onclick="sendLeadWhatsApp('${l.id}','${k}')">Send</button>` : ''}
-              <button class="bh-doc-mini" onclick="downloadLeadCard('${l.id}','${k}')">↓</button>
+              <button class="bh-doc-mini" title="Download picture" onclick="downloadLeadCard('${l.id}','${k}')">JPG</button>
+              <button class="bh-doc-mini" title="Download PDF" onclick="downloadLeadPDF('${l.id}','${k}')">PDF</button>
             </span>`).join('')}
           <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeLead('${l.id}')">🗑</button>
         </span>
       </div>
     `).join('')}
     <p style="font-size:.78rem;color:var(--ok);margin:4px 0 0">${escapeHtml(transient.leadDownloadStatus)}</p>
-    <p class="bh-note">Tap a status pill to move it along: Enquired → Paid → Ready → Sent.<br><br>Each order has three documents. <strong>Send</strong> opens WhatsApp with that message already written — you just tap send. <strong>↓</strong> downloads the matching picture if you want to attach it.<br><br><strong>Order</strong> = what they bought, plus banking details. <strong>Receipt</strong> = send once their payment reflects. <strong>Delivery</strong> = ready for collection, or on its way.</p>
+    <p class="bh-note">Tap a status pill to move it along: Enquired → Paid → Ready → Sent.<br><br>Each order has three documents. <strong>Send</strong> opens WhatsApp with that message already written — you just tap send. <strong>JPG</strong> downloads a picture, <strong>PDF</strong> a proper printable document — either can be attached in WhatsApp.<br><br><strong>Order</strong> = what they bought, plus banking details. <strong>Receipt</strong> = send once their payment reflects. <strong>Delivery</strong> = ready for collection, or on its way.</p>
   `;
 }
 
@@ -1292,6 +1643,19 @@ function sendLeadWhatsApp(id){
   window.open(buildWhatsAppLink(lead.phone, message), '_blank');
 }
 
+async function downloadLeadPDF(id, kind){
+  const lead = leads.find(l => l.id === id);
+  transient.leadDownloadStatus = 'Preparing PDF\u2026';
+  render();
+  try {
+    await makeOrderPDF(lead, kind || 'order');
+    transient.leadDownloadStatus = 'PDF downloaded \u2014 attach it in WhatsApp.';
+  } catch (e) {
+    transient.leadDownloadStatus = "Couldn't make the PDF \u2014 please try again.";
+  }
+  render();
+}
+
 async function downloadLeadCard(id, kind){
   const lead = leads.find(l => l.id === id);
   kind = kind || 'order';
@@ -1302,6 +1666,102 @@ async function downloadLeadCard(id, kind){
   await downloadCanvas(canvas, `bling-happiness-${kind}.jpg`);
   transient.leadDownloadStatus = 'Downloaded — attach it in WhatsApp before sending.';
   render();
+}
+
+// ---- Admin: settings ----
+function renderSettings(){
+  const field = (key, label, help, rows) => `
+    <div class="bh-set-block">
+      <label class="bh-label">${label}</label>
+      ${help ? `<p class="bh-set-help">${help}</p>` : ''}
+      ${rows
+        ? `<textarea id="set_${key}" class="bh-textarea" style="min-height:${rows * 22}px">${escapeHtml(setting(key))}</textarea>`
+        : `<input id="set_${key}" class="bh-input" value="${escapeHtml(setting(key))}">`}
+    </div>`;
+
+  const placeholders = `
+    <div class="bh-set-keys">
+      <strong>You can use these anywhere in a message</strong> \u2014 they get filled in automatically:<br>
+      <code>{name}</code> the customer\u2019s name &nbsp;
+      <code>{items}</code> what they ordered &nbsp;
+      <code>{total}</code> total &nbsp;
+      <code>{subtotal}</code> &nbsp;
+      <code>{shipping}</code> &nbsp;
+      <code>{totals}</code> the full breakdown &nbsp;
+      <code>{address}</code> their address &nbsp;
+      <code>{bank}</code> your banking details &nbsp;
+      <code>{collection}</code> your collection details
+    </div>`;
+
+  return `
+    <div class="bh-card" style="margin-bottom:18px;background:var(--blushp);border:none">
+      <p style="font-size:.85rem;color:var(--grey);margin:0">Change anything here whenever you like \u2014 prices, banking details, collection info, or the exact wording of every message. Nothing else needs to be updated.</p>
+    </div>
+
+    <div class="bh-card" style="margin-bottom:18px">
+      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Delivery &amp; payment</h3>
+      ${field('shippingCost', 'Shipping cost (R)', 'What customers pay for delivery. Collection is always free.')}
+      ${field('bankDetails', 'Banking details', 'Shown to customers on the order message and the order document.', 2)}
+    </div>
+
+    <div class="bh-card" style="margin-bottom:18px">
+      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Collection details</h3>
+      ${field('collectionDetails', 'Collection information', 'Times, address, who to contact \u2014 anything a customer needs in order to collect. Put a * either side of a line to make it bold in WhatsApp.', 12)}
+    </div>
+
+    <div class="bh-card" style="margin-bottom:18px">
+      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:6px">Message wording</h3>
+      ${placeholders}
+      ${field('orderMessage', 'When an order is placed', 'Sent with the banking details so they can pay.', 6)}
+      ${field('receiptMessage', 'When payment is received', '', 5)}
+      ${field('shippingMessage', 'When it is ready \u2014 shipping', '', 5)}
+      ${field('collectionMessage', 'When it is ready \u2014 collection', '', 5)}
+    </div>
+
+    <p id="settingsStatus" style="font-size:.85rem;min-height:1.2em;margin:0 0 10px;color:var(--ok)"></p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="bh-btn" onclick="saveSettings()">Save changes</button>
+      <button class="bh-btn-outline" onclick="resetSettings()">Undo my edits</button>
+    </div>
+  `;
+}
+
+const SETTING_KEYS = ['shippingCost','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
+
+async function saveSettings(){
+  const status = document.getElementById('settingsStatus');
+  const updates = {};
+  SETTING_KEYS.forEach(k => {
+    const el = document.getElementById('set_' + k);
+    if (el) updates[k] = el.value;
+  });
+  if (updates.shippingCost !== undefined && isNaN(parseFloat(updates.shippingCost))){
+    status.style.color = 'var(--risk)';
+    status.textContent = 'Shipping cost must be a number, like 99.';
+    return;
+  }
+  status.style.color = 'var(--grey)';
+  status.textContent = 'Saving\u2026';
+  try {
+    await apiFetch('/settings', { method: 'PATCH', body: JSON.stringify(updates) });
+    await fetchSettings();
+    status.style.color = 'var(--ok)';
+    status.textContent = 'Saved. These are live straight away.';
+  } catch (e) {
+    status.style.color = 'var(--risk)';
+    status.textContent = "Couldn't save \u2014 please try again.";
+  }
+}
+
+function resetSettings(){
+  if (!confirm('Put every setting back to how it started? Anything you have changed here will be lost.')) return;
+  SETTING_KEYS.forEach(k => {
+    const el = document.getElementById('set_' + k);
+    if (el) el.value = DEFAULT_SETTINGS[k];
+  });
+  const status = document.getElementById('settingsStatus');
+  status.style.color = 'var(--grey)';
+  status.textContent = 'Put back to the original wording \u2014 tap Save changes to keep it.';
 }
 
 // ---- Admin: post manager ----
@@ -1396,7 +1856,7 @@ async function createRoundupCard(){
 async function boot(){
   render(); // show the loading state immediately
   try {
-    await Promise.all([fetchStories(), fetchReplies(), fetchProducts()]);
+    await Promise.all([fetchStories(), fetchReplies(), fetchProducts(), fetchSettings()]);
   } catch (e) {
     transient.loadError = "Couldn't reach the server just now — check your connection and reload.";
   }
