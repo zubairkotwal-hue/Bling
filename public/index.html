@@ -81,6 +81,18 @@
   .bh-post-item .snip{ flex:1; font-family:'Fraunces',serif; font-style:italic; font-size:.9rem; min-width:180px; }
   .bh-postedtag{ font-size:.68rem; font-weight:700; color:var(--ok); text-transform:uppercase; }
   .bh-checkrow{ display:flex; align-items:flex-start; gap:10px; font-size:.86rem; padding:9px 0; border-bottom:1px solid var(--line); }
+.bh-filters{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:16px; }
+  .bh-filter-row{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; padding:5px 0; }
+  .bh-filter-label{ font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--grey); margin-right:3px; }
+  .bh-chip{ background:var(--blushp); border:1px solid var(--line); color:var(--plum); font-size:.78rem; font-weight:700; padding:6px 13px; border-radius:20px; cursor:pointer; font-family:'Instrument Sans',sans-serif; }
+  .bh-chip.sm{ font-size:.72rem; padding:5px 10px; }
+  .bh-chip.on{ background:var(--plum); color:#fff; border-color:var(--plum); }
+  .bh-swatch{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); color:var(--plum); font-size:.74rem; font-weight:700; padding:4px 11px 4px 5px; border-radius:20px; cursor:pointer; font-family:'Instrument Sans',sans-serif; }
+  .bh-swatch span{ width:15px; height:15px; border-radius:50%; border:1px solid rgba(0,0,0,.15); display:block; }
+  .bh-swatch.on{ background:var(--plum); color:#fff; border-color:var(--plum); }
+  .bh-sort{ border:1px solid var(--line); border-radius:20px; padding:6px 11px; font-size:.78rem; font-family:'Instrument Sans',sans-serif; color:var(--plum); background:#fff; font-weight:600; }
+  .bh-card-swatches{ display:flex; gap:4px; margin-top:5px; }
+  .bh-card-swatches i{ width:11px; height:11px; border-radius:50%; border:1px solid rgba(0,0,0,.15); display:block; }
   .bh-shop-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px; margin-top:18px; }
   .bh-shop-card{ background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden; cursor:pointer; transition:transform .15s; }
   .bh-shop-card:hover{ transform:translateY(-2px); }
@@ -97,6 +109,11 @@
   .bh-size-tag{ display:inline-block; background:var(--blushp); border:1px solid var(--line); color:var(--plum); font-size:.8rem; font-weight:700; padding:6px 13px; border-radius:20px; }
   .bh-size-opt{ background:#fff; border:1.5px solid var(--line); color:var(--plum); font-size:.82rem; font-weight:700; padding:9px 15px; border-radius:20px; cursor:pointer; font-family:'Instrument Sans',sans-serif; }
   .bh-size-opt:hover{ border-color:var(--gold); background:var(--blushp); }
+.bh-size-opt.to-order{ opacity:.45; border-style:dashed; }
+  .bh-size-opt.to-order.on{ opacity:1; background:var(--gold); color:var(--ink); border-color:var(--gold); border-style:solid; }
+  .bh-size-note{ font-size:.78rem; color:var(--grey); margin:0 0 14px; min-height:1.1em; }
+  .bh-size-note.is-leadtime{ color:var(--gold); font-weight:700; }
+  .bh-leadtime-banner{ background:#fdf3e3; border:1px solid #ecd6a6; color:#a6752f; font-size:.82rem; font-weight:700; border-radius:9px; padding:9px 13px; margin-bottom:14px; }
   .bh-size-opt.on{ background:var(--plum); color:#fff; border-color:var(--plum); }
   .bh-shop-sizes{ font-size:.72rem; color:var(--grey); margin-top:3px; }
   .bh-radio-row label{ display:flex; align-items:center; gap:6px; font-size:.85rem; cursor:pointer; }
@@ -122,6 +139,9 @@
 // before anything has been saved.
 const DEFAULT_SETTINGS = {
   shippingCost: '99',
+
+  leadTimeLabel: 'Available in 2-3 weeks',
+
 
   bankDetails: 'Bling Happiness \u00b7 FNB/RMB \u00b7 Acc 62727946181 \u00b7 Branch 250655 \u00b7 Reference: your full name',
 
@@ -177,6 +197,85 @@ function fillTemplate(tpl, vars){
     vars[key] !== undefined && vars[key] !== null ? String(vars[key]) : ''
   );
 }
+
+const SHOP_CATEGORIES = [
+  'Bride', 'Date Night', 'Sleepwear', 'Dressing gowns', 'Undies',
+  'Mum to be', 'Slippers', 'Slips', 'Bedroom Accessories',
+  'Gift Voucher', 'Fun-Size',
+];
+
+// Swatch colours shown when adding a product and when filtering.
+const COLOURS = [
+  { name: 'Black',      hex: '#1c1c1c' },
+  { name: 'White',      hex: '#ffffff' },
+  { name: 'Ivory',      hex: '#f6f0e2' },
+  { name: 'Nude',       hex: '#e3c3a8' },
+  { name: 'Champagne',  hex: '#e6d3b3' },
+  { name: 'Blush',      hex: '#f2c6cd' },
+  { name: 'Pink',       hex: '#e87ea6' },
+  { name: 'Red',        hex: '#c0192f' },
+  { name: 'Burgundy',   hex: '#6d1b2c' },
+  { name: 'Purple',     hex: '#6b3560' },
+  { name: 'Blue',       hex: '#2f4d8a' },
+  { name: 'Green',      hex: '#3f6b46' },
+  { name: 'Grey',       hex: '#8a8a8a' },
+  { name: 'Leopard',    hex: '#b58b4c' },
+];
+
+const VOUCHER_STEP = 100;
+const VOUCHER_MIN = 100;
+const VOUCHER_MAX = 5000;
+
+function productColours(p){
+  try {
+    const raw = typeof p.colours === 'string' ? JSON.parse(p.colours || '[]') : (p.colours || []);
+    return Array.isArray(raw) ? raw : [];
+  } catch (e) { return []; }
+}
+function colourHex(name){
+  const c = COLOURS.find(x => x.name === name);
+  return c ? c.hex : '#cccccc';
+}
+// Shrinks a photo before it's stored. Phone photos are several megabytes;
+// a shop doesn't need that, and sending full-size photos is what makes a
+// catalogue slow to load.
+function resizeImage(file, maxSize, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read that file'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('That file is not a picture'));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxSize){
+          height = Math.round(height * maxSize / width);
+          width = maxSize;
+        } else if (height > maxSize){
+          width = Math.round(width * maxSize / height);
+          height = maxSize;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Pictures come from their own address so the browser caches them.
+function productImageUrl(p, size){
+  if (!p || !p.has_image) return '';
+  return `${API}/image?id=${encodeURIComponent(p.id)}&size=${size || 'thumb'}`;
+}
+
+function isVoucher(p){ return p && p.product_type === 'voucher'; }
 
 const SIZE_PRESETS = {
   clothing: { label: 'Clothing (XS–XXL)', options: ['XS','S','M','L','XL','XXL'] },
@@ -775,7 +874,7 @@ function leadItemList(lead){
   try {
     const items = typeof lead.items === 'string' ? JSON.parse(lead.items || 'null') : lead.items;
     if (Array.isArray(items) && items.length){
-      return items.map(i => `${i.qty} x ${i.name}${i.size ? ' (' + i.size + ')' : ''} — R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}`).join('\n');
+      return items.map(i => `${i.qty} x ${i.name}${i.size ? ' (' + i.size + ')' : ''}${i.toOrder ? ' [' + setting('leadTimeLabel') + ']' : ''} — R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}`).join('\n');
     }
   } catch (e) {}
   return `${lead.item}${lead.size ? ' (' + lead.size + ')' : ''}${lead.price ? ' — R' + lead.price : ''}`;
@@ -868,10 +967,21 @@ let transient = {
   viewingCart: false,
   checkingOut: false,
   deliveryMethod: 'Collection',
+  filterCategory: '',
+  filterColour: '',
+  filterSize: '',
+  sortBy: 'newest',
+  voucherAmount: 100,
   orderingProductId: null,
   chosenSize: '',
   sizeType: 'clothing',
   selectedSizes: [],
+  orderSizes: [],
+  stockStatus: 'in_stock',
+  category: '',
+  colours: [],
+  shopImages: null,
+  imageStatus: '',
   orderSent: false,
   shopImageData: null,
   compileStoryId: '',
@@ -895,12 +1005,12 @@ function cartSubtotal(){ return cart.reduce((n, i) => n + (parseFloat(i.price) |
 function shippingFor(method){ return method === 'Shipping' ? shippingCost() : 0; }
 function cartTotal(method){ return cartSubtotal() + shippingFor(method || transient.deliveryMethod); }
 
-function addToCart(productId, size){
+function addToCart(productId, size, toOrder){
   const p = products.find(x => x.id === productId);
   if (!p) return;
   const existing = cart.find(i => i.productId === productId && i.size === (size || ''));
   if (existing) existing.qty += 1;
-  else cart.push({ productId, name: p.name, price: p.price, size: size || '', qty: 1 });
+  else cart.push({ productId, name: p.name, price: p.price, size: size || '', qty: 1, toOrder: !!toOrder });
   saveCart();
 }
 function changeQty(idx, delta){
@@ -912,6 +1022,23 @@ function changeQty(idx, delta){
 }
 function removeFromCart(idx){ cart.splice(idx, 1); saveCart(); render(); }
 function clearCart(){ cart = []; saveCart(); }
+
+function orderOnlySizes(p){
+  try {
+    const raw = typeof p.order_sizes === 'string' ? JSON.parse(p.order_sizes || '[]') : (p.order_sizes || []);
+    return Array.isArray(raw) ? raw : [];
+  } catch (e) { return []; }
+}
+// Everything a customer can pick: in stock first, then made-to-order.
+function allSizesFor(p){
+  const inStock = productSizes(p);
+  const toOrder = orderOnlySizes(p).filter(s => !inStock.includes(s));
+  return { inStock, toOrder, all: inStock.concat(toOrder) };
+}
+function isMadeToOrder(p, size){
+  if (p.stock_status === 'made_to_order') return true;
+  return !productSizes(p).includes(size);
+}
 
 function productSizes(p){
   try {
@@ -1183,6 +1310,7 @@ function renderShop(){
             <div class="bh-cart-info">
               <div class="bh-cart-name">${escapeHtml(i.name)}</div>
               ${i.size ? `<div class="bh-cart-size">Size ${escapeHtml(i.size)}</div>` : ''}
+              ${i.toOrder ? `<div class="bh-cart-size" style="color:var(--gold);font-weight:700">${escapeHtml(setting('leadTimeLabel'))}</div>` : ''}
               <div class="bh-cart-price">R${escapeHtml(i.price)} each</div>
             </div>
             <div class="bh-qty">
@@ -1204,24 +1332,44 @@ function renderShop(){
   if (transient.viewingProductId){
     const product = products.find(p => p.id === transient.viewingProductId);
     if (!product){ transient.viewingProductId = null; return renderShop(); }
-    const sizes = productSizes(product);
+    const sizeInfo = allSizesFor(product);
     return `
       <button class="bh-btn-ghost" onclick="goShop()" style="margin-bottom:14px">← Back to shop</button>
       <div class="bh-detail">
-        ${product.image
-          ? `<img class="bh-detail-img" src="${product.image}" alt="${escapeHtml(product.name)}">`
+        ${product.has_image
+          ? `<img class="bh-detail-img" src="${productImageUrl(product,'full')}" alt="${escapeHtml(product.name)}" decoding="async">`
           : `<div class="bh-detail-img" style="background:var(--blushp)"></div>`}
         <div class="bh-detail-body">
           <h2 class="bh-serif" style="font-size:1.4rem;color:var(--plum);margin:0 0 4px">${escapeHtml(product.name)}</h2>
-          <p style="color:var(--gold);font-weight:700;font-size:1.15rem;margin:0 0 14px">R${escapeHtml(product.price)}</p>
+          <p style="color:var(--gold);font-weight:700;font-size:1.15rem;margin:0 0 14px">${isVoucher(product) ? 'Gift voucher' : 'R' + escapeHtml(product.price)}</p>
           ${product.description ? `<p style="font-size:.9rem;color:var(--grey);margin-bottom:16px">${escapeHtml(product.description)}</p>` : ''}
-          ${sizes.length > 1 ? `
+          ${isVoucher(product) ? `
+            <label class="bh-label">Choose an amount</label>
+            <p style="font-size:.78rem;color:var(--grey);margin:-2px 0 10px">Any amount in steps of R${VOUCHER_STEP}.</p>
+            <div class="bh-voucher-row">
+              <button class="bh-qty-btn" onclick="changeVoucher(-1)">\u2212</button>
+              <span class="bh-voucher-amount" id="voucherAmount">R${transient.voucherAmount || VOUCHER_MIN}</span>
+              <button class="bh-qty-btn" onclick="changeVoucher(1)">+</button>
+            </div>
+            <p class="bh-size-note">Between R${VOUCHER_MIN} and R${VOUCHER_MAX}.</p>
+          ` : ''}
+
+          ${!isVoucher(product) && product.stock_status === 'made_to_order' ? `
+            <div class="bh-leadtime-banner">${escapeHtml(setting('leadTimeLabel'))} \u2014 made to order</div>` : ''}
+
+          ${!isVoucher(product) && sizeInfo.all.length > 1 ? `
             <label class="bh-label">Choose a size</label>
-            <div class="bh-size-grid" id="detailSizeGrid" style="margin-bottom:18px">
-              ${sizes.map(s => `<button class="bh-size-opt ${transient.chosenSize === s ? 'on' : ''}" onclick="chooseSize('${escapeHtml(s)}', this)">${escapeHtml(s)}</button>`).join('')}
-            </div>` : (sizes.length === 1 ? `
+            <div class="bh-size-grid" id="detailSizeGrid" style="margin-bottom:10px">
+              ${sizeInfo.all.map(s => {
+                const toOrder = isMadeToOrder(product, s);
+                return `<button class="bh-size-opt ${toOrder ? 'to-order' : ''} ${transient.chosenSize === s ? 'on' : ''}" onclick="chooseSize('${escapeHtml(s)}', this, ${toOrder})">${escapeHtml(s)}</button>`;
+              }).join('')}
+            </div>
+            <p id="sizeNote" class="bh-size-note">${transient.chosenSize && isMadeToOrder(product, transient.chosenSize) ? escapeHtml(setting('leadTimeLabel')) : (sizeInfo.toOrder.length ? 'Faded sizes are still available \u2014 tap one to see when.' : '')}</p>
+            ` : (!isVoucher(product) && sizeInfo.all.length === 1 ? `
             <label class="bh-label">Size</label>
-            <div class="bh-size-grid" style="margin-bottom:18px"><span class="bh-size-tag">${escapeHtml(sizes[0])}</span></div>` : '')}
+            <div class="bh-size-grid" style="margin-bottom:10px"><span class="bh-size-tag">${escapeHtml(sizeInfo.all[0])}</span></div>
+            <p class="bh-size-note">${isMadeToOrder(product, sizeInfo.all[0]) ? escapeHtml(setting('leadTimeLabel')) : ''}</p>` : '')}
           <p id="detailError" style="color:var(--risk);font-size:.8rem;min-height:1.1em;margin:0 0 6px"></p>
           <button class="bh-btn" style="width:100%" onclick="addToCartFromDetail('${product.id}')">Add to basket →</button>
         </div>
@@ -1229,29 +1377,118 @@ function renderShop(){
   }
 
   // 4. THUMBNAIL GRID
+  const shown = visibleProducts();
+  const cats = categoriesInShop();
+  const cols = coloursInShop();
+  const sizes = sizesInShop();
+  const filtering = transient.filterCategory || transient.filterColour || transient.filterSize;
+
   return `
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px">
       <div>
         <h2 class="bh-serif" style="font-size:1.3rem;color:var(--plum);margin:0 0 2px">Shop</h2>
         <p style="font-size:.85rem;color:var(--grey);margin:0">Kept separate from the stories, on purpose.</p>
       </div>
       <button class="bh-btn-outline" onclick="viewCart()">Basket${cartCount() ? ` (${cartCount()})` : ''}</button>
     </div>
-    ${products.length === 0 ? `<p class="bh-empty">Nothing in the shop yet — check back soon.</p>` : ''}
+
+    ${products.length === 0 ? '' : `
+    <div class="bh-filters">
+      ${cats.length ? `
+        <div class="bh-filter-row">
+          ${cats.map(cat => `<button class="bh-chip ${transient.filterCategory === cat ? 'on' : ''}" onclick="setFilter('Category','${escapeHtml(cat)}')">${escapeHtml(cat)}</button>`).join('')}
+        </div>` : ''}
+
+      ${cols.length ? `
+        <div class="bh-filter-row">
+          <span class="bh-filter-label">Colour</span>
+          ${cols.map(col => `<button class="bh-swatch ${transient.filterColour === col ? 'on' : ''}" title="${escapeHtml(col)}" onclick="setFilter('Colour','${escapeHtml(col)}')"><span style="background:${colourHex(col)}"></span>${escapeHtml(col)}</button>`).join('')}
+        </div>` : ''}
+
+      ${sizes.length ? `
+        <div class="bh-filter-row">
+          <span class="bh-filter-label">Size</span>
+          ${sizes.map(s => `<button class="bh-chip sm ${transient.filterSize === s ? 'on' : ''}" onclick="setFilter('Size','${escapeHtml(s)}')">${escapeHtml(s)}</button>`).join('')}
+        </div>` : ''}
+
+      <div class="bh-filter-row">
+        <span class="bh-filter-label">Sort</span>
+        <select class="bh-sort" onchange="setSort(this.value)">
+          <option value="newest"     ${transient.sortBy==='newest'?'selected':''}>Newest first</option>
+          <option value="oldest"     ${transient.sortBy==='oldest'?'selected':''}>Oldest first</option>
+          <option value="price_low"  ${transient.sortBy==='price_low'?'selected':''}>Price: low to high</option>
+          <option value="price_high" ${transient.sortBy==='price_high'?'selected':''}>Price: high to low</option>
+          <option value="name"       ${transient.sortBy==='name'?'selected':''}>Name A\u2013Z</option>
+        </select>
+        ${filtering ? `<button class="bh-btn-ghost" style="font-size:.78rem" onclick="clearFilters()">Clear filters</button>` : ''}
+      </div>
+    </div>`}
+
+    ${products.length === 0 ? `<p class="bh-empty">Nothing in the shop yet \u2014 check back soon.</p>` : ''}
+    ${products.length && shown.length === 0 ? `<p class="bh-empty">Nothing matches those filters. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearFilters()">Clear them</button></p>` : ''}
+
     <div class="bh-shop-grid">
-      ${products.map(p => {
-        const sizes = productSizes(p);
+      ${shown.map(p => {
+        const sz = allSizesFor(p).all;
+        const pc = productColours(p);
         return `
         <div class="bh-shop-card" onclick="viewProduct('${p.id}')">
-          ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">` : `<div style="aspect-ratio:1;background:var(--blushp)"></div>`}
+          ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async">` : `<div style="aspect-ratio:1;background:var(--blushp)"></div>`}
           <div class="body">
             <div class="name">${escapeHtml(p.name)}</div>
-            <div class="price">R${escapeHtml(p.price)}</div>
-            ${sizes.length ? `<div class="bh-shop-sizes">${sizes.length === 1 ? escapeHtml(sizes[0]) : sizes.length + ' sizes'}</div>` : ''}
+            <div class="price">${isVoucher(p) ? 'From R' + VOUCHER_MIN : 'R' + escapeHtml(p.price)}</div>
+            ${pc.length ? `<div class="bh-card-swatches">${pc.slice(0,5).map(col => `<i title="${escapeHtml(col)}" style="background:${colourHex(col)}"></i>`).join('')}</div>` : ''}
+            ${!isVoucher(p) && sz.length ? `<div class="bh-shop-sizes">${sz.length === 1 ? escapeHtml(sz[0]) : sz.length + ' sizes'}</div>` : ''}
+            ${p.stock_status === 'made_to_order' ? `<div class="bh-shop-sizes" style="color:#a6752f;font-weight:700">${escapeHtml(setting('leadTimeLabel'))}</div>` : ''}
           </div>
         </div>`;
       }).join('')}
     </div>`;
+}
+
+function visibleProducts(){
+  let list = products.slice();
+
+  if (transient.filterCategory) list = list.filter(p => p.category === transient.filterCategory);
+  if (transient.filterColour)   list = list.filter(p => productColours(p).includes(transient.filterColour));
+  if (transient.filterSize)     list = list.filter(p => allSizesFor(p).all.includes(transient.filterSize));
+
+  const num = v => parseFloat(v) || 0;
+  switch (transient.sortBy){
+    case 'price_low':  list.sort((a,b) => num(a.price) - num(b.price)); break;
+    case 'price_high': list.sort((a,b) => num(b.price) - num(a.price)); break;
+    case 'name':       list.sort((a,b) => String(a.name).localeCompare(String(b.name))); break;
+    case 'oldest':     list.sort((a,b) => new Date(a.created_at||0) - new Date(b.created_at||0)); break;
+    default:           list.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
+  }
+  return list;
+}
+
+// Only offer sizes/colours that actually exist in the shop.
+function sizesInShop(){
+  const set = new Set();
+  products.forEach(p => allSizesFor(p).all.forEach(s => set.add(s)));
+  return Array.from(set);
+}
+function coloursInShop(){
+  const set = new Set();
+  products.forEach(p => productColours(p).forEach(x => set.add(x)));
+  return Array.from(set);
+}
+function categoriesInShop(){
+  return SHOP_CATEGORIES.filter(cat => products.some(p => p.category === cat));
+}
+
+function setFilter(kind, value){
+  transient['filter' + kind] = transient['filter' + kind] === value ? '' : value;
+  render();
+}
+function setSort(v){ transient.sortBy = v; render(); }
+function clearFilters(){
+  transient.filterCategory = '';
+  transient.filterColour = '';
+  transient.filterSize = '';
+  render();
 }
 
 function viewProduct(id){
@@ -1279,24 +1516,47 @@ function startCheckout(){
 }
 
 // Highlight the chosen size without re-rendering (which would lose scroll position)
-function chooseSize(s, btn){
+function changeVoucher(dir){
+  let v = (transient.voucherAmount || VOUCHER_MIN) + dir * VOUCHER_STEP;
+  v = Math.max(VOUCHER_MIN, Math.min(VOUCHER_MAX, v));
+  transient.voucherAmount = v;
+  const el = document.getElementById('voucherAmount');
+  if (el) el.textContent = 'R' + v;
+}
+
+function chooseSize(s, btn, toOrder){
   transient.chosenSize = s;
   const grid = document.getElementById('detailSizeGrid');
   if (grid) grid.querySelectorAll('.bh-size-opt').forEach(b => b.classList.toggle('on', b === btn));
+  const note = document.getElementById('sizeNote');
+  if (note){
+    note.textContent = toOrder ? setting('leadTimeLabel') : 'In stock \u2014 ready now.';
+    note.classList.toggle('is-leadtime', !!toOrder);
+  }
   const err = document.getElementById('detailError');
   if (err) err.textContent = '';
 }
 
 function addToCartFromDetail(productId){
   const product = products.find(p => p.id === productId);
-  const sizes = productSizes(product);
   const err = document.getElementById('detailError');
-  if (sizes.length > 1 && !transient.chosenSize){
+
+  if (isVoucher(product)){
+    const amount = transient.voucherAmount || VOUCHER_MIN;
+    cart.push({ productId, name: product.name, price: String(amount), size: '', qty: 1, toOrder: false, voucher: true });
+    saveCart();
+    transient.voucherAmount = VOUCHER_MIN;
+    viewCart();
+    return;
+  }
+
+  const sizeInfo = allSizesFor(product);
+  if (sizeInfo.all.length > 1 && !transient.chosenSize){
     if (err) err.textContent = 'Please choose a size first.';
     return;
   }
-  const size = transient.chosenSize || (sizes.length === 1 ? sizes[0] : '');
-  addToCart(productId, size);
+  const size = transient.chosenSize || (sizeInfo.all.length === 1 ? sizeInfo.all[0] : '');
+  addToCart(productId, size, isMadeToOrder(product, size));
   transient.chosenSize = '';
   viewCart();
 }
@@ -1305,7 +1565,7 @@ function renderCheckoutSummary(){
   const method = transient.deliveryMethod;
   const ship = shippingFor(method);
   return `
-    ${cart.map(i => `<div class="bh-cart-line"><span>${i.qty} \u00d7 ${escapeHtml(i.name)}${i.size ? ' (' + escapeHtml(i.size) + ')' : ''}</span><span>R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}</span></div>`).join('')}
+    ${cart.map(i => `<div class="bh-cart-line"><span>${i.qty} \u00d7 ${escapeHtml(i.name)}${i.size ? ' (' + escapeHtml(i.size) + ')' : ''}${i.toOrder ? ' \u2014 ' + escapeHtml(setting('leadTimeLabel')) : ''}</span><span>R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}</span></div>`).join('')}
     <div class="bh-cart-line"><span>Subtotal</span><span>R${cartSubtotal().toFixed(0)}</span></div>
     <div class="bh-cart-line"><span>${method === 'Shipping' ? 'Shipping' : 'Collection'}</span><span>${ship ? 'R' + ship.toFixed(0) : 'Free'}</span></div>
     <div class="bh-cart-line bh-cart-total"><span>Total</span><span>R${cartTotal(method).toFixed(0)}</span></div>`;
@@ -1339,6 +1599,7 @@ async function submitOrder(){
       body: JSON.stringify({
         buyer, phone, deliveryMethod, address,
         items: cart,
+        leadTime: cart.some(i => i.toOrder) ? setting('leadTimeLabel') : '',
         subtotal: cartSubtotal().toFixed(0),
         shipping: shippingFor(deliveryMethod).toFixed(0),
         total: cartTotal(deliveryMethod).toFixed(0),
@@ -1470,11 +1731,14 @@ function renderShopManager(){
         <div>
           <label class="bh-label">Picture</label>
           <input type="file" accept="image/*" class="bh-input" style="margin-bottom:12px" onchange="handleShopFile(event)">
-          ${transient.shopImageData ? `<img src="${transient.shopImageData}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;margin-bottom:12px">` : ''}
+          <img id="imagePreview" src="${transient.shopImageData || ''}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:${transient.shopImageData ? 'block' : 'none'}">
+          <p id="imageStatus" style="font-size:.75rem;color:var(--grey);margin:0 0 12px">${escapeHtml(transient.imageStatus)}</p>
           <label class="bh-label">Name</label>
           <input id="shopName" class="bh-input" placeholder="e.g. Item name" style="margin-bottom:12px">
-          <label class="bh-label">Price (R)</label>
-          <input id="shopPrice" type="number" class="bh-input" placeholder="0.00" style="margin-bottom:12px">
+          <div id="priceWrap" style="display:${transient.category === 'Gift Voucher' ? 'none' : 'block'}">
+            <label class="bh-label">Price (R)</label>
+            <input id="shopPrice" type="number" class="bh-input" placeholder="0.00" style="margin-bottom:12px">
+          </div>
 
           <label class="bh-label">Description (optional)</label>
           <textarea id="shopDesc" class="bh-textarea" style="min-height:60px;margin-bottom:12px" placeholder="Any extra detail shown on the product page…"></textarea>
@@ -1484,11 +1748,42 @@ function renderShopManager(){
             ${Object.keys(SIZE_PRESETS).map(k => `<option value="${k}" ${transient.sizeType === k ? 'selected' : ''}>${SIZE_PRESETS[k].label}</option>`).join('')}
           </select>
 
-          <label class="bh-label">Which sizes are available?</label>
-          <p style="font-size:.75rem;color:var(--grey);margin:-2px 0 8px">Tap the ones she has in stock.</p>
-          <div class="bh-size-grid" id="shopSizeGrid" style="margin-bottom:14px">
+          <label class="bh-label">Category</label>
+          <select id="shopCategory" class="bh-select" style="margin-bottom:12px" onchange="changeProductType(this.value)">
+            <option value="">Choose a category\u2026</option>
+            ${SHOP_CATEGORIES.map(cat => `<option value="${escapeHtml(cat)}" ${transient.category === cat ? 'selected' : ''}>${escapeHtml(cat)}</option>`).join('')}
+          </select>
+
+          ${transient.category === 'Gift Voucher' ? `
+            <div class="bh-note" style="margin-bottom:14px">This is a gift voucher \u2014 customers choose their own amount in steps of R${VOUCHER_STEP}, so no price, sizes or colours are needed.</div>
+          ` : `
+          <label class="bh-label">Colours available</label>
+          <div class="bh-size-grid" style="margin-bottom:14px">
+            ${COLOURS.map(col => `<button class="bh-swatch ${transient.colours.includes(col.name) ? 'on' : ''}" onclick="toggleColour('${escapeHtml(col.name)}', this)"><span style="background:${col.hex}"></span>${escapeHtml(col.name)}</button>`).join('')}
+          </div>
+          `}
+
+          <label class="bh-label">Stock</label>
+          <div class="bh-radio-row" style="margin-bottom:12px">
+            <label><input type="radio" name="stockStatus" value="in_stock" ${transient.stockStatus !== 'made_to_order' ? 'checked' : ''} onchange="changeStockStatus(this.value)"> Some in stock</label>
+            <label><input type="radio" name="stockStatus" value="made_to_order" ${transient.stockStatus === 'made_to_order' ? 'checked' : ''} onchange="changeStockStatus(this.value)"> Made to order</label>
+          </div>
+
+          <div id="inStockWrap" style="display:${transient.stockStatus === 'made_to_order' ? 'none' : 'block'}">
+            <label class="bh-label">In stock now</label>
+            <p style="font-size:.75rem;color:var(--grey);margin:-2px 0 8px">Sizes you can send straight away.</p>
+            <div class="bh-size-grid" id="shopSizeGrid" style="margin-bottom:14px">
+              ${SIZE_PRESETS[transient.sizeType].options.map(s =>
+                `<button class="bh-size-opt ${transient.selectedSizes.includes(s) ? 'on' : ''}" onclick="toggleSize('${escapeHtml(s)}', this)">${escapeHtml(s)}</button>`
+              ).join('')}
+            </div>
+          </div>
+
+          <label class="bh-label">${transient.stockStatus === 'made_to_order' ? 'Sizes offered' : 'Can be ordered in'}</label>
+          <p style="font-size:.75rem;color:var(--grey);margin:-2px 0 8px">${transient.stockStatus === 'made_to_order' ? 'Every size here is made to order.' : 'Not in stock, but you can get them in. Customers see these faded, and are told the wait.'}</p>
+          <div class="bh-size-grid" id="shopOrderSizeGrid" style="margin-bottom:14px">
             ${SIZE_PRESETS[transient.sizeType].options.map(s =>
-              `<button class="bh-size-opt ${transient.selectedSizes.includes(s) ? 'on' : ''}" onclick="toggleSize('${escapeHtml(s)}', this)">${escapeHtml(s)}</button>`
+              `<button class="bh-size-opt to-order ${transient.orderSizes.includes(s) ? 'on' : ''}" onclick="toggleOrderSize('${escapeHtml(s)}', this)">${escapeHtml(s)}</button>`
             ).join('')}
           </div>
 
@@ -1504,11 +1799,14 @@ function renderShopManager(){
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px">
       ${products.map(p => `
         <div class="bh-product">
-          ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">` : `<div style="aspect-ratio:1;background:var(--blushp)"></div>`}
+          ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async">` : `<div style="aspect-ratio:1;background:var(--blushp)"></div>`}
           <div class="body">
             <div class="name">${escapeHtml(p.name)}</div>
-            <div class="price">R${escapeHtml(p.price)}</div>
-            ${productSizes(p).length ? `<div class="bh-shop-sizes">${productSizes(p).map(escapeHtml).join(', ')}</div>` : ''}
+            ${p.category ? `<div class="bh-shop-sizes" style="color:var(--plum);font-weight:700">${escapeHtml(p.category)}</div>` : ''}
+            <div class="price">${isVoucher(p) ? 'Voucher' : 'R' + escapeHtml(p.price)}</div>
+            ${productColours(p).length ? `<div class="bh-card-swatches">${productColours(p).map(col => `<i title="${escapeHtml(col)}" style="background:${colourHex(col)}"></i>`).join('')}</div>` : ''}
+            ${productSizes(p).length ? `<div class="bh-shop-sizes">In stock: ${productSizes(p).map(escapeHtml).join(', ')}</div>` : ''}
+            ${orderOnlySizes(p).length ? `<div class="bh-shop-sizes" style="color:#a6752f">To order: ${orderOnlySizes(p).map(escapeHtml).join(', ')}</div>` : ''}
             <button class="bh-btn-ghost" style="color:var(--risk);margin-top:8px;font-size:.75rem" onclick="removeProduct('${p.id}')">🗑 Remove</button>
           </div>
         </div>
@@ -1517,12 +1815,37 @@ function renderShopManager(){
   `;
 }
 
-function handleShopFile(e){
+async function handleShopFile(e){
   const file = e.target.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => { transient.shopImageData = reader.result; render(); };
-  reader.readAsDataURL(file);
+
+  // Update the preview and status IN PLACE. A full re-render here would
+  // wipe the name and price already typed into the form.
+  const statusEl = document.getElementById('imageStatus');
+  const previewEl = document.getElementById('imagePreview');
+  if (statusEl) statusEl.textContent = 'Preparing picture\u2026';
+
+  try {
+    // A small one for the grid, a larger one for the product page.
+    const [thumb, full] = await Promise.all([
+      resizeImage(file, 500, 0.72),
+      resizeImage(file, 1400, 0.82),
+    ]);
+    transient.shopImages = { thumb, full };
+    transient.shopImageData = thumb;
+    const kb = Math.round((thumb.length + full.length) / 1024);
+    transient.imageStatus = `Picture ready (${kb} KB) \u2014 shrunk so the shop stays fast.`;
+    if (previewEl){
+      previewEl.src = thumb;
+      previewEl.style.display = 'block';
+    }
+  } catch (err) {
+    transient.shopImages = null;
+    transient.shopImageData = null;
+    transient.imageStatus = "Couldn't use that picture \u2014 try another one.";
+    if (previewEl) previewEl.style.display = 'none';
+  }
+  if (statusEl) statusEl.textContent = transient.imageStatus;
 }
 
 function changeSizeType(type){
@@ -1530,12 +1853,45 @@ function changeSizeType(type){
   // free size selects itself automatically — there is only one option
   transient.selectedSizes = type === 'freesize' ? ['Free size'] : [];
   // Rebuild only the size grid so typed fields aren't lost.
+  transient.orderSizes = [];
   const grid = document.getElementById('shopSizeGrid');
   if (grid){
     grid.innerHTML = SIZE_PRESETS[type].options.map(s =>
       `<button class="bh-size-opt ${transient.selectedSizes.includes(s) ? 'on' : ''}" onclick="toggleSize('${escapeHtml(s)}', this)">${escapeHtml(s)}</button>`
     ).join('');
   }
+  const oGrid = document.getElementById('shopOrderSizeGrid');
+  if (oGrid){
+    oGrid.innerHTML = SIZE_PRESETS[type].options.map(s =>
+      `<button class="bh-size-opt to-order" onclick="toggleOrderSize('${escapeHtml(s)}', this)">${escapeHtml(s)}</button>`
+    ).join('');
+  }
+}
+
+function changeProductType(cat){
+  transient.category = cat;
+  render(); // the form changes shape for vouchers
+}
+
+function toggleColour(name, btn){
+  const i = transient.colours.indexOf(name);
+  if (i === -1) transient.colours.push(name);
+  else transient.colours.splice(i, 1);
+  if (btn) btn.classList.toggle('on', i === -1);
+}
+
+function changeStockStatus(v){
+  transient.stockStatus = v;
+  if (v === 'made_to_order') transient.selectedSizes = [];
+  const wrap = document.getElementById('inStockWrap');
+  if (wrap) wrap.style.display = v === 'made_to_order' ? 'none' : 'block';
+}
+
+function toggleOrderSize(s, btn){
+  const i = transient.orderSizes.indexOf(s);
+  if (i === -1) transient.orderSizes.push(s);
+  else transient.orderSizes.splice(i, 1);
+  if (btn) btn.classList.toggle('on', i === -1);
 }
 
 function toggleSize(s, btn){
@@ -1549,15 +1905,23 @@ function toggleSize(s, btn){
 
 async function addProduct(){
   const name = document.getElementById('shopName').value.trim();
-  const price = document.getElementById('shopPrice').value;
+  const priceEl = document.getElementById('shopPrice');
+  const isGiftVoucher = transient.category === 'Gift Voucher';
+  const price = isGiftVoucher ? String(VOUCHER_MIN) : (priceEl ? priceEl.value : '');
   const description = document.getElementById('shopDesc').value.trim();
+
+  if (!transient.category){
+    transient.loadError = 'Choose a category for this product.';
+    render();
+    return;
+  }
   if (!name || !price){
     transient.loadError = 'Give the product a name and a price before adding it.';
     render();
     return;
   }
-  if (transient.selectedSizes.length === 0){
-    transient.loadError = 'Pick at least one available size.';
+  if (!isGiftVoucher && transient.selectedSizes.length === 0 && transient.orderSizes.length === 0){
+    transient.loadError = 'Pick at least one size \u2014 either in stock, or one you can order in.';
     render();
     return;
   }
@@ -1565,14 +1929,23 @@ async function addProduct(){
   await apiFetch('/products', {
     method: 'POST',
     body: JSON.stringify({
-      name, price, image: transient.shopImageData,
+      name, price, images: transient.shopImages,
       description,
       sizeType: transient.sizeType,
       sizes: transient.selectedSizes,
+      orderSizes: transient.orderSizes,
+      stockStatus: transient.stockStatus,
+      category: transient.category,
+      colours: transient.colours,
+      productType: isGiftVoucher ? 'voucher' : 'item',
     }),
   });
   transient.shopImageData = null;
+  transient.shopImages = null;
+  transient.imageStatus = '';
   transient.selectedSizes = transient.sizeType === 'freesize' ? ['Free size'] : [];
+  transient.orderSizes = [];
+  transient.colours = [];
   await fetchProducts();
   render();
 }
@@ -1598,7 +1971,8 @@ function renderLeadsManager(){
         <span class="who"><strong>${escapeHtml(l.buyer)}</strong>${l.total ? ` — R${escapeHtml(l.total)}` : (l.price ? ` — R${escapeHtml(l.price)}` : '')}
         <br><span style="font-size:.8rem;color:var(--ink)">${escapeHtml(leadItemList(l)).replace(/\n/g, '<br>')}</span>
         ${l.phone ? `<br><span style="font-size:.78rem;color:var(--grey)">${escapeHtml(l.phone)} · ${escapeHtml(l.delivery_method || l.deliveryMethod || 'Collection')}</span>` : ''}
-        ${l.address ? `<br><span style="font-size:.75rem;color:var(--grey)">${escapeHtml(l.address)}</span>` : ''}</span>
+        ${l.address ? `<br><span style="font-size:.75rem;color:var(--grey)">${escapeHtml(l.address)}</span>` : ''}
+        ${l.lead_time ? `<br><span style="font-size:.75rem;color:#a6752f;font-weight:700">${escapeHtml(l.lead_time)}</span>` : ''}</span>
         <span class="bh-statuspill" onclick="cycleLeadStatus('${l.id}')" title="Tap to move to the next status">${escapeHtml(l.status)}</span>
         <span class="bh-doc-actions">
           ${['order','receipt','delivery'].map(k => `
@@ -1701,6 +2075,7 @@ function renderSettings(){
     <div class="bh-card" style="margin-bottom:18px">
       <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Delivery &amp; payment</h3>
       ${field('shippingCost', 'Shipping cost (R)', 'What customers pay for delivery. Collection is always free.')}
+      ${field('leadTimeLabel', 'Wait time wording', 'Shown on sizes and items that are not in stock, e.g. \u201cAvailable in 2-3 weeks\u201d.')}
       ${field('bankDetails', 'Banking details', 'Shown to customers on the order message and the order document.', 2)}
     </div>
 
@@ -1726,7 +2101,7 @@ function renderSettings(){
   `;
 }
 
-const SETTING_KEYS = ['shippingCost','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
+const SETTING_KEYS = ['shippingCost','leadTimeLabel','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
 
 async function saveSettings(){
   const status = document.getElementById('settingsStatus');

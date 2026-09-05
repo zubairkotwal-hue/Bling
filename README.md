@@ -1,51 +1,48 @@
-# Bling Happiness — update: logo, product sizes, product detail pages
+# Bling Happiness — update: picture handling (do this before importing products)
 
-## STEP 1 — upload the new image files to GitHub
+## STEP 1 — update on GitHub
 
-These go in the **public/** folder (GitHub: Add file → Upload files):
+  public/index.html                 (replaced)
+  netlify/functions/products.js     (replaced)
+  netlify/functions/image.js        (NEW)
+  netlify/functions/leads.js        (replaced)
+  netlify/functions/stories.js      (replaced)
+  netlify/functions/replies.js      (replaced)
+  netlify/functions/settings.js     (NEW if not already there)
+  netlify/functions/migrate.js      (run once, then delete)
 
-- favicon.png       (browser tab icon)
-- icon-180.png      (iPhone home-screen icon)
-- icon-192.png      (Android home-screen icon)
-- icon-512.png      (Android home-screen icon, large)
-- mark.png          (cream logo — used as the watermark on generated cards)
-- mark-dark.png     (dark logo — used in the site header)
-- manifest.webmanifest  (tells phones the name/icon when saved to home screen)
+## STEP 2 — run the database update ONCE
 
-## STEP 2 — update the code files
+  https://blinghappiness.netlify.app/.netlify/functions/migrate
 
-- public/index.html                       (replaced)
-- netlify/functions/products.js           (replaced — sizes, description, editing)
-- netlify/functions/leads.js              (updated — records the ordered size)
-- netlify/functions/migrate-sizes.js      (NEW — run once, then delete)
+Then delete migrate.js.
 
-## STEP 3 — run the database migration ONCE
+## Why this update matters
 
-After deploying, visit this address in your browser:
+Before: every photo was stored as text inside the product record, and the
+shop downloaded EVERY photo, at full phone-camera size, every time
+someone opened it. Three products with real photos meant about 18 MB
+downloaded on every visit. That is why it would have crawled once the
+catalogue grew.
 
-    https://blinghappiness.netlify.app/.netlify/functions/migrate-sizes
+After: 0.9 MB became 0.9 KB for the same three products - the list no
+longer carries pictures at all.
 
-You should see  "ok": true  and a list of columns. Then DELETE
-netlify/functions/migrate-sizes.js from GitHub — it has done its job.
+Three things changed:
 
-Without this step the shop will error, because the database doesn't yet
-have anywhere to store sizes.
+1. Photos are shrunk when uploaded. A 6 MB phone photo becomes a 7 KB
+   thumbnail for the grid and a 211 KB version for the product page.
 
-## What's new
+2. Pictures are stored separately and fetched one at a time, with
+   caching, so the browser downloads each picture once and remembers it.
 
-**Logo** — appears in the site header, as the browser tab icon, as the
-home-screen icon when someone saves the site to their phone, and as a
-subtle watermark in the bottom-right of every generated card (story
-cards, reply round-ups, and order confirmations).
+3. Grid pictures only load as they scroll into view.
 
-**Product detail pages** — the shop now shows thumbnails. Tapping one
-opens a full page with a large picture, description, price and the
-available sizes, plus an "Order this" button.
+Existing products keep working - old pictures are still found and served.
 
-**Sizes** — when adding a product she picks a size type:
-  - Clothing (XS–XXL)
-  - Bra sizes (30A through 44G — all standard SA band/cup combinations)
-  - Free size (one size)
-…then taps which sizes are actually in stock. Only those appear to
-customers, customers must choose one when ordering, and the chosen size
-shows in the Leads list, in the WhatsApp message, and on the order card.
+## What this means for the catalogue
+
+The shop will now stay quick into the hundreds of products, rather than
+slowing down after about fifteen. Nothing about how she adds a product
+has changed, except that she now sees the picture size after choosing
+one.
