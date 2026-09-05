@@ -25,7 +25,10 @@
   .bh-navlinks button{ background:none; border:none; font-weight:600; font-size:.85rem; color:var(--plum); opacity:.75; cursor:pointer; padding:8px 12px; border-radius:8px; }
   .bh-navlinks button:hover{ opacity:1; background:#fff; }
   .bh-navlinks button.on{ opacity:1; background:#fff; }
-  .bh-hero{ background:linear-gradient(155deg,var(--plum) 0%,var(--plum2) 55%,var(--plum3) 100%); color:#fff; padding:44px 24px; border-radius:0 0 24px 24px; margin-bottom:8px; }
+  .bh-hero{ background:linear-gradient(155deg,var(--plum) 0%,var(--plum2) 55%,var(--plum3) 100%); color:#fff; padding:44px 24px; border-radius:0 0 24px 24px; margin-bottom:8px; position:relative; overflow:hidden; }
+  .bh-hero > *{ position:relative; z-index:2; }
+  .bh-hero-mark{ position:absolute; right:16px; bottom:10px; height:150px; width:auto; opacity:.20; z-index:1; pointer-events:none; }
+  @media (max-width:600px){ .bh-hero-mark{ height:118px; right:10px; bottom:8px; } }
   .bh-hero h1{ font-size:clamp(1.5rem,4vw,2.1rem); font-weight:500; max-width:20ch; }
   .bh-hero p{ color:#e9d9e4; font-size:.92rem; max-width:48ch; margin-top:8px; }
   .bh-wrap{ max-width:900px; margin:0 auto; padding:20px 24px 70px; }
@@ -143,6 +146,7 @@ const DEFAULT_SETTINGS = {
   leadTimeLabel: 'Available in 2-3 weeks',
 
   storyCardTag: 'Shared anonymously',
+  cardTheme: 'plum',
 
 
 
@@ -224,6 +228,20 @@ const COLOURS = [
   { name: 'Grey',       hex: '#8a8a8a' },
   { name: 'Leopard',    hex: '#b58b4c' },
 ];
+
+// Card colour themes — all drawn from the brand palette.
+const CARD_THEMES = {
+  plum:      { label: 'Plum (default)', from: '#3d1e3a', to: '#8a4877', accent: '#e4c989', text: '#fdf6f9' },
+  midnight:  { label: 'Midnight',       from: '#1a1226', to: '#3d2a55', accent: '#d9b877', text: '#f4eef8' },
+  burgundy:  { label: 'Burgundy',       from: '#3a0f1c', to: '#7c2338', accent: '#e8c48a', text: '#fdf2f2' },
+  blush:     { label: 'Blush',          from: '#7a4257', to: '#d99bab', accent: '#5c2438', text: '#fffaf9' },
+  champagne: { label: 'Champagne',      from: '#5c4a2e', to: '#b99a5e', accent: '#3a2c16', text: '#fffdf6' },
+  ink:       { label: 'Ink',            from: '#171717', to: '#3d3d3d', accent: '#c9a15a', text: '#faf7f2' },
+};
+
+function cardTheme(){
+  return CARD_THEMES[setting('cardTheme')] || CARD_THEMES.plum;
+}
 
 const VOUCHER_STEP = 100;
 const VOUCHER_MIN = 100;
@@ -349,22 +367,22 @@ async function drawStoryCard(canvas, storyText, tagText){
   const w = canvas.width, h = canvas.height;
   await loadCanvasFonts();
 
+  const T = cardTheme();
   const grad = ctx.createLinearGradient(0, 0, w, h);
-  grad.addColorStop(0, '#3d1e3a');
-  grad.addColorStop(0.55, '#6b3560');
-  grad.addColorStop(1, '#8a4877');
+  grad.addColorStop(0, T.from);
+  grad.addColorStop(1, T.to);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, w, h);
 
   const marginX = 90;
   const contentWidth = w - marginX * 2;
 
-  ctx.fillStyle = '#c9a15a';
+  ctx.fillStyle = T.accent;
   ctx.font = "700 200px Fraunces, Georgia, serif";
   ctx.textBaseline = 'alphabetic';
   ctx.fillText('\u201C', marginX - 10, 480);
 
-  ctx.fillStyle = '#fdf6f9';
+  ctx.fillStyle = T.text;
   ctx.font = "italic 400 62px Fraunces, Georgia, serif";
   const lineHeight = 82;
   const lines = wrapCanvasText(ctx, storyText, contentWidth);
@@ -372,14 +390,14 @@ async function drawStoryCard(canvas, storyText, tagText){
   lines.forEach((line, i) => ctx.fillText(line, marginX, startY + i * lineHeight));
 
   const tagY = h - 140;
-  ctx.strokeStyle = '#e4c989';
+  ctx.strokeStyle = T.accent;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(marginX, tagY);
   ctx.lineTo(marginX + 34, tagY);
   ctx.stroke();
 
-  ctx.fillStyle = '#e4c989';
+  ctx.fillStyle = T.accent;
   ctx.font = "700 26px 'Instrument Sans', sans-serif";
   const tag = (tagText || setting('storyCardTag') || '').toUpperCase().split('').join(' ');
   ctx.fillText(tag, marginX + 48, tagY + 9);
@@ -387,51 +405,117 @@ async function drawStoryCard(canvas, storyText, tagText){
   await drawWatermark(ctx, w, h);
 }
 
-async function drawCompileCard(canvas, replyTexts, tagText){
+async function drawCompileCard(canvas, replyTexts, tagText, storyText){
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   await loadCanvasFonts();
 
+  const T = cardTheme();
   const grad = ctx.createLinearGradient(0, 0, w, h);
-  grad.addColorStop(0, '#3d1e3a');
-  grad.addColorStop(1, '#8a4877');
+  grad.addColorStop(0, T.from);
+  grad.addColorStop(1, T.to);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, w, h);
 
   const marginX = 80;
   const contentWidth = w - marginX * 2;
-
-  ctx.fillStyle = '#c9a15a';
-  ctx.font = "700 64px Fraunces, Georgia, serif";
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('Here\u2019s what', marginX, 210);
-  ctx.fillText('you said', marginX, 285);
 
-  ctx.strokeStyle = '#e4c989';
+  const headingY = 210;
+  const topOfBody = 430;
+  const bottomLimit = h - 190;   // leave room for the tag and the logo
+  const available = bottomLimit - topOfBody;
+
+  // Work out how much room everything needs at a given size, then shrink
+  // until it fits. This is what stops a long story or lots of replies
+  // running off the bottom of the card.
+  function layout(scale){
+    const storySize = 44 * scale;
+    const replySize = 36 * scale;
+    const storyLead = storySize * 1.34;
+    const replyLead = replySize * 1.34;
+    const gapAfterStory = 54 * scale;
+    const gapBetween = 40 * scale;
+
+    const blocks = [];
+    let total = 0;
+
+    if (storyText){
+      ctx.font = `italic 400 ${storySize}px Fraunces, Georgia, serif`;
+      const lines = wrapCanvasText(ctx, storyText, contentWidth - 30);
+      blocks.push({ kind: 'story', lines, size: storySize, lead: storyLead });
+      total += lines.length * storyLead + gapAfterStory;
+    }
+
+    ctx.font = `italic 400 ${replySize}px Fraunces, Georgia, serif`;
+    replyTexts.forEach((t, i) => {
+      const lines = wrapCanvasText(ctx, t, contentWidth - 50);
+      blocks.push({ kind: 'reply', lines, size: replySize, lead: replyLead });
+      total += lines.length * replyLead + (i < replyTexts.length - 1 ? gapBetween : 0);
+    });
+
+    return { blocks, total, gapAfterStory, gapBetween, storySize, replySize };
+  }
+
+  let scale = 1;
+  let plan = layout(scale);
+  // Shrink in small steps rather than one guess, so it stays readable.
+  while (plan.total > available && scale > 0.45){
+    scale -= 0.04;
+    plan = layout(scale);
+  }
+
+  // Heading
+  ctx.fillStyle = T.accent;
+  ctx.font = "700 64px Fraunces, Georgia, serif";
+  ctx.fillText('Here\u2019s what', marginX, headingY);
+  ctx.fillText('you said', marginX, headingY + 75);
+
+  ctx.strokeStyle = T.accent;
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(marginX, 330);
-  ctx.lineTo(marginX + 60, 330);
+  ctx.moveTo(marginX, headingY + 120);
+  ctx.lineTo(marginX + 60, headingY + 120);
   ctx.stroke();
 
-  let y = 430;
-  const lineHeight = 54;
-  replyTexts.forEach((reply) => {
-    ctx.fillStyle = '#e4c989';
-    ctx.font = "700 46px Fraunces, Georgia, serif";
-    ctx.fillText('\u201C', marginX, y);
-    y += 10;
+  let y = topOfBody;
 
-    ctx.fillStyle = '#fdf6f9';
-    ctx.font = "italic 400 38px Fraunces, Georgia, serif";
-    const lines = wrapCanvasText(ctx, reply, contentWidth - 20);
-    lines.forEach((line) => { y += lineHeight; ctx.fillText(line, marginX + 20, y); });
-    y += 70;
+  plan.blocks.forEach((block, idx) => {
+    if (block.kind === 'story'){
+      // The original story, in gold.
+      ctx.fillStyle = T.accent;
+      ctx.font = `700 ${Math.round(block.size * 1.15)}px Fraunces, Georgia, serif`;
+      ctx.fillText('\u201C', marginX, y);
+      y += block.lead * 0.55;
+
+      ctx.fillStyle = T.accent;
+      ctx.font = `italic 400 ${block.size}px Fraunces, Georgia, serif`;
+      block.lines.forEach(line => { ctx.fillText(line, marginX + 30, y); y += block.lead; });
+      y += plan.gapAfterStory;
+
+      // A soft divider between the story and what people replied
+      ctx.strokeStyle = T.accent + '59';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(marginX, y - plan.gapAfterStory * 0.45);
+      ctx.lineTo(w - marginX, y - plan.gapAfterStory * 0.45);
+      ctx.stroke();
+    } else {
+      // Replies, in the lighter cream.
+      ctx.fillStyle = T.accent + 'cc';
+      ctx.font = `700 ${Math.round(block.size * 1.05)}px Fraunces, Georgia, serif`;
+      ctx.fillText('\u2014', marginX, y);
+
+      ctx.fillStyle = T.text;
+      ctx.font = `italic 400 ${block.size}px Fraunces, Georgia, serif`;
+      block.lines.forEach(line => { ctx.fillText(line, marginX + 50, y); y += block.lead; });
+      if (idx < plan.blocks.length - 1) y += plan.gapBetween;
+    }
   });
 
-  ctx.fillStyle = '#e4c989';
+  ctx.fillStyle = T.accent;
   ctx.font = "700 24px 'Instrument Sans', sans-serif";
-  const rtag = (tagText || 'Replies from the community').toUpperCase().split('').join(' ');
+  const rtag = (tagText || setting('storyCardTag') || '').toUpperCase().split('').join(' ');
   ctx.fillText(rtag, marginX, h - 90);
 
   await drawWatermark(ctx, w, h);
@@ -477,9 +561,10 @@ async function drawDocCard(canvas, order, kind){
   const w = canvas.width, h = canvas.height;
   await loadCanvasFonts();
 
+  const T = cardTheme();
   const grad = ctx.createLinearGradient(0, 0, w, h);
-  grad.addColorStop(0, '#3d1e3a');
-  grad.addColorStop(1, '#8a4877');
+  grad.addColorStop(0, T.from);
+  grad.addColorStop(1, T.to);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, w, h);
 
@@ -488,16 +573,16 @@ async function drawDocCard(canvas, order, kind){
   ctx.textBaseline = 'alphabetic';
 
   const titles = { order: 'Order confirmed', receipt: 'Receipt', delivery: 'Delivery note' };
-  ctx.fillStyle = '#c9a15a';
+  ctx.fillStyle = T.accent;
   ctx.font = "700 58px Fraunces, Georgia, serif";
   ctx.fillText(titles[kind] || 'Order', marginX, 220);
 
-  ctx.strokeStyle = '#e4c989';
+  ctx.strokeStyle = T.accent;
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(marginX, 260); ctx.lineTo(marginX + 60, 260); ctx.stroke();
 
   // date
-  ctx.fillStyle = 'rgba(253,246,249,0.65)';
+  ctx.fillStyle = T.text + 'a6';
   ctx.font = "400 26px 'Instrument Sans', sans-serif";
   const when = order.created_at ? new Date(order.created_at) : new Date();
   ctx.fillText(when.toLocaleDateString('en-ZA', { day:'numeric', month:'long', year:'numeric' }), marginX, 300);
@@ -505,7 +590,7 @@ async function drawDocCard(canvas, order, kind){
   let y = 390;
   const basket = basketOf(order);
 
-  ctx.fillStyle = '#e4c989';
+  ctx.fillStyle = T.accent;
   ctx.font = "700 26px 'Instrument Sans', sans-serif";
   ctx.fillText('ITEMS', marginX, y);
   y += 50;
@@ -513,7 +598,7 @@ async function drawDocCard(canvas, order, kind){
   basket.forEach(i => {
     const label = `${i.qty} x ${i.name}${i.size ? ' (' + i.size + ')' : ''}`;
     const amount = 'R' + ((parseFloat(i.price) || 0) * (i.qty || 1)).toFixed(0);
-    ctx.fillStyle = '#fdf6f9';
+    ctx.fillStyle = T.text;
     ctx.font = "italic 400 36px Fraunces, Georgia, serif";
     const lines = wrapCanvasText(ctx, label, contentWidth - 220);
     lines.forEach((line, idx) => {
@@ -531,11 +616,11 @@ async function drawDocCard(canvas, order, kind){
   // totals (not shown on a delivery note — that's a packing document)
   if (kind !== 'delivery'){
     y += 6;
-    ctx.strokeStyle = 'rgba(228,201,137,0.45)';
+    ctx.strokeStyle = T.accent + '73';
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(w - marginX, y); ctx.stroke();
     y += 52;
-    ctx.fillStyle = '#e4c989';
+    ctx.fillStyle = T.accent;
     ctx.font = "700 34px 'Instrument Sans', sans-serif";
     ctx.fillText(kind === 'receipt' ? 'PAID' : 'TOTAL', marginX, y);
     ctx.textAlign = 'right';
@@ -553,11 +638,11 @@ async function drawDocCard(canvas, order, kind){
 
   rows.filter(r => r[1]).forEach(([label, value]) => {
     y += 34;
-    ctx.fillStyle = '#e4c989';
+    ctx.fillStyle = T.accent;
     ctx.font = "700 26px 'Instrument Sans', sans-serif";
     ctx.fillText(label.toUpperCase(), marginX, y);
     y += 44;
-    ctx.fillStyle = '#fdf6f9';
+    ctx.fillStyle = T.text;
     ctx.font = "italic 400 40px Fraunces, Georgia, serif";
     wrapCanvasText(ctx, String(value), contentWidth).forEach(line => { ctx.fillText(line, marginX, y); y += 48; });
   });
@@ -565,7 +650,7 @@ async function drawDocCard(canvas, order, kind){
   // footer note per document type
   y += 40;
   ctx.font = "700 24px 'Instrument Sans', sans-serif";
-  ctx.fillStyle = '#e4c989';
+  ctx.fillStyle = T.accent;
   if (kind === 'order'){
     wrapCanvasText(ctx, 'PAYMENT: ' + setting('bankDetails'), contentWidth).forEach(line => { ctx.fillText(line, marginX, y); y += 32; });
   } else if (kind === 'receipt'){
@@ -582,7 +667,7 @@ async function drawDocCard(canvas, order, kind){
     ctx.fillText(deliveryNote, marginX, y);
   }
 
-  ctx.fillStyle = '#e4c989';
+  ctx.fillStyle = T.accent;
   ctx.font = "700 22px 'Instrument Sans', sans-serif";
   ctx.fillText('B L I N G   H A P P I N E S S', marginX, h - 80);
 
@@ -744,7 +829,7 @@ async function makeOrderPDF(order, kind){
   const doc = createPDF();
   const W = doc.PAGE_W, H = doc.PAGE_H;
   const M = 18;
-  const PLUM = [61, 30, 58], GOLD = [201, 161, 90], GREY = [107, 90, 103], INK = [30, 20, 28];
+  const PLUM = hexToRgb(T.from), GOLD = hexToRgb(T.accent), GREY = [107, 90, 103], INK = [30, 20, 28];
   const titles = { order: 'ORDER CONFIRMATION', receipt: 'RECEIPT', delivery: 'DELIVERY NOTE' };
 
   // Header band
@@ -855,6 +940,11 @@ async function makeOrderPDF(order, kind){
   doc.text('Thank you for your support', W - M, H - 14, { size: 8, align: 'right' });
 
   doc.save('bling-happiness-' + kind + '.pdf');
+}
+
+function hexToRgb(hex){
+  const h = String(hex).replace('#','');
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
 }
 
 function cleanPhoneForWhatsApp(phone){
@@ -1136,6 +1226,7 @@ function renderHome(){
   const folders = CATEGORIES.map(cat => ({ cat, count: approved.filter(s => s.category === cat).length }));
   return `
     <div class="bh-hero">
+      <img class="bh-hero-mark" src="/mark-hero.png" alt="">
       <h1 class="bh-serif">Every story deserves somewhere safe to land.</h1>
       <p>Browse by what you're going through, or share your own — completely anonymously.</p>
     </div>
@@ -2086,6 +2177,22 @@ function renderSettings(){
     <div class="bh-card" style="margin-bottom:18px">
       <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Delivery &amp; payment</h3>
       ${field('shippingCost', 'Shipping cost (R)', 'What customers pay for delivery. Collection is always free.')}
+      <div class="bh-set-block">
+        <label class="bh-label">Card colours</label>
+        <p class="bh-set-help">Used on story pictures, reply round-ups, and order documents.</p>
+        <div class="bh-theme-grid">
+          ${Object.keys(CARD_THEMES).map(k => {
+            const t = CARD_THEMES[k];
+            const on = (setting('cardTheme') === k);
+            return `<button class="bh-theme ${on ? 'on' : ''}" onclick="pickTheme('${k}')">
+              <span class="bh-theme-swatch" style="background:linear-gradient(135deg,${t.from},${t.to})"><i style="background:${t.accent}"></i></span>
+              ${escapeHtml(t.label)}
+            </button>`;
+          }).join('')}
+        </div>
+        <input type="hidden" id="set_cardTheme" value="${escapeHtml(setting('cardTheme'))}">
+      </div>
+
       ${field('storyCardTag', 'Wording at the bottom of story pictures', 'Normally \u201cShared anonymously\u201d. You can change it here, or type something different for one picture on the Post tab.')}
       ${field('leadTimeLabel', 'Wait time wording', 'Shown on sizes and items that are not in stock, e.g. \u201cAvailable in 2-3 weeks\u201d.')}
       ${field('bankDetails', 'Banking details', 'Shown to customers on the order message and the order document.', 2)}
@@ -2113,7 +2220,7 @@ function renderSettings(){
   `;
 }
 
-const SETTING_KEYS = ['shippingCost','leadTimeLabel','storyCardTag','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
+const SETTING_KEYS = ['shippingCost','leadTimeLabel','storyCardTag','cardTheme','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
 
 async function saveSettings(){
   const status = document.getElementById('settingsStatus');
@@ -2138,6 +2245,13 @@ async function saveSettings(){
     status.style.color = 'var(--risk)';
     status.textContent = "Couldn't save \u2014 please try again.";
   }
+}
+
+function pickTheme(key){
+  settings.cardTheme = key;
+  const hidden = document.getElementById('set_cardTheme');
+  if (hidden) hidden.value = key;
+  render();
 }
 
 function resetSettings(){
@@ -2234,11 +2348,15 @@ async function createRoundupCard(){
     render();
     return;
   }
+  // Read the wording and the story BEFORE re-rendering (render rebuilds the input).
+  const tagEl2 = document.getElementById('cardTagInput');
+  const tagText2 = tagEl2 ? tagEl2.value.trim() : '';
+  transient.cardTag = tagText2;
+  const compileStoryForCard = stories.find(s => s.id === transient.compileStoryId);
   transient.compileStatus = 'Preparing image…';
   render();
   const canvas = document.getElementById('exportCanvas');
-  const tagEl2 = document.getElementById('cardTagInput');
-  await drawCompileCard(canvas, chosen, tagEl2 ? tagEl2.value.trim() : '');
+  await drawCompileCard(canvas, chosen, tagText2, compileStoryForCard ? compileStoryForCard.text : '');
   await downloadCanvas(canvas, 'bling-happiness-roundup.jpg');
   transient.compileStatus = 'Downloaded — ready to post back to Stories.';
   render();
