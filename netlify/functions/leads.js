@@ -16,7 +16,7 @@ exports.handler = async (event, context) => {
     // Placing an order (from the storefront, or added manually by the admin)
     // is the one write anyone can do without being logged in.
     if (event.httpMethod === 'POST'){
-      const { buyer, phone, item, price, deliveryMethod, address, size, items, total } = JSON.parse(event.body || '{}');
+      const { buyer, phone, item, price, deliveryMethod, address, size, items, total, shipping, subtotal } = JSON.parse(event.body || '{}');
       if (!buyer) return json(400, { error: 'buyer is required' });
       if (!item && !(Array.isArray(items) && items.length)) return json(400, { error: 'at least one item is required' });
 
@@ -28,8 +28,8 @@ exports.handler = async (event, context) => {
         : basket.length + ' items');
       const id = newId();
       await pool.query(
-        'INSERT INTO leads (id, buyer, phone, item, price, delivery_method, address, status, size, items, total) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',
-        [id, buyer, phone || null, summary, price || null, deliveryMethod || 'Collection', address || null, 'Enquired', size || null, basket.length ? JSON.stringify(basket) : null, total || null]
+        'INSERT INTO leads (id, buyer, phone, item, price, delivery_method, address, status, size, items, total, shipping, subtotal) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)',
+        [id, buyer, phone || null, summary, price || null, deliveryMethod || 'Collection', address || null, 'Enquired', size || null, basket.length ? JSON.stringify(basket) : null, total || null, shipping || null, subtotal || null]
       );
       return json(201, { id });
     }
