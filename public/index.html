@@ -27,10 +27,12 @@
   .bh-navlinks button.on{ opacity:1; background:#fff; }
   .bh-hero{ background:linear-gradient(155deg,var(--plum) 0%,var(--plum2) 55%,var(--plum3) 100%); color:#fff; padding:44px 24px; border-radius:0 0 24px 24px; margin-bottom:8px; position:relative; overflow:hidden; }
   .bh-hero > *{ position:relative; z-index:2; }
-  .bh-hero-mark{ position:absolute; right:16px; bottom:10px; height:150px; width:auto; opacity:.20; z-index:1; pointer-events:none; }
-  @media (max-width:600px){ .bh-hero-mark{ height:118px; right:10px; bottom:8px; } }
-  .bh-hero h1{ font-size:clamp(1.5rem,4vw,2.1rem); font-weight:500; max-width:20ch; }
-  .bh-hero p{ color:#e9d9e4; font-size:.92rem; max-width:48ch; margin-top:8px; }
+  .bh-hero-mark{ position:absolute; right:14px; bottom:8px; height:104px; width:auto; opacity:.16; z-index:1; pointer-events:none; }
+  @media (max-width:600px){
+    .bh-hero-mark{ height:78px; right:10px; bottom:8px; opacity:.14; }
+  }
+  .bh-hero h1{ font-size:clamp(1.5rem,4vw,2.1rem); font-weight:500; max-width:min(20ch, calc(100% - 86px)); }
+  .bh-hero p{ color:#e9d9e4; font-size:.92rem; max-width:min(48ch, calc(100% - 86px)); margin-top:8px; }
   .bh-wrap{ max-width:900px; margin:0 auto; padding:20px 24px 70px; }
   .bh-folder-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-top:18px; }
   .bh-folder{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; cursor:pointer; transition:transform .15s, box-shadow .15s; }
@@ -240,7 +242,10 @@ const CARD_THEMES = {
 };
 
 function cardTheme(){
-  return CARD_THEMES[setting('cardTheme')] || CARD_THEMES.plum;
+  // A choice made on the Post tab wins for that picture; otherwise the
+  // default from Settings is used.
+  const key = transient.cardTheme || setting('cardTheme');
+  return CARD_THEMES[key] || CARD_THEMES.plum;
 }
 
 const VOUCHER_STEP = 100;
@@ -492,14 +497,6 @@ async function drawCompileCard(canvas, replyTexts, tagText, storyText){
       ctx.font = `italic 400 ${block.size}px Fraunces, Georgia, serif`;
       block.lines.forEach(line => { ctx.fillText(line, marginX + 30, y); y += block.lead; });
       y += plan.gapAfterStory;
-
-      // A soft divider between the story and what people replied
-      ctx.strokeStyle = T.accent + '59';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(marginX, y - plan.gapAfterStory * 0.45);
-      ctx.lineTo(w - marginX, y - plan.gapAfterStory * 0.45);
-      ctx.stroke();
     } else {
       // Replies, in the lighter cream.
       ctx.fillStyle = T.accent + 'cc';
@@ -1073,6 +1070,7 @@ let transient = {
   sortBy: 'newest',
   voucherAmount: 100,
   cardTag: '',
+  cardTheme: '',
   orderingProductId: null,
   chosenSize: '',
   sizeType: 'clothing',
@@ -2179,18 +2177,12 @@ function renderSettings(){
       ${field('shippingCost', 'Shipping cost (R)', 'What customers pay for delivery. Collection is always free.')}
       <div class="bh-set-block">
         <label class="bh-label">Card colours</label>
-        <p class="bh-set-help">Used on story pictures, reply round-ups, and order documents.</p>
-        <div class="bh-theme-grid">
-          ${Object.keys(CARD_THEMES).map(k => {
-            const t = CARD_THEMES[k];
-            const on = (setting('cardTheme') === k);
-            return `<button class="bh-theme ${on ? 'on' : ''}" onclick="pickTheme('${k}')">
-              <span class="bh-theme-swatch" style="background:linear-gradient(135deg,${t.from},${t.to})"><i style="background:${t.accent}"></i></span>
-              ${escapeHtml(t.label)}
-            </button>`;
-          }).join('')}
-        </div>
-        <input type="hidden" id="set_cardTheme" value="${escapeHtml(setting('cardTheme'))}">
+        <p class="bh-set-help">The colour new pictures start with. You can also change it on the Post tab before making each one.</p>
+        <select id="set_cardTheme" class="bh-select">
+          ${Object.keys(CARD_THEMES).map(k =>
+            `<option value="${k}" ${setting('cardTheme') === k ? 'selected' : ''}>${escapeHtml(CARD_THEMES[k].label)}</option>`
+          ).join('')}
+        </select>
       </div>
 
       ${field('storyCardTag', 'Wording at the bottom of story pictures', 'Normally \u201cShared anonymously\u201d. You can change it here, or type something different for one picture on the Post tab.')}
@@ -2247,13 +2239,6 @@ async function saveSettings(){
   }
 }
 
-function pickTheme(key){
-  settings.cardTheme = key;
-  const hidden = document.getElementById('set_cardTheme');
-  if (hidden) hidden.value = key;
-  render();
-}
-
 function resetSettings(){
   if (!confirm('Put every setting back to how it started? Anything you have changed here will be lost.')) return;
   SETTING_KEYS.forEach(k => {
@@ -2277,9 +2262,21 @@ function renderPostManager(){
     <div class="bh-card" style="margin-bottom:20px">
       <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:10px">Ready to post (${readyToPost.length})</h3>
       <p style="font-size:.83rem;color:var(--grey);margin-bottom:10px">Approved stories, turned into a finished picture with one tap. Sized for Instagram Stories.</p>
-      <label class="bh-label">Wording at the bottom of the picture</label>
-      <input id="cardTagInput" class="bh-input" style="margin-bottom:6px" value="${escapeHtml(transient.cardTag || setting('storyCardTag'))}" oninput="transient.cardTag = this.value">
-      <p style="font-size:.75rem;color:var(--grey);margin:0 0 16px">Leave as is for anonymous, or type a name if someone is happy to be credited. Only affects the next picture you make.</p>
+      <div class="bh-grid2" style="margin-bottom:6px">
+        <div>
+          <label class="bh-label">Wording at the bottom</label>
+          <input id="cardTagInput" class="bh-input" value="${escapeHtml(transient.cardTag || setting('storyCardTag'))}" oninput="transient.cardTag = this.value">
+        </div>
+        <div>
+          <label class="bh-label">Card colour</label>
+          <select id="cardThemeSelect" class="bh-select" onchange="transient.cardTheme = this.value">
+            ${Object.keys(CARD_THEMES).map(k =>
+              `<option value="${k}" ${(transient.cardTheme || setting('cardTheme')) === k ? 'selected' : ''}>${escapeHtml(CARD_THEMES[k].label)}</option>`
+            ).join('')}
+          </select>
+        </div>
+      </div>
+      <p style="font-size:.75rem;color:var(--grey);margin:0 0 16px">Both apply to the next picture you make. Leave the wording as is for anonymous, or type a name if someone is happy to be credited.</p>
       ${readyToPost.length === 0 ? `<p class="bh-empty">Nothing waiting to be posted right now.</p>` : ''}
       ${readyToPost.map(s => `
         <div class="bh-post-item">
@@ -2352,6 +2349,8 @@ async function createRoundupCard(){
   const tagEl2 = document.getElementById('cardTagInput');
   const tagText2 = tagEl2 ? tagEl2.value.trim() : '';
   transient.cardTag = tagText2;
+  const themeEl2 = document.getElementById('cardThemeSelect');
+  if (themeEl2) transient.cardTheme = themeEl2.value;
   const compileStoryForCard = stories.find(s => s.id === transient.compileStoryId);
   transient.compileStatus = 'Preparing image…';
   render();
