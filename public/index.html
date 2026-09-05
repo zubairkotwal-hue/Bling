@@ -142,6 +142,9 @@ const DEFAULT_SETTINGS = {
 
   leadTimeLabel: 'Available in 2-3 weeks',
 
+  storyCardTag: 'Shared anonymously',
+
+
 
   bankDetails: 'Bling Happiness \u00b7 FNB/RMB \u00b7 Acc 62727946181 \u00b7 Branch 250655 \u00b7 Reference: your full name',
 
@@ -341,7 +344,7 @@ async function drawWatermark(ctx, w, h){
   ctx.restore();
 }
 
-async function drawStoryCard(canvas, storyText){
+async function drawStoryCard(canvas, storyText, tagText){
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   await loadCanvasFonts();
@@ -378,12 +381,13 @@ async function drawStoryCard(canvas, storyText){
 
   ctx.fillStyle = '#e4c989';
   ctx.font = "700 26px 'Instrument Sans', sans-serif";
-  ctx.fillText('S H A R E D   A N O N Y M O U S L Y', marginX + 48, tagY + 9);
+  const tag = (tagText || setting('storyCardTag') || '').toUpperCase().split('').join(' ');
+  ctx.fillText(tag, marginX + 48, tagY + 9);
 
   await drawWatermark(ctx, w, h);
 }
 
-async function drawCompileCard(canvas, replyTexts){
+async function drawCompileCard(canvas, replyTexts, tagText){
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   await loadCanvasFonts();
@@ -427,7 +431,8 @@ async function drawCompileCard(canvas, replyTexts){
 
   ctx.fillStyle = '#e4c989';
   ctx.font = "700 24px 'Instrument Sans', sans-serif";
-  ctx.fillText('R E P L I E S   F R O M   T H E   C O M M U N I T Y', marginX, h - 90);
+  const rtag = (tagText || 'Replies from the community').toUpperCase().split('').join(' ');
+  ctx.fillText(rtag, marginX, h - 90);
 
   await drawWatermark(ctx, w, h);
 }
@@ -947,7 +952,12 @@ async function apiFetch(path, options = {}){
 }
 
 async function fetchStories(){ stories = await apiFetch('/stories'); }
-async function fetchReplies(){ replies = await apiFetch('/replies'); }
+async function fetchReplies(){
+  const rows = await apiFetch('/replies');
+  // The database column is story_id; the app uses storyId. Normalise here
+  // so a reply is always linked to its story.
+  replies = (rows || []).map(r => ({ ...r, storyId: r.storyId || r.story_id }));
+}
 async function fetchProducts(){ products = await apiFetch('/products'); }
 async function fetchLeads(){ leads = await apiFetch('/leads'); }
 async function fetchSettings(){
@@ -972,6 +982,7 @@ let transient = {
   filterSize: '',
   sortBy: 'newest',
   voucherAmount: 100,
+  cardTag: '',
   orderingProductId: null,
   chosenSize: '',
   sizeType: 'clothing',
@@ -2075,6 +2086,7 @@ function renderSettings(){
     <div class="bh-card" style="margin-bottom:18px">
       <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Delivery &amp; payment</h3>
       ${field('shippingCost', 'Shipping cost (R)', 'What customers pay for delivery. Collection is always free.')}
+      ${field('storyCardTag', 'Wording at the bottom of story pictures', 'Normally \u201cShared anonymously\u201d. You can change it here, or type something different for one picture on the Post tab.')}
       ${field('leadTimeLabel', 'Wait time wording', 'Shown on sizes and items that are not in stock, e.g. \u201cAvailable in 2-3 weeks\u201d.')}
       ${field('bankDetails', 'Banking details', 'Shown to customers on the order message and the order document.', 2)}
     </div>
@@ -2101,7 +2113,7 @@ function renderSettings(){
   `;
 }
 
-const SETTING_KEYS = ['shippingCost','leadTimeLabel','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
+const SETTING_KEYS = ['shippingCost','leadTimeLabel','storyCardTag','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
 
 async function saveSettings(){
   const status = document.getElementById('settingsStatus');
@@ -2150,7 +2162,10 @@ function renderPostManager(){
   return `
     <div class="bh-card" style="margin-bottom:20px">
       <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:10px">Ready to post (${readyToPost.length})</h3>
-      <p style="font-size:.83rem;color:var(--grey);margin-bottom:14px">Approved stories, turned into a finished picture with one tap. Sized for Instagram Stories.</p>
+      <p style="font-size:.83rem;color:var(--grey);margin-bottom:10px">Approved stories, turned into a finished picture with one tap. Sized for Instagram Stories.</p>
+      <label class="bh-label">Wording at the bottom of the picture</label>
+      <input id="cardTagInput" class="bh-input" style="margin-bottom:6px" value="${escapeHtml(transient.cardTag || setting('storyCardTag'))}" oninput="transient.cardTag = this.value">
+      <p style="font-size:.75rem;color:var(--grey);margin:0 0 16px">Leave as is for anonymous, or type a name if someone is happy to be credited. Only affects the next picture you make.</p>
       ${readyToPost.length === 0 ? `<p class="bh-empty">Nothing waiting to be posted right now.</p>` : ''}
       ${readyToPost.map(s => `
         <div class="bh-post-item">
@@ -2202,7 +2217,8 @@ async function downloadStoryCard(id){
   transient.postDownloadStatus = 'Preparing image…';
   render();
   const canvas = document.getElementById('exportCanvas');
-  await drawStoryCard(canvas, story.text);
+  const tagEl = document.getElementById('cardTagInput');
+  await drawStoryCard(canvas, story.text, tagEl ? tagEl.value.trim() : '');
   await downloadCanvas(canvas, 'bling-happiness-story.jpg');
   await apiFetch('/stories', { method: 'PATCH', body: JSON.stringify({ id, posted: true }) });
   await fetchStories();
@@ -2221,7 +2237,8 @@ async function createRoundupCard(){
   transient.compileStatus = 'Preparing image…';
   render();
   const canvas = document.getElementById('exportCanvas');
-  await drawCompileCard(canvas, chosen);
+  const tagEl2 = document.getElementById('cardTagInput');
+  await drawCompileCard(canvas, chosen, tagEl2 ? tagEl2.value.trim() : '');
   await downloadCanvas(canvas, 'bling-happiness-roundup.jpg');
   transient.compileStatus = 'Downloaded — ready to post back to Stories.';
   render();
