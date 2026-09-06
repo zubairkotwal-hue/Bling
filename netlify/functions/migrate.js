@@ -14,15 +14,21 @@ exports.handler = async () => {
       ALTER TABLE products ADD COLUMN IF NOT EXISTS category TEXT;
       ALTER TABLE products ADD COLUMN IF NOT EXISTS colours TEXT DEFAULT '[]';
       ALTER TABLE products ADD COLUMN IF NOT EXISTS product_type TEXT DEFAULT 'item';
-      ALTER TABLE products ADD COLUMN IF NOT EXISTS category TEXT;
-      ALTER TABLE products ADD COLUMN IF NOT EXISTS colours TEXT DEFAULT '[]';
-      ALTER TABLE products ADD COLUMN IF NOT EXISTS is_voucher BOOLEAN DEFAULT FALSE;
-      ALTER TABLE leads ADD COLUMN IF NOT EXISTS lead_time TEXT;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS has_image BOOLEAN DEFAULT FALSE;
+
       ALTER TABLE leads ADD COLUMN IF NOT EXISTS size TEXT;
       ALTER TABLE leads ADD COLUMN IF NOT EXISTS items TEXT;
       ALTER TABLE leads ADD COLUMN IF NOT EXISTS total TEXT;
       ALTER TABLE leads ADD COLUMN IF NOT EXISTS shipping TEXT;
       ALTER TABLE leads ADD COLUMN IF NOT EXISTS subtotal TEXT;
+      ALTER TABLE leads ADD COLUMN IF NOT EXISTS lead_time TEXT;
+
+      -- Pseudonyms and archiving
+      ALTER TABLE stories ADD COLUMN IF NOT EXISTS pseudonym TEXT;
+      ALTER TABLE stories ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
+      ALTER TABLE replies ADD COLUMN IF NOT EXISTS pseudonym TEXT;
+      ALTER TABLE replies ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
+
       CREATE TABLE IF NOT EXISTS product_images (
         id         TEXT PRIMARY KEY,
         product_id TEXT NOT NULL,
@@ -31,7 +37,41 @@ exports.handler = async () => {
         created_at TIMESTAMPTZ NOT NULL DEFAULT now()
       );
       CREATE INDEX IF NOT EXISTS idx_pimg ON product_images(product_id, kind);
-      ALTER TABLE products ADD COLUMN IF NOT EXISTS has_image BOOLEAN DEFAULT FALSE;
+
+      -- Product reviews
+      CREATE TABLE IF NOT EXISTS reviews (
+        id          TEXT PRIMARY KEY,
+        product_id  TEXT NOT NULL,
+        rating      INTEGER NOT NULL DEFAULT 5,
+        text        TEXT,
+        pseudonym   TEXT,
+        status      TEXT NOT NULL DEFAULT 'pending',
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+      );
+      CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id, status);
+
+      -- Help / contact messages
+      CREATE TABLE IF NOT EXISTS help_messages (
+        id          TEXT PRIMARY KEY,
+        name        TEXT,
+        phone       TEXT,
+        message     TEXT NOT NULL,
+        status      TEXT NOT NULL DEFAULT 'new',
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+      );
+
+      -- Gift cards
+      CREATE TABLE IF NOT EXISTS gift_cards (
+        id          TEXT PRIMARY KEY,
+        code        TEXT,
+        purchaser   TEXT NOT NULL,
+        recipient   TEXT NOT NULL,
+        amount      TEXT NOT NULL,
+        note        TEXT,
+        phone       TEXT,
+        status      TEXT NOT NULL DEFAULT 'Enquired',
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+      );
 
       CREATE TABLE IF NOT EXISTS settings (
         key   TEXT PRIMARY KEY,
@@ -40,7 +80,7 @@ exports.handler = async () => {
     `);
     const cols = await pool.query(`
       SELECT table_name, column_name FROM information_schema.columns
-      WHERE table_name IN ('products','leads') ORDER BY table_name, column_name
+      WHERE table_name IN ('products','leads','stories','replies') ORDER BY table_name, column_name
     `);
     return json(200, {
       ok: true,

@@ -14,7 +14,7 @@ exports.handler = async (event, context) => {
 
     // Anyone can reply — no login required, same as submitting a story.
     if (event.httpMethod === 'POST'){
-      const { storyId, text } = JSON.parse(event.body || '{}');
+      const { storyId, text, pseudonym } = JSON.parse(event.body || '{}');
       if (!storyId || !text) return json(400, { error: 'storyId and text are required' });
       const id = newId();
       await pool.query(
@@ -26,9 +26,13 @@ exports.handler = async (event, context) => {
 
     if (event.httpMethod === 'PATCH'){
       if (!admin) return json(401, { error: 'Admin login required' });
-      const { id, status } = JSON.parse(event.body || '{}');
-      if (!id || !status) return json(400, { error: 'id and status are required' });
-      await pool.query('UPDATE replies SET status = $1 WHERE id = $2', [status, id]);
+      const { id, status, archived } = JSON.parse(event.body || '{}');
+      if (!id) return json(400, { error: 'id is required' });
+      if (status) await pool.query('UPDATE replies SET status = $1 WHERE id = $2', [status, id]);
+      if (typeof archived === 'boolean'){
+        await pool.query('UPDATE replies SET archived_at = $1 WHERE id = $2',
+          [archived ? new Date().toISOString() : null, id]);
+      }
       return json(200, { ok: true });
     }
 

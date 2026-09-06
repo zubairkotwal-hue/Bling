@@ -16,12 +16,12 @@ exports.handler = async (event, context) => {
 
     // Anyone can submit a story — no login required, exactly as designed.
     if (event.httpMethod === 'POST'){
-      const { text, category } = JSON.parse(event.body || '{}');
+      const { text, category, pseudonym } = JSON.parse(event.body || '{}');
       if (!text || !category) return json(400, { error: 'text and category are required' });
       const id = newId();
       await pool.query(
-        'INSERT INTO stories (id, text, category, status) VALUES ($1, $2, $3, $4)',
-        [id, text, category, 'pending']
+        'INSERT INTO stories (id, text, category, status, pseudonym) VALUES ($1, $2, $3, $4, $5)',
+        [id, text, category, 'pending', (pseudonym || '').trim() || null]
       );
       return json(201, { id });
     }
@@ -29,10 +29,17 @@ exports.handler = async (event, context) => {
     // Approving/rejecting/marking-posted is admin only.
     if (event.httpMethod === 'PATCH'){
       if (!admin) return json(401, { error: 'Admin login required' });
-      const { id, status, posted } = JSON.parse(event.body || '{}');
+      const { id, status, posted, category, archived } = JSON.parse(event.body || '{}');
       if (!id) return json(400, { error: 'id is required' });
       if (status) await pool.query('UPDATE stories SET status = $1 WHERE id = $2', [status, id]);
       if (typeof posted === 'boolean') await pool.query('UPDATE stories SET posted = $1 WHERE id = $2', [posted, id]);
+      // Admin can correct the category if the submitter picked the wrong one.
+      if (category) await pool.query('UPDATE stories SET category = $1 WHERE id = $2', [category, id]);
+      // Archiving only tidies the admin screen. The story stays published.
+      if (typeof archived === 'boolean'){
+        await pool.query('UPDATE stories SET archived_at = $1 WHERE id = $2',
+          [archived ? new Date().toISOString() : null, id]);
+      }
       return json(200, { ok: true });
     }
 
