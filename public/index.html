@@ -17,6 +17,102 @@
     font-family:'Instrument Sans',sans-serif; color:var(--ink); background:var(--blushp); min-height:100vh; }
   .bh-root *{ box-sizing:border-box; }
   .bh-serif{ font-family:'Fraunces',serif; }
+/* hero, rail and badges */
+  .bh-hero2{ position:relative; min-height:420px; display:flex; align-items:center; justify-content:center; text-align:center; overflow:hidden; color:#fff; }
+  .bh-hero2-bg{ position:absolute; inset:0; background:linear-gradient(160deg,#2b1524 0%,#5e2a4c 55%,#8a4877 100%); }
+  .bh-hero2-mark{ position:absolute; right:-20px; bottom:-16px; height:230px; opacity:.13; z-index:1; }
+  .bh-hero2-inner{ position:relative; z-index:2; padding:52px 26px; max-width:520px; }
+  .bh-kicker{ font-size:.68rem; letter-spacing:.22em; text-transform:uppercase; color:var(--goldl); margin-bottom:14px; }
+  .bh-hero2-title{ font-weight:400; font-size:clamp(2.2rem,9vw,3.1rem); margin:0; letter-spacing:.02em; }
+  .bh-hero2-sub{ font-size:.9rem; color:#efe2ea; margin:14px auto 0; max-width:32ch; line-height:1.55; }
+  .bh-hero2-ctas{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:24px; }
+  .bh-hero2-cta{ background:#fffdf9; color:var(--ink); border:none; font-family:'Instrument Sans',sans-serif; font-weight:600; font-size:.86rem; padding:13px 26px; cursor:pointer; letter-spacing:.02em; }
+  .bh-hero2-cta.ghost{ background:transparent; border:1.4px solid rgba(255,255,255,.7); color:#fff; }
+
+  .bh-rail-wrap{ padding:26px 0 6px; }
+  .bh-rail-head{ display:flex; align-items:baseline; justify-content:space-between; padding:0 20px 12px; max-width:900px; margin:0 auto; }
+  .bh-rail-head h3{ font-weight:500; color:var(--plum); font-size:1.12rem; margin:0; }
+  .bh-rail{ display:flex; gap:11px; overflow-x:auto; padding:0 20px 8px; scrollbar-width:none; max-width:900px; margin:0 auto; }
+  .bh-rail::-webkit-scrollbar{ display:none; }
+  .bh-railcard{ flex:0 0 170px; height:236px; position:relative; overflow:hidden; cursor:pointer; border-radius:3px; }
+  .bh-railcard img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .bh-railcard-fill{ width:100%; height:100%; background:linear-gradient(150deg,#8f5f72,#d9aab4); }
+  .bh-railcard-fill.story{ background:linear-gradient(150deg,#341b30,#7d4c63); }
+  .bh-railcard-fill.mf1{ background:linear-gradient(150deg,#8f5f72,#d9aab4); }
+  .bh-railcard-fill.mf2{ background:linear-gradient(150deg,#4a1f33,#8a4877); }
+  .bh-railcard-fill.mf3{ background:linear-gradient(150deg,#b08b6a,#e7cdb2); }
+  .bh-railcard-fill.mf4{ background:linear-gradient(150deg,#5b2740,#a4607c); }
+  .bh-railcard-fill.mf5{ background:linear-gradient(150deg,#6b3560,#c79aa8); }
+  .bh-railcard-fill.mf6{ background:linear-gradient(150deg,#3d1e3a,#7d4c63); }
+  .bh-railcard-fill.sf1{ background:linear-gradient(150deg,#341b30,#6b3560); }
+  .bh-railcard-fill.sf2{ background:linear-gradient(150deg,#4a2545,#8a4877); }
+  .bh-railcard-fill.sf3{ background:linear-gradient(150deg,#2b1524,#5e2a4c); }
+
+  .bh-catstrip{ padding:18px 0 4px; }
+  .bh-catstrip-inner{ display:flex; gap:8px; overflow-x:auto; padding:0 20px 6px; scrollbar-width:none; max-width:900px; margin:0 auto; }
+  .bh-catstrip-inner::-webkit-scrollbar{ display:none; }
+  .bh-catchip{ flex:0 0 auto; background:#fff; border:1px solid var(--line); border-radius:20px; padding:9px 15px;
+    font-family:'Instrument Sans',sans-serif; font-size:.82rem; font-weight:600; color:var(--plum); cursor:pointer; white-space:nowrap; }
+  .bh-catchip b{ color:var(--gold); margin-left:4px; }
+  .bh-railveil{ position:absolute; inset:0; background:linear-gradient(0deg, rgba(20,8,16,.8) 6%, rgba(20,8,16,.04) 62%); }
+  .bh-raillbl{ position:absolute; left:0; right:0; bottom:0; padding:13px; color:#fff; z-index:2; }
+  .bh-raillbl .t{ font-family:'Fraunces',serif; font-size:.94rem; font-weight:500; line-height:1.2; }
+  .bh-raillbl .s{ font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; opacity:.85; margin-top:5px; }
+  .bh-railpill{ position:absolute; top:9px; left:9px; z-index:3; font-size:.57rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:4px 8px; border-radius:20px; }
+  .bh-railpill.shop{ background:var(--goldl); color:var(--ink); }
+  .bh-railpill.story{ background:rgba(255,255,255,.92); color:var(--plum); }
+
+  .bh-badges{ display:grid; grid-template-columns:1fr 1fr; gap:22px 12px; padding:30px 22px 36px; background:#fffdf9; margin-top:26px; }
+  .bh-badge{ text-align:center; }
+  .bh-badge svg{ width:29px; height:29px; stroke:var(--plum); fill:none; stroke-width:1.3; margin-bottom:8px; }
+  .bh-badge .t{ font-weight:700; font-size:.8rem; color:var(--plum); }
+  .bh-badge .s{ font-size:.71rem; color:var(--grey); margin-top:3px; line-height:1.4; }
+  @media (min-width:700px){ .bh-badges{ grid-template-columns:repeat(4,1fr); max-width:900px; margin:26px auto 0; } }
+
+/* announcement bar + header */
+  .bh-announce{ background:var(--ink); color:var(--goldl); text-align:center; font-family:'Fraunces',serif; font-weight:500; font-size:.78rem; padding:9px 12px; letter-spacing:.02em; }
+  .bh-hdr{ background:var(--plum); display:flex; align-items:center; justify-content:space-between; padding:13px 16px; position:sticky; top:0; z-index:40; }
+  .bh-burger{ background:none; border:none; display:flex; flex-direction:column; gap:4px; cursor:pointer; padding:6px; }
+  .bh-burger i{ display:block; width:21px; height:1.7px; background:#fffdf9; }
+  .bh-brand{ background:none; border:none; display:flex; align-items:center; gap:8px; cursor:pointer; color:#fffdf9; font-family:'Fraunces',serif; font-weight:500; font-size:1.02rem; letter-spacing:.02em; }
+  .bh-brand-mark{ height:24px; width:auto; opacity:.95; }
+  .bh-brand .dot{ color:var(--gold); }
+  .bh-cartbtn{ background:none; border:none; cursor:pointer; position:relative; padding:6px; }
+  .bh-cartbtn svg{ width:20px; height:20px; stroke:#fffdf9; fill:none; stroke-width:1.6; }
+  .bh-cart-dot{ position:absolute; top:0; right:0; background:var(--gold); color:var(--ink); font-size:.6rem; font-weight:800; border-radius:20px; padding:1px 5px; }
+
+/* slide-out menu */
+  .bh-menu{ position:fixed; inset:0; background:var(--plum); z-index:100; padding:22px 22px 30px; overflow-y:auto; }
+  .bh-menu-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+  .bh-menu-x{ background:none; border:none; color:#fffdf9; font-size:1.25rem; cursor:pointer; }
+  .bh-menu-brand{ font-family:'Fraunces',serif; color:#fffdf9; font-size:1.02rem; }
+  .bh-menu-brand .dot{ color:var(--gold); }
+  .bh-menu-list{ list-style:none; margin:0; padding:0; }
+  .bh-menu-list li{ display:flex; align-items:center; justify-content:space-between; padding:15px 2px; color:#fffdf9; font-size:1.05rem; border-bottom:1px solid rgba(255,255,255,.09); cursor:pointer; }
+  .bh-menu-list li.sub{ padding-left:16px; font-size:.92rem; color:rgba(255,253,249,.72); }
+  .bh-menu-list li span{ opacity:.5; }
+  .bh-menu-foot{ margin-top:24px; color:rgba(255,255,255,.55); font-size:.82rem; cursor:pointer; }
+
+/* gift card preview */
+  .bh-giftpreview{ display:flex; justify-content:center; margin-bottom:20px; }
+  .bh-gc{ position:relative; width:100%; max-width:340px; aspect-ratio:1.586; border-radius:12px; overflow:hidden;
+    background:linear-gradient(135deg,var(--plum),var(--plum3)); box-shadow:0 10px 26px rgba(61,30,58,.28); }
+  .bh-gc::after{ content:''; position:absolute; inset:9px; border:1px solid rgba(228,201,137,.4); border-radius:7px; }
+  .bh-gc-label{ position:absolute; top:22px; left:24px; color:var(--goldl); font-size:.6rem; font-weight:800; letter-spacing:.24em; text-transform:uppercase; z-index:2; }
+  .bh-gc-brand{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:500; color:#fffdf9; font-size:1.9rem; z-index:2; }
+  .bh-gc-amt{ position:absolute; left:24px; bottom:34px; font-family:'Fraunces',serif; font-weight:600; color:var(--goldl); font-size:1.5rem; z-index:2; }
+  .bh-gc-for{ position:absolute; left:24px; bottom:18px; color:rgba(255,253,249,.8); font-size:.72rem; z-index:2; }
+  .bh-gc-mark{ position:absolute; right:16px; bottom:14px; height:74px; opacity:.16; z-index:1; }
+
+/* reviews */
+  .bh-stars{ color:var(--gold); letter-spacing:.08em; }
+  .bh-review{ border-top:1px solid var(--line); padding:13px 0; }
+  .bh-review .who{ font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--gold); }
+  .bh-review .txt{ font-size:.88rem; margin-top:5px; }
+  .bh-rate-pick{ display:flex; gap:5px; margin-bottom:12px; }
+  .bh-rate-pick button{ background:none; border:none; font-size:1.5rem; color:var(--line); cursor:pointer; padding:0; line-height:1; }
+  .bh-rate-pick button.on{ color:var(--gold); }
+
   .bh-nav{ display:flex; align-items:center; justify-content:space-between; padding:18px 24px; flex-wrap:wrap; gap:10px; }
   .bh-logo{ font-family:'Fraunces',serif; font-weight:600; font-size:1.15rem; color:var(--plum); cursor:pointer; background:none; border:none; display:flex; align-items:center; gap:9px; padding:0; }
   .bh-logo-mark{ height:30px; width:auto; display:block; }
@@ -25,7 +121,7 @@
   .bh-navlinks button{ background:none; border:none; font-weight:600; font-size:.85rem; color:var(--plum); opacity:.75; cursor:pointer; padding:8px 12px; border-radius:8px; }
   .bh-navlinks button:hover{ opacity:1; background:#fff; }
   .bh-navlinks button.on{ opacity:1; background:#fff; }
-  .bh-hero{ background:linear-gradient(155deg,var(--plum) 0%,var(--plum2) 55%,var(--plum3) 100%); color:#fff; padding:44px 24px; border-radius:0 0 24px 24px; margin-bottom:8px; position:relative; overflow:hidden; }
+  .bh-hero{ display:none; }
   .bh-hero > *{ position:relative; z-index:2; }
   .bh-hero-mark{ position:absolute; right:14px; bottom:8px; height:104px; width:auto; opacity:.16; z-index:1; pointer-events:none; }
   @media (max-width:600px){
@@ -34,7 +130,7 @@
   .bh-hero h1{ font-size:clamp(1.5rem,4vw,2.1rem); font-weight:500; max-width:min(20ch, calc(100% - 86px)); }
   .bh-hero p{ color:#e9d9e4; font-size:.92rem; max-width:min(48ch, calc(100% - 86px)); margin-top:8px; }
   .bh-wrap{ max-width:900px; margin:0 auto; padding:20px 24px 70px; }
-  .bh-folder-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-top:18px; }
+  .bh-folder-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:12px; margin-top:4px; }
   .bh-folder{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; cursor:pointer; transition:transform .15s, box-shadow .15s; }
   .bh-folder:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(61,30,58,.1); }
   .bh-folder .count{ font-family:'Fraunces',serif; font-size:1.7rem; color:var(--gold); font-weight:600; }
@@ -75,6 +171,7 @@
   .bh-empty{ text-align:center; padding:40px 20px; color:var(--grey); font-size:.88rem; }
   .bh-lockscreen{ max-width:360px; margin:60px auto; text-align:center; }
   .bh-lockscreen .ico{ width:48px; height:48px; border-radius:50%; background:var(--plum); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+.bh-warn{ font-size:.75rem; color:#a6552f; background:#fdf3e3; border:1px solid #ecd6a6; border-radius:8px; padding:9px 11px; margin:8px 0 0; }
   .bh-note{ font-size:.78rem; color:var(--grey); background:var(--blushp); border-radius:8px; padding:10px 12px; margin-top:10px; }
   .bh-grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
   @media (max-width:600px){ .bh-grid2{ grid-template-columns:1fr; } }
@@ -144,11 +241,15 @@
 // before anything has been saved.
 const DEFAULT_SETTINGS = {
   shippingCost: '99',
+  freeShippingOver: '1500',
+  announcement: 'Free shipping over R1500 \u00b7 Share your story',
+
 
   leadTimeLabel: 'Available in 2-3 weeks',
 
   storyCardTag: 'Shared anonymously',
   cardTheme: 'plum',
+  categories: JSON.stringify(['Relationships', 'Intimacy', 'Health', 'Beauty', 'Faith', "Men's Health"]),
 
 
 
@@ -249,8 +350,27 @@ function cardTheme(){
 }
 
 const VOUCHER_STEP = 100;
-const VOUCHER_MIN = 100;
-const VOUCHER_MAX = 5000;
+const VOUCHER_MIN = 300;
+const VOUCHER_MAX = 20000;
+
+function voucherAmounts(){
+  const out = [];
+  for (let v = VOUCHER_MIN; v <= VOUCHER_MAX; v += VOUCHER_STEP) out.push(v);
+  return out;
+}
+
+function reviewsFor(productId){
+  return reviews.filter(r => r.product_id === productId && r.status === 'approved');
+}
+function averageRating(productId){
+  const list = reviewsFor(productId);
+  if (!list.length) return 0;
+  return list.reduce((n, r) => n + (parseInt(r.rating,10) || 0), 0) / list.length;
+}
+function stars(n, size){
+  const full = Math.round(n);
+  return `<span class="bh-stars" style="font-size:${size || '.85rem'}">${'\u2605'.repeat(full)}${'\u2606'.repeat(5-full)}</span>`;
+}
 
 function productColours(p){
   try {
@@ -315,7 +435,17 @@ const SIZE_PRESETS = {
   freesize: { label: 'Free size (one size)', options: ['Free size'] },
 };
 
-const CATEGORIES = ['Relationships', 'Intimacy', 'Friendships', 'Family', 'Work & Money', 'Self & Growth'];
+// Story categories are editable in Settings. This is only the starting list.
+const DEFAULT_CATEGORIES = ['Relationships', 'Intimacy', 'Health', 'Beauty', 'Faith', "Men's Health"];
+
+function categories(){
+  try {
+    const raw = settings.categories;
+    const list = raw ? JSON.parse(raw) : null;
+    if (Array.isArray(list) && list.length) return list;
+  } catch (e) {}
+  return DEFAULT_CATEGORIES;
+}
 
 function wrapCanvasText(ctx, text, maxWidth){
   const words = text.split(' ');
@@ -381,18 +511,40 @@ async function drawStoryCard(canvas, storyText, tagText){
 
   const marginX = 90;
   const contentWidth = w - marginX * 2;
+  ctx.textBaseline = 'alphabetic';
+
+  const quoteY = 480;
+  const topLimit = quoteY + 60;    // below the big quote mark
+  const bottomLimit = h - 230;     // above the tag and logo
+  const available = bottomLimit - topLimit;
+
+  // Shrink the text until it fits between the quote mark and the footer,
+  // so a long story never runs off the card.
+  function measure(size){
+    ctx.font = `italic 400 ${size}px Fraunces, Georgia, serif`;
+    const lines = wrapCanvasText(ctx, storyText, contentWidth);
+    return { lines, lead: size * 1.32, total: lines.length * (size * 1.32) };
+  }
+
+  let size = 62;
+  let plan = measure(size);
+  while (plan.total > available && size > 26){
+    size -= 2;
+    plan = measure(size);
+  }
 
   ctx.fillStyle = T.accent;
   ctx.font = "700 200px Fraunces, Georgia, serif";
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText('\u201C', marginX - 10, 480);
+  ctx.fillText('\u201C', marginX - 10, quoteY);
 
   ctx.fillStyle = T.text;
-  ctx.font = "italic 400 62px Fraunces, Georgia, serif";
-  const lineHeight = 82;
-  const lines = wrapCanvasText(ctx, storyText, contentWidth);
-  const startY = h / 2 - ((lines.length - 1) * lineHeight) / 2;
-  lines.forEach((line, i) => ctx.fillText(line, marginX, startY + i * lineHeight));
+  ctx.font = `italic 400 ${size}px Fraunces, Georgia, serif`;
+
+  // Sit the block in the middle of the space available, but never above it.
+  let startY = topLimit + (available - plan.total) / 2 + plan.lead * 0.8;
+  if (startY < topLimit + plan.lead) startY = topLimit + plan.lead;
+
+  plan.lines.forEach((line, i) => ctx.fillText(line, marginX, startY + i * plan.lead));
 
   const tagY = h - 140;
   ctx.strokeStyle = T.accent;
@@ -587,17 +739,36 @@ async function drawDocCard(canvas, order, kind){
   let y = 390;
   const basket = basketOf(order);
 
+  // Shrink the item list if there are a lot of items, so a big order
+  // still fits on one card.
+  const itemRoom = (h - 420) - 460;   // space before the totals and footer
+  function measureItems(sz){
+    ctx.font = `italic 400 ${sz}px Fraunces, Georgia, serif`;
+    let total = 0;
+    const rows = basket.map(i => {
+      const label = `${i.qty} x ${i.name}${i.size ? ' (' + i.size + ')' : ''}`;
+      const lines = wrapCanvasText(ctx, label, contentWidth - 220);
+      total += lines.length * (sz * 1.28) + 10;
+      return { lines, i };
+    });
+    return { rows, total, lead: sz * 1.28 };
+  }
+  let itemSize = 36;
+  let items = measureItems(itemSize);
+  while (items.total > itemRoom && itemSize > 20){
+    itemSize -= 2;
+    items = measureItems(itemSize);
+  }
+
   ctx.fillStyle = T.accent;
   ctx.font = "700 26px 'Instrument Sans', sans-serif";
   ctx.fillText('ITEMS', marginX, y);
   y += 50;
 
-  basket.forEach(i => {
-    const label = `${i.qty} x ${i.name}${i.size ? ' (' + i.size + ')' : ''}`;
+  items.rows.forEach(({ lines, i }) => {
     const amount = 'R' + ((parseFloat(i.price) || 0) * (i.qty || 1)).toFixed(0);
     ctx.fillStyle = T.text;
-    ctx.font = "italic 400 36px Fraunces, Georgia, serif";
-    const lines = wrapCanvasText(ctx, label, contentWidth - 220);
+    ctx.font = `italic 400 ${itemSize}px Fraunces, Georgia, serif`;
     lines.forEach((line, idx) => {
       ctx.fillText(line, marginX, y);
       if (idx === 0 && kind !== 'delivery'){
@@ -605,7 +776,7 @@ async function drawDocCard(canvas, order, kind){
         ctx.fillText(amount, w - marginX, y);
         ctx.textAlign = 'left';
       }
-      y += 46;
+      y += items.lead;
     });
     y += 10;
   });
@@ -944,6 +1115,73 @@ function hexToRgb(hex){
   return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
 }
 
+// A gift card, drawn at credit-card proportions.
+async function drawGiftCard(canvas, card){
+  const ctx = canvas.getContext('2d');
+  // Standard card ratio (85.6 x 54mm), rendered large enough to look crisp.
+  canvas.width = 1620; canvas.height = 1020;
+  const w = canvas.width, h = canvas.height;
+  await loadCanvasFonts();
+
+  const T = cardTheme();
+  const grad = ctx.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, T.from);
+  grad.addColorStop(1, T.to);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Thin inner keyline
+  ctx.strokeStyle = T.accent + '66';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(38, 38, w - 76, h - 76);
+
+  ctx.textBaseline = 'alphabetic';
+
+  // GIFT CARD label
+  ctx.fillStyle = T.accent;
+  ctx.font = "700 30px 'Instrument Sans', sans-serif";
+  ctx.fillText('G I F T   C A R D', 92, 130);
+
+  // BLING. centred
+  ctx.fillStyle = T.text;
+  ctx.font = "500 132px Fraunces, Georgia, serif";
+  ctx.textAlign = 'center';
+  ctx.fillText('BLING.', w / 2, h / 2 + 26);
+  ctx.textAlign = 'left';
+
+  // Value, bottom left
+  ctx.fillStyle = T.accent;
+  ctx.font = "700 76px Fraunces, Georgia, serif";
+  ctx.fillText('R' + card.amount, 92, h - 110);
+
+  // Recipient, bottom left under the value
+  if (card.recipient){
+    ctx.fillStyle = T.text + 'cc';
+    ctx.font = "400 30px 'Instrument Sans', sans-serif";
+    ctx.fillText('For ' + card.recipient, 92, h - 68);
+  }
+
+  // Code, bottom right
+  if (card.code){
+    ctx.fillStyle = T.accent + 'cc';
+    ctx.font = "600 30px 'Instrument Sans', sans-serif";
+    ctx.textAlign = 'right';
+    ctx.fillText(card.code, w - 92, h - 68);
+    ctx.textAlign = 'left';
+  }
+
+  // Logo mark, quietly bottom-right
+  const img = await loadMark();
+  if (img){
+    const targetH = 190;
+    const targetW = Math.round(img.width * (targetH / img.height));
+    ctx.save();
+    ctx.globalAlpha = 0.16;
+    ctx.drawImage(img, w - targetW - 90, h - targetH - 150, targetW, targetH);
+    ctx.restore();
+  }
+}
+
 function cleanPhoneForWhatsApp(phone){
   let n = (phone || '').replace(/[^0-9+]/g, '');
 
@@ -1010,6 +1248,12 @@ function buildLeadMessage(lead, kind){
   return fillTemplate(tpl, vars);
 }
 
+// What to show as the author of a story or reply.
+function authorLabel(item){
+  const p = (item && item.pseudonym || '').trim();
+  return p ? p : 'Anonymous';
+}
+
 function escapeHtml(str){
   return String(str == null ? '' : str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -1047,6 +1291,9 @@ async function fetchReplies(){
 }
 async function fetchProducts(){ products = await apiFetch('/products'); }
 async function fetchLeads(){ leads = await apiFetch('/leads'); }
+async function fetchReviews(){ reviews = await apiFetch('/reviews'); }
+async function fetchHelp(){ helpMessages = await apiFetch('/help'); }
+async function fetchGiftCards(){ giftCards = await apiFetch('/giftcards'); }
 async function fetchSettings(){
   const saved = await apiFetch('/settings');
   settings = Object.assign({}, DEFAULT_SETTINGS, saved || {});
@@ -1057,7 +1304,10 @@ let stories = [];
 let replies = [];
 let products = [];
 let leads = [];
-let nav = { view: 'home', activeFolder: null, activeStoryId: null, adminUnlocked: false, adminTab: 'queue' };
+let reviews = [];
+let helpMessages = [];
+let giftCards = [];
+let nav = { menuOpen: false, view: 'home', activeFolder: null, activeStoryId: null, adminUnlocked: false, adminTab: 'queue' };
 let transient = {
   submitSent: false,
   viewingProductId: null,
@@ -1070,7 +1320,14 @@ let transient = {
   sortBy: 'newest',
   voucherAmount: 100,
   cardTag: '',
+  giftStatus: '',
   cardTheme: '',
+  giftAmount: 300,
+  giftRecipient: '',
+  giftSent: false,
+  helpSent: false,
+  reviewSent: false,
+  reviewRating: 5,
   orderingProductId: null,
   chosenSize: '',
   sizeType: 'clothing',
@@ -1101,7 +1358,16 @@ function saveCart(){
 }
 function cartCount(){ return cart.reduce((n, i) => n + i.qty, 0); }
 function cartSubtotal(){ return cart.reduce((n, i) => n + (parseFloat(i.price) || 0) * i.qty, 0); }
-function shippingFor(method){ return method === 'Shipping' ? shippingCost() : 0; }
+function freeShippingOver(){
+  const n = parseFloat(setting('freeShippingOver'));
+  return isNaN(n) ? 0 : n;
+}
+function shippingFor(method){
+  if (method !== 'Shipping') return 0;
+  const threshold = freeShippingOver();
+  if (threshold > 0 && cartSubtotal() >= threshold) return 0;
+  return shippingCost();
+}
 function cartTotal(method){ return cartSubtotal() + shippingFor(method || transient.deliveryMethod); }
 
 function addToCart(productId, size, toOrder){
@@ -1149,10 +1415,73 @@ function productSizes(p){
 const LEAD_STATUSES = ['Enquired', 'Paid', 'Ready', 'Sent'];
 
 // ---- Navigation ----
-function goHome(){ nav.view = 'home'; nav.activeFolder = null; nav.activeStoryId = null; render(); }
-function goSubmit(){ nav.view = 'submit'; transient.submitSent = false; render(); }
-function goShop(){ nav.view = 'shop'; transient.viewingProductId = null; transient.viewingCart = false; transient.checkingOut = false; transient.orderSent = false; render(); }
-async function goAdmin(){
+// Each story has its own web address, so a link can be attached to an
+// Instagram Story and land someone straight on it.
+function storyUrl(id){
+  return `${window.location.origin}${window.location.pathname}?story=${encodeURIComponent(id)}`;
+}
+
+async function copyStoryLink(id, btn){
+  const url = storyUrl(id);
+  try {
+    await navigator.clipboard.writeText(url);
+    if (btn){ const t = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = t, 1800); }
+  } catch (e) {
+    // Some phone browsers block copying — show it so it can be copied by hand.
+    window.prompt('Copy this link and paste it into the Instagram link sticker:', url);
+  }
+}
+
+// If someone arrives on a story link, open that story straight away.
+function openDeepLink(){
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('story');
+  if (!id) return false;
+  const story = stories.find(s => s.id === id && s.status === 'approved');
+  if (!story) return false;
+  nav.activeStoryId = story.id;
+  nav.activeFolder = story.category;
+  nav.view = 'story';
+  return true;
+}
+
+function goHome(){ nav.menuOpen = false; nav.view = 'home'; nav.activeFolder = null; nav.activeStoryId = null; render(); }
+function goSubmit(){ nav.menuOpen = false; nav.view = 'submit'; transient.submitSent = false; render(); }
+function toggleMenu(){ nav.menuOpen = !nav.menuOpen; render(); }
+function closeMenu(){ nav.menuOpen = false; }
+
+function renderMenu(){
+  const cats = categoriesInShop();
+  return `
+    <div class="bh-menu">
+      <div class="bh-menu-top">
+        <button class="bh-menu-x" onclick="toggleMenu()">\u2715</button>
+        <span class="bh-menu-brand">Bling <span class="dot">\u2022</span> Happiness</span>
+        <span style="width:20px"></span>
+      </div>
+      <ul class="bh-menu-list">
+        <li onclick="closeMenu(); goHome()">Stories <span>\u2192</span></li>
+        <li onclick="closeMenu(); goSubmit()">Share your story</li>
+        <li onclick="closeMenu(); goShop()">Shop <span>\u2192</span></li>
+        ${cats.slice(0, 6).map(cat => `<li class="sub" onclick="closeMenu(); goShop(); setFilter('Category','${escapeHtml(cat)}')">${escapeHtml(cat)}</li>`).join('')}
+        <li onclick="closeMenu(); goGiftCard()">Gift Cards</li>
+        <li onclick="closeMenu(); goHelp()">Help <span>\u2192</span></li>
+      </ul>
+      <div class="bh-menu-foot" onclick="closeMenu(); goAdmin()">\uD83D\uDD12 &nbsp;Admin</div>
+    </div>`;
+}
+
+function goGiftCard(){
+  nav.view = 'gift';
+  transient.giftSent = false;
+  transient.giftAmount = VOUCHER_MIN;
+  transient.giftRecipient = '';
+  render();
+}
+function goHelp(){ nav.view = 'help'; nav.menuOpen = false; transient.helpSent = false; render(); }
+
+function goShop(){ nav.menuOpen = false; nav.view = 'shop'; transient.viewingProductId = null; transient.viewingCart = false; transient.checkingOut = false; transient.orderSent = false; render(); }
+async function goAdmin(){ nav.menuOpen = false;
   nav.view = 'admin';
   render();
   if (!nav.adminUnlocked){
@@ -1162,7 +1491,7 @@ async function goAdmin(){
   // so anything submitted elsewhere in the meantime (a new story, a new
   // reply) actually shows up instead of showing what was last loaded.
   try {
-    await Promise.all([fetchStories(), fetchReplies(), fetchLeads()]);
+    await Promise.all([fetchStories(), fetchReplies(), fetchLeads(), fetchReviews(), fetchHelp(), fetchGiftCards()]);
     transient.loadError = '';
   } catch (e) {
     transient.loadError = "Couldn't refresh admin data — showing what was last loaded.";
@@ -1182,18 +1511,21 @@ function render(){
   const root = document.getElementById('root');
   root.innerHTML = `
     <div class="bh-root">
-      <nav class="bh-nav">
-        <button class="bh-logo" onclick="goHome()">
-          <img src="/mark-dark.png" alt="" class="bh-logo-mark">
+      ${setting('announcement') ? `<div class="bh-announce">${escapeHtml(setting('announcement'))}</div>` : ''}
+
+      <header class="bh-hdr">
+        <button class="bh-burger" onclick="toggleMenu()" aria-label="Menu"><i></i><i></i><i></i></button>
+        <button class="bh-brand" onclick="goHome()">
+          <img src="/mark-hero.png" alt="" class="bh-brand-mark">
           <span>Bling <span class="dot">•</span> Happiness</span>
         </button>
-        <div class="bh-navlinks">
-          <button class="${['home','folder','story'].includes(nav.view) ? 'on' : ''}" onclick="goHome()">Library</button>
-          <button class="${nav.view === 'submit' ? 'on' : ''}" onclick="goSubmit()">Share your story</button>
-          <button class="${nav.view === 'shop' ? 'on' : ''}" onclick="goShop()">Shop${cartCount() ? `<span class="bh-cart-badge">${cartCount()}</span>` : ''}</button>
-          <button class="${nav.view === 'admin' ? 'on' : ''}" onclick="goAdmin()">🔒 Admin</button>
-        </div>
-      </nav>
+        <button class="bh-cartbtn" onclick="viewCart()" aria-label="Basket">
+          <svg viewBox="0 0 24 24"><path d="M6 8h12l1 12H5L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+          ${cartCount() ? `<span class="bh-cart-dot">${cartCount()}</span>` : ''}
+        </button>
+      </header>
+
+      ${nav.menuOpen ? renderMenu() : ''}
       ${transient.loadError ? `
         <div style="max-width:900px;margin:14px auto 0;padding:0 24px;">
           <div style="background:var(--riskbg,#fbeaec);border:1px solid #e3b8bf;color:var(--risk);border-radius:10px;padding:12px 16px;font-size:.85rem;font-weight:600;">
@@ -1213,6 +1545,8 @@ function renderCurrentView(){
     case 'story': return renderStory();
     case 'submit': return renderSubmit();
     case 'shop': return renderShop();
+    case 'gift': return renderGiftCard();
+    case 'help': return renderHelp();
     case 'admin': return renderAdmin();
     default: return '';
   }
@@ -1221,27 +1555,110 @@ function renderCurrentView(){
 // ---- Home / folders ----
 function renderHome(){
   const approved = stories.filter(s => s.status === 'approved');
-  const folders = CATEGORIES.map(cat => ({ cat, count: approved.filter(s => s.category === cat).length }));
+
+  // Shop by mood — one card per category that actually has products.
+  const moods = SHOP_CATEGORIES
+    .map(cat => ({ cat, items: products.filter(p => p.category === cat) }))
+    .filter(m => m.items.length);
+
+  // From the stories — newest approved stories, plus their category counts.
+  const recent = approved.slice(0, 8);
+  const storyCats = categories().map(cat => ({ cat, count: approved.filter(s => s.category === cat).length }));
+
+  const moodFill = ['mf1','mf2','mf3','mf4','mf5','mf6'];
+  const storyFill = ['sf1','sf2','sf3'];
+
   return `
-    <div class="bh-hero">
-      <img class="bh-hero-mark" src="/mark-hero.png" alt="">
-      <h1 class="bh-serif">Every story deserves somewhere safe to land.</h1>
-      <p>Browse by what you're going through, or share your own — completely anonymously.</p>
-    </div>
-    <div class="bh-wrap" style="padding:0 0 0">
-      <div class="bh-folder-grid">
-        ${folders.map(f => `
-          <div class="bh-folder" onclick="openFolder('${escapeHtml(f.cat)}')">
-            <div class="count">${f.count}</div>
-            <div class="name">${escapeHtml(f.cat)}</div>
-          </div>
-        `).join('')}
+    <div class="bh-hero2">
+      <div class="bh-hero2-bg"></div>
+      <img class="bh-hero2-mark" src="/mark-hero.png" alt="">
+      <div class="bh-hero2-inner">
+        <div class="bh-kicker">Embrace your confidence</div>
+        <h1 class="bh-serif bh-hero2-title">BLING.</h1>
+        <p class="bh-hero2-sub">Lingerie, sleepwear and everything that makes you feel like yourself.</p>
+        <div class="bh-hero2-ctas">
+          <button class="bh-hero2-cta" onclick="goShop()">Shop the collection</button>
+          <button class="bh-hero2-cta ghost" onclick="goSubmit()">Share your story</button>
+        </div>
       </div>
     </div>
-  `;
+
+    ${moods.length ? `
+    <div class="bh-rail-wrap">
+      <div class="bh-rail-head">
+        <h3 class="bh-serif">Shop by mood</h3>
+        <button class="bh-btn-ghost" style="font-size:.78rem" onclick="goShop()">See all \u2192</button>
+      </div>
+      <div class="bh-rail">
+        ${moods.map((m, i) => {
+          const withPic = m.items.find(p => p.has_image);
+          return `
+          <div class="bh-railcard" onclick="goShop(); setFilter('Category','${escapeHtml(m.cat)}')">
+            ${withPic ? `<img src="${productImageUrl(withPic,'thumb')}" alt="" loading="lazy">` : `<div class="bh-railcard-fill ${moodFill[i % moodFill.length]}"></div>`}
+            <span class="bh-railpill shop">Shop</span>
+            <div class="bh-railveil"></div>
+            <div class="bh-raillbl">
+              <div class="t">${escapeHtml(m.cat)}</div>
+              <div class="s">${m.items.length} ${m.items.length === 1 ? 'piece' : 'pieces'}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : ''}
+
+    ${recent.length ? `
+    <div class="bh-rail-wrap">
+      <div class="bh-rail-head">
+        <h3 class="bh-serif">From the stories</h3>
+        <button class="bh-btn-ghost" style="font-size:.78rem" onclick="goSubmit()">Share yours \u2192</button>
+      </div>
+      <div class="bh-rail">
+        ${recent.map((s, i) => `
+          <div class="bh-railcard" onclick="openStory('${s.id}')">
+            <div class="bh-railcard-fill ${storyFill[i % storyFill.length]}"></div>
+            <span class="bh-railpill story">Story</span>
+            <div class="bh-railveil"></div>
+            <div class="bh-raillbl">
+              <div class="t">\u201c${escapeHtml(s.text.slice(0, 62))}${s.text.length > 62 ? '\u2026' : ''}\u201d</div>
+              <div class="s">${escapeHtml(s.category || '')} \u00b7 ${replies.filter(r => r.storyId === s.id && r.status === 'approved').length} replies</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>` : `
+    <div class="bh-rail-wrap">
+      <div class="bh-rail-head"><h3 class="bh-serif">From the stories</h3></div>
+      <p class="bh-empty" style="padding:10px 20px 20px">No stories yet \u2014 <button class="bh-btn-ghost" style="display:inline;font-size:.86rem" onclick="goSubmit()">be the first to share one</button>.</p>
+    </div>`}
+
+    <div class="bh-catstrip">
+      <div class="bh-catstrip-inner">
+        ${storyCats.map(f => `
+          <button class="bh-catchip" onclick="openFolder('${escapeHtml(f.cat)}')">
+            ${escapeHtml(f.cat)} <b>${f.count}</b>
+          </button>`).join('')}
+      </div>
+    </div>
+
+    <div class="bh-badges">
+      <div class="bh-badge">
+        <svg viewBox="0 0 24 24"><path d="M2 8h11v9H2z"/><path d="M13 11h5l3 3v3h-8z"/><circle cx="6" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg>
+        <div class="t">Countrywide delivery</div><div class="s">R${shippingCost()} anywhere in SA${freeShippingOver() > 0 ? `, free over R${freeShippingOver()}` : ''}</div>
+      </div>
+      <div class="bh-badge">
+        <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        <div class="t">Discreet packaging</div><div class="s">Nothing on the outside</div>
+      </div>
+      <div class="bh-badge">
+        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-4-7.5"/><path d="M9 12l2.5 2.5L21 5"/></svg>
+        <div class="t">Always anonymous</div><div class="s">Unless you choose otherwise</div>
+      </div>
+      <div class="bh-badge" onclick="goGiftCard()" style="cursor:pointer">
+        <svg viewBox="0 0 24 24"><path d="M20 12v7H4v-7"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7S9 3 7 4.5 8.5 7 12 7zM12 7s3-4 5-2.5S15.5 7 12 7z"/></svg>
+        <div class="t">Gift cards</div><div class="s">From R${VOUCHER_MIN}</div>
+      </div>
+    </div>`;
 }
 
-// ---- Folder ----
 function renderFolder(){
   const items = stories.filter(s => s.status === 'approved' && s.category === nav.activeFolder);
   return `
@@ -1278,7 +1695,7 @@ function renderStory(){
       ${storyReplies.length === 0 ? `<p class="bh-empty">No replies yet — be the first to respond.</p>` : ''}
       ${storyReplies.map(r => `
         <div class="bh-reply">
-          <span class="rt">Anonymous</span>
+          <span class="rt">${escapeHtml(authorLabel(r))}</span>
           ${escapeHtml(r.text)}
           ${nav.adminUnlocked ? `<div style="margin-top:8px"><button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteReply('${r.id}')">Delete this reply</button></div>` : ''}
         </div>`).join('')}
@@ -1307,7 +1724,8 @@ async function submitReply(){
   const statusEl = document.getElementById('replyStatus');
   statusEl.textContent = 'Sending…';
   try {
-    await apiFetch('/replies', { method: 'POST', body: JSON.stringify({ storyId: story.id, text }) });
+    const pseudonym = readPseudonym('replyAnonMode','replyPseudonym');
+    await apiFetch('/replies', { method: 'POST', body: JSON.stringify({ storyId: story.id, text, pseudonym }) });
     el.value = '';
     statusEl.textContent = "Sent — it'll appear here once it's been read and approved.";
   } catch (e) {
@@ -1331,9 +1749,18 @@ function renderSubmit(){
     <div class="bh-card">
       <label class="bh-label">Your story</label>
       <textarea id="submitStoryText" class="bh-textarea" style="margin-bottom:16px" placeholder="Type what's going on…"></textarea>
+      <label class="bh-label">How should this appear?</label>
+      <select id="submitAnonMode" class="bh-select" style="margin-bottom:10px" onchange="togglePseudonym('submitAnonMode','submitPseudoWrap')">
+        <option value="anon">Stay anonymous</option>
+        <option value="pseudonym">Use a pseudonym</option>
+      </select>
+      <div id="submitPseudoWrap" style="display:none;margin-bottom:12px">
+        <input id="submitPseudonym" class="bh-input" maxlength="24" placeholder="Your pseudonym, e.g. Sunflower">
+        <p class="bh-warn">Please do not use your real name, or anyone else's. Choose a pseudonym \u2014 whatever you type here will be visible to everyone.</p>
+      </div>
       <label class="bh-label">Category</label>
       <select id="submitCategory" class="bh-select" style="margin-bottom:16px">
-        ${CATEGORIES.map(c => `<option>${escapeHtml(c)}</option>`).join('')}
+        ${categories().map(c => `<option>${escapeHtml(c)}</option>`).join('')}
       </select>
       <p class="bh-note">No sign-up, no name required. Every story is read by a real person before anything is shared.</p>
       <div style="margin-top:16px">
@@ -1343,12 +1770,26 @@ function renderSubmit(){
   `;
 }
 
+function togglePseudonym(selectId, wrapId){
+  const sel = document.getElementById(selectId);
+  const wrap = document.getElementById(wrapId);
+  if (sel && wrap) wrap.style.display = sel.value === 'pseudonym' ? 'block' : 'none';
+}
+
+function readPseudonym(selectId, inputId){
+  const sel = document.getElementById(selectId);
+  const inp = document.getElementById(inputId);
+  if (!sel || sel.value !== 'pseudonym') return '';
+  return inp ? inp.value.trim().slice(0, 24) : '';
+}
+
 async function submitStory(){
   const text = document.getElementById('submitStoryText').value.trim();
   const category = document.getElementById('submitCategory').value;
   if (!text) return;
   try {
-    await apiFetch('/stories', { method: 'POST', body: JSON.stringify({ text, category }) });
+    const pseudonym = readPseudonym('submitAnonMode','submitPseudonym');
+    await apiFetch('/stories', { method: 'POST', body: JSON.stringify({ text, category, pseudonym }) });
     transient.submitSent = true;
     transient.loadError = '';
   } catch (e) {
@@ -1472,6 +1913,43 @@ function renderShop(){
             <p class="bh-size-note">${isMadeToOrder(product, sizeInfo.all[0]) ? escapeHtml(setting('leadTimeLabel')) : ''}</p>` : '')}
           <p id="detailError" style="color:var(--risk);font-size:.8rem;min-height:1.1em;margin:0 0 6px"></p>
           <button class="bh-btn" style="width:100%" onclick="addToCartFromDetail('${product.id}')">Add to basket →</button>
+
+          <div style="margin-top:26px;border-top:1px solid var(--line);padding-top:18px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap">
+              <h3 class="bh-serif" style="font-size:1.02rem;color:var(--plum);margin:0">Reviews</h3>
+              ${reviewsFor(product.id).length ? `<span style="font-size:.8rem;color:var(--grey)">${stars(averageRating(product.id))} ${averageRating(product.id).toFixed(1)} · ${reviewsFor(product.id).length}</span>` : ''}
+            </div>
+
+            ${reviewsFor(product.id).length === 0 ? `<p style="font-size:.85rem;color:var(--grey);margin:10px 0 0">No reviews yet — be the first.</p>` : ''}
+            ${reviewsFor(product.id).map(r => `
+              <div class="bh-review">
+                <span class="bh-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
+                <span class="who" style="margin-left:8px">${escapeHtml(authorLabel(r))}</span>
+                <div class="txt">${escapeHtml(r.text)}</div>
+              </div>`).join('')}
+
+            ${transient.reviewSent ? `
+              <p style="font-size:.85rem;color:var(--ok);margin-top:14px">Thank you — your review will appear once it's been read.</p>
+            ` : `
+              <div style="margin-top:18px">
+                <label class="bh-label">Leave a review</label>
+                <div class="bh-rate-pick">
+                  ${[1,2,3,4,5].map(n => `<button class="${(transient.reviewRating||5) >= n ? 'on' : ''}" onclick="setReviewRating(${n})">★</button>`).join('')}
+                </div>
+                <textarea id="reviewText" class="bh-textarea" style="min-height:74px;margin-bottom:10px" placeholder="How was it?"></textarea>
+                <label class="bh-label">How should this appear?</label>
+                <select id="reviewAnonMode" class="bh-select" style="margin-bottom:10px" onchange="togglePseudonym('reviewAnonMode','reviewPseudoWrap')">
+                  <option value="anon">Stay anonymous</option>
+                  <option value="pseudonym">Use a pseudonym</option>
+                </select>
+                <div id="reviewPseudoWrap" style="display:none;margin-bottom:10px">
+                  <input id="reviewPseudonym" class="bh-input" maxlength="24" placeholder="Your pseudonym, e.g. Sunflower">
+                  <p class="bh-warn">Please don't use your real name — whatever you type here will be visible to everyone.</p>
+                </div>
+                <p id="reviewError" style="color:var(--risk);font-size:.8rem;min-height:1.1em;margin:0 0 6px"></p>
+                <button class="bh-btn-outline" onclick="submitReview('${product.id}')">Send review</button>
+              </div>`}
+          </div>
         </div>
       </div>`;
   }
@@ -1539,6 +2017,7 @@ function renderShop(){
             <div class="price">${isVoucher(p) ? 'From R' + VOUCHER_MIN : 'R' + escapeHtml(p.price)}</div>
             ${pc.length ? `<div class="bh-card-swatches">${pc.slice(0,5).map(col => `<i title="${escapeHtml(col)}" style="background:${colourHex(col)}"></i>`).join('')}</div>` : ''}
             ${!isVoucher(p) && sz.length ? `<div class="bh-shop-sizes">${sz.length === 1 ? escapeHtml(sz[0]) : sz.length + ' sizes'}</div>` : ''}
+            ${reviewsFor(p.id).length ? `<div class="bh-shop-sizes">${stars(averageRating(p.id), '.72rem')} <span style="opacity:.7">(${reviewsFor(p.id).length})</span></div>` : ''}
             ${p.stock_status === 'made_to_order' ? `<div class="bh-shop-sizes" style="color:#a6752f;font-weight:700">${escapeHtml(setting('leadTimeLabel'))}</div>` : ''}
           </div>
         </div>`;
@@ -1592,6 +2071,8 @@ function clearFilters(){
 }
 
 function viewProduct(id){
+  transient.reviewSent = false;
+  transient.reviewRating = 5;
   transient.viewingProductId = id;
   transient.viewingCart = false;
   transient.checkingOut = false;
@@ -1715,6 +2196,155 @@ async function submitOrder(){
   render();
 }
 
+// ---- Gift cards (public) ----
+function renderGiftCard(){
+  if (transient.giftSent){
+    return `
+      <div class="bh-card" style="text-align:center;padding:40px 24px">
+        <div class="bh-serif" style="font-size:2.2rem;color:var(--gold)">\u2713</div>
+        <h2 class="bh-serif" style="font-size:1.2rem;color:var(--plum);margin:10px 0">Gift card ordered.</h2>
+        <p style="font-size:.88rem;color:var(--grey);max-width:42ch;margin:0 auto 16px">
+          We'll be in touch on WhatsApp with payment details. Once payment reflects, the card is sent straight to ${escapeHtml(transient.giftRecipient || 'them')}.
+        </p>
+        <button class="bh-btn-outline" onclick="goGiftCard()">Buy another</button>
+      </div>`;
+  }
+
+  const amt = transient.giftAmount || VOUCHER_MIN;
+  return `
+    <h2 class="bh-serif" style="font-size:1.5rem;color:var(--plum);margin:0 0 4px">Gift Cards</h2>
+    <p style="font-size:.87rem;color:var(--grey);margin:0 0 18px">Let her choose. Sent by WhatsApp, ready to spend on anything in the shop.</p>
+
+    <div class="bh-giftpreview">
+      <div class="bh-gc">
+        <span class="bh-gc-label">Gift Card</span>
+        <span class="bh-gc-brand">BLING.</span>
+        <span class="bh-gc-amt">R${amt}</span>
+        <span class="bh-gc-for">${transient.giftRecipient ? 'For ' + escapeHtml(transient.giftRecipient) : 'For\u2026'}</span>
+        <img class="bh-gc-mark" src="/mark-hero.png" alt="">
+      </div>
+    </div>
+
+    <div class="bh-card">
+      <label class="bh-label">Amount</label>
+      <select id="giftAmount" class="bh-select" style="margin-bottom:16px" onchange="setGiftAmount(this.value)">
+        ${voucherAmounts().map(v => `<option value="${v}" ${amt == v ? 'selected' : ''}>R${v.toLocaleString('en-ZA')}</option>`).join('')}
+      </select>
+
+      <label class="bh-label">Your name</label>
+      <input id="giftPurchaser" class="bh-input" placeholder="Who it's from" style="margin-bottom:14px">
+
+      <label class="bh-label">Who is it for?</label>
+      <input id="giftRecipient" class="bh-input" placeholder="Their name \u2014 this appears on the card" style="margin-bottom:6px"
+             oninput="transient.giftRecipient = this.value; updateGiftPreview()">
+      <p style="font-size:.75rem;color:var(--grey);margin:0 0 14px">Only their name shows on the card.</p>
+
+      <label class="bh-label">Your WhatsApp number</label>
+      <input id="giftPhone" class="bh-input" placeholder="e.g. 082 123 4567" style="margin-bottom:14px">
+
+      <label class="bh-label">Message (optional)</label>
+      <textarea id="giftNote" class="bh-textarea" style="min-height:70px;margin-bottom:14px" placeholder="A few words to go with it\u2026"></textarea>
+
+      <p class="bh-note">Payment is by EFT. We'll send banking details on WhatsApp, and the card as soon as payment reflects.</p>
+      <p id="giftError" style="color:var(--risk);font-size:.8rem;min-height:1.1em;margin:8px 0 0"></p>
+      <button class="bh-btn" style="width:100%;margin-top:6px" onclick="submitGiftCard()">Order gift card \u2192</button>
+    </div>`;
+}
+
+function setReviewRating(n){ transient.reviewRating = n; render(); }
+
+async function submitReview(productId){
+  const text = document.getElementById('reviewText').value.trim();
+  const err = document.getElementById('reviewError');
+  if (!text){ err.textContent = 'Please write a few words.'; return; }
+  const pseudonym = readPseudonym('reviewAnonMode','reviewPseudonym');
+  err.textContent = 'Sending\u2026';
+  try {
+    await apiFetch('/reviews', { method: 'POST', body: JSON.stringify({
+      productId, rating: transient.reviewRating || 5, text, pseudonym }) });
+    transient.reviewSent = true;
+  } catch (e) {
+    err.textContent = "Couldn't send that \u2014 please try again.";
+    return;
+  }
+  render();
+}
+
+function setGiftAmount(v){ transient.giftAmount = parseInt(v, 10); updateGiftPreview(); }
+
+function updateGiftPreview(){
+  const amtEl = document.querySelector('.bh-gc-amt');
+  const forEl = document.querySelector('.bh-gc-for');
+  if (amtEl) amtEl.textContent = 'R' + (transient.giftAmount || VOUCHER_MIN);
+  if (forEl) forEl.textContent = transient.giftRecipient ? 'For ' + transient.giftRecipient : 'For\u2026';
+}
+
+async function submitGiftCard(){
+  const purchaser = document.getElementById('giftPurchaser').value.trim();
+  const recipient = document.getElementById('giftRecipient').value.trim();
+  const phone = document.getElementById('giftPhone').value.trim();
+  const note = document.getElementById('giftNote').value.trim();
+  const amount = String(transient.giftAmount || VOUCHER_MIN);
+  const err = document.getElementById('giftError');
+
+  if (!purchaser || !recipient){ err.textContent = 'Please add your name and who it is for.'; return; }
+  if (!phone){ err.textContent = 'Please add a WhatsApp number so we can send payment details.'; return; }
+
+  err.textContent = 'Sending\u2026';
+  try {
+    await apiFetch('/giftcards', { method: 'POST', body: JSON.stringify({ purchaser, recipient, amount, note, phone }) });
+    transient.giftSent = true;
+  } catch (e) {
+    err.textContent = "Couldn't place that order \u2014 please try again.";
+    return;
+  }
+  render();
+}
+
+// ---- Help (public) ----
+function renderHelp(){
+  if (transient.helpSent){
+    return `
+      <div class="bh-card" style="text-align:center;padding:40px 24px">
+        <div class="bh-serif" style="font-size:2.2rem;color:var(--gold)">\u2713</div>
+        <h2 class="bh-serif" style="font-size:1.2rem;color:var(--plum);margin:10px 0">Message sent.</h2>
+        <p style="font-size:.88rem;color:var(--grey);max-width:40ch;margin:0 auto 16px">We'll get back to you on WhatsApp as soon as we can.</p>
+        <button class="bh-btn-outline" onclick="goHome()">Back to the library</button>
+      </div>`;
+  }
+  return `
+    <h2 class="bh-serif" style="font-size:1.5rem;color:var(--plum);margin:0 0 4px">Help</h2>
+    <p style="font-size:.87rem;color:var(--grey);margin:0 0 18px">A question about an order, a size, or anything else \u2014 send a message and we'll reply on WhatsApp.</p>
+    <div class="bh-card">
+      <label class="bh-label">Your name</label>
+      <input id="helpName" class="bh-input" placeholder="What should we call you?" style="margin-bottom:14px">
+      <label class="bh-label">Your WhatsApp number</label>
+      <input id="helpPhone" class="bh-input" placeholder="e.g. 082 123 4567" style="margin-bottom:6px">
+      <p style="font-size:.75rem;color:var(--grey);margin:0 0 14px">We'll reply to you on WhatsApp \u2014 no email needed.</p>
+      <label class="bh-label">How can we help?</label>
+      <textarea id="helpMessage" class="bh-textarea" style="min-height:110px;margin-bottom:14px" placeholder="Tell us what you need\u2026"></textarea>
+      <p id="helpError" style="color:var(--risk);font-size:.8rem;min-height:1.1em;margin:0 0 8px"></p>
+      <button class="bh-btn" style="width:100%" onclick="submitHelp()">Send message \u2192</button>
+    </div>`;
+}
+
+async function submitHelp(){
+  const name = document.getElementById('helpName').value.trim();
+  const phone = document.getElementById('helpPhone').value.trim();
+  const message = document.getElementById('helpMessage').value.trim();
+  const err = document.getElementById('helpError');
+  if (!phone || !message){ err.textContent = 'Please add a WhatsApp number and a message.'; return; }
+  err.textContent = 'Sending\u2026';
+  try {
+    await apiFetch('/help', { method: 'POST', body: JSON.stringify({ name, phone, message }) });
+    transient.helpSent = true;
+  } catch (e) {
+    err.textContent = "Couldn't send that \u2014 please try again.";
+    return;
+  }
+  render();
+}
+
 // ---- Admin root ----
 function renderAdmin(){
   if (!nav.adminUnlocked){
@@ -1722,13 +2352,13 @@ function renderAdmin(){
       <div class="bh-lockscreen">
         <div class="ico">🔒</div>
         <h2 class="bh-serif" style="font-size:1.2rem;color:var(--plum);margin-bottom:6px">Admin area</h2>
-        <p style="font-size:.85rem;color:var(--grey);margin-bottom:18px">Log in with your invited account to review submissions and manage the shop.</p>
+        <p style="font-size:.85rem;color:var(--grey);margin-bottom:18px">Enter the admin password to review submissions and manage the shop.</p>
         <input id="adminPwInput" class="bh-input" type="password" placeholder="Admin password"
                style="margin-bottom:10px;text-align:center"
                onkeydown="if(event.key==='Enter') doAdminLogin()">
         <p id="adminPwError" style="color:var(--risk);font-size:.8rem;min-height:1.1em;margin:0 0 10px"></p>
         <button class="bh-btn" onclick="doAdminLogin()" style="width:100%">Log in</button>
-        <p class="bh-note">Real, secure login, handled by Netlify Identity — not a password stored in this file. Only accounts specifically invited from the Netlify dashboard can get in.</p>
+        <p class="bh-note">The password is checked on the server, not stored in this page.</p>
       </div>
     `;
   }
@@ -1741,12 +2371,18 @@ function renderAdmin(){
       <button class="bh-tab ${nav.adminTab === 'post' ? 'on' : ''}" onclick="setAdminTab('post')">Post</button>
       <button class="bh-tab ${nav.adminTab === 'shop' ? 'on' : ''}" onclick="setAdminTab('shop')">Shop</button>
       <button class="bh-tab ${nav.adminTab === 'leads' ? 'on' : ''}" onclick="setAdminTab('leads')">Leads</button>
+      <button class="bh-tab ${nav.adminTab === 'reviews' ? 'on' : ''}" onclick="setAdminTab('reviews')">Reviews${reviews.filter(r=>r.status==='pending').length ? ` (${reviews.filter(r=>r.status==='pending').length})` : ''}</button>
+      <button class="bh-tab ${nav.adminTab === 'gifts' ? 'on' : ''}" onclick="setAdminTab('gifts')">Gift cards</button>
+      <button class="bh-tab ${nav.adminTab === 'help' ? 'on' : ''}" onclick="setAdminTab('help')">Help${helpMessages.filter(h=>h.status==='new').length ? ` (${helpMessages.filter(h=>h.status==='new').length})` : ''}</button>
       <button class="bh-tab ${nav.adminTab === 'settings' ? 'on' : ''}" onclick="setAdminTab('settings')">Settings</button>
     </div>
     ${nav.adminTab === 'queue' ? renderReviewQueue() : ''}
     ${nav.adminTab === 'post' ? renderPostManager() : ''}
     ${nav.adminTab === 'shop' ? renderShopManager() : ''}
     ${nav.adminTab === 'leads' ? renderLeadsManager() : ''}
+    ${nav.adminTab === 'reviews' ? renderReviewsAdmin() : ''}
+    ${nav.adminTab === 'gifts' ? renderGiftsAdmin() : ''}
+    ${nav.adminTab === 'help' ? renderHelpAdmin() : ''}
     ${nav.adminTab === 'settings' ? renderSettings() : ''}
   `;
 }
@@ -1755,8 +2391,8 @@ function setAdminTab(tab){ nav.adminTab = tab; render(); }
 
 // ---- Admin: review queue ----
 function renderReviewQueue(){
-  const pendingStories = stories.filter(s => s.status === 'pending');
-  const pendingReplies = replies.filter(r => r.status === 'pending');
+  const pendingStories = stories.filter(s => s.status === 'pending' && !isArchived(s));
+  const pendingReplies = replies.filter(r => r.status === 'pending' && !isArchived(r));
   return `
     <div class="bh-card" style="margin-bottom:16px;background:var(--blushp);border:none">
       <p style="font-size:.85rem;color:var(--grey);margin:0">Approving a story automatically files it into its folder below — no separate filing step. Same for replies: approve, and it appears on the story's page right away.</p>
@@ -1765,10 +2401,20 @@ function renderReviewQueue(){
     ${pendingStories.length === 0 ? `<p class="bh-empty">Nothing waiting right now.</p>` : ''}
     ${pendingStories.map(s => `
       <div class="bh-qrow">
-        <span class="txt"><span class="catpill">Will file into: ${escapeHtml(s.category)}</span><br>${escapeHtml(s.text)}</span>
+        <span class="txt">
+          <span class="bh-author">${escapeHtml(authorLabel(s))}</span>
+          ${escapeHtml(s.text)}
+          <div style="margin-top:8px;display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+            <span style="font-size:.72rem;color:var(--grey);font-weight:700">Category</span>
+            <select class="bh-select" style="width:auto;padding:5px 9px;font-size:.78rem" onchange="recategoriseStory('${s.id}', this.value)">
+              ${categories().map(cat => `<option value="${escapeHtml(cat)}" ${s.category === cat ? 'selected' : ''}>${escapeHtml(cat)}</option>`).join('')}
+            </select>
+          </div>
+        </span>
         <span class="actions">
           <button class="bh-approve" onclick="approveStory('${s.id}')">✓ Approve</button>
           <button class="bh-reject" onclick="rejectStory('${s.id}')">✕ Reject</button>
+          <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveStory('${s.id}', true)">Archive</button>
           <button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteStory('${s.id}')">Delete</button>
         </span>
       </div>
@@ -1780,16 +2426,56 @@ function renderReviewQueue(){
       const parentSnip = parent ? (parent.text.slice(0, 40) + '…') : 'a story';
       return `
         <div class="bh-qrow">
-          <span class="txt"><span class="catpill">Reply</span> to "${escapeHtml(parentSnip)}"<br>${escapeHtml(r.text)}</span>
+          <span class="txt"><span class="catpill">Reply</span> <span class="bh-author">${escapeHtml(authorLabel(r))}</span> to "${escapeHtml(parentSnip)}"<br>${escapeHtml(r.text)}</span>
           <span class="actions">
             <button class="bh-approve" onclick="approveReply('${r.id}')">✓ Approve</button>
             <button class="bh-reject" onclick="rejectReply('${r.id}')">✕ Reject</button>
+            <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveReply('${r.id}', true)">Archive</button>
             <button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteReply('${r.id}')">Delete</button>
           </span>
         </div>
       `;
     }).join('')}
+
+    ${renderArchiveSection()}
   `;
+}
+
+// Archived items sit quietly at the bottom, grouped by the day they were
+// archived, and drop off this screen after a week. They are NEVER deleted —
+// approved stories stay published in their folder the whole time.
+function renderArchiveSection(){
+  const archived = []
+    .concat(stories.filter(archivedRecently).map(s => ({ ...s, kind: 'story' })))
+    .concat(replies.filter(archivedRecently).map(r => ({ ...r, kind: 'reply' })))
+    .sort((a, b) => new Date(b.archived_at) - new Date(a.archived_at));
+
+  if (!archived.length) return '';
+
+  const byDay = {};
+  archived.forEach(item => {
+    const d = new Date(item.archived_at);
+    const key = d.toLocaleDateString('en-ZA', { weekday:'long', day:'numeric', month:'long' });
+    (byDay[key] = byDay[key] || []).push(item);
+  });
+
+  return `
+    <div style="margin-top:36px;padding-top:20px;border-top:1px solid var(--line)">
+      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:4px">Archived (${archived.length})</h3>
+      <p style="font-size:.78rem;color:var(--grey);margin:0 0 6px">Tidied off the list above. These clear from this screen after 7 days \u2014 nothing is deleted, and anything approved stays in its folder.</p>
+      ${Object.keys(byDay).map(day => `
+        <div class="bh-arch-day">${escapeHtml(day)}</div>
+        ${byDay[day].map(item => `
+          <div class="bh-arch-row">
+            <span class="t">
+              <span class="catpill">${item.kind === 'story' ? escapeHtml(item.category || 'Story') : 'Reply'}</span>
+              ${escapeHtml(String(item.text || '').slice(0, 90))}${String(item.text || '').length > 90 ? '\u2026' : ''}
+            </span>
+            <button class="bh-btn-ghost" style="font-size:.72rem" onclick="${item.kind === 'story' ? `archiveStory('${item.id}', false)` : `archiveReply('${item.id}', false)`}">Put back</button>
+          </div>
+        `).join('')}
+      `).join('')}
+    </div>`;
 }
 
 async function unpublishStory(id){
@@ -1814,6 +2500,34 @@ async function deleteReply(id){
   if (!confirm('Permanently delete this reply? This cannot be undone.')) return;
   await apiFetch('/replies', { method: 'DELETE', body: JSON.stringify({ id }) });
   await fetchReplies();
+  render();
+}
+
+function isArchived(x){ return !!(x && x.archived_at); }
+
+// Archived items drop off the admin screen after a week. They are never
+// deleted, and anything approved stays published in its folder.
+function archivedRecently(x){
+  if (!x || !x.archived_at) return false;
+  const days = (Date.now() - new Date(x.archived_at).getTime()) / 86400000;
+  return days <= 7;
+}
+
+async function archiveStory(id, on){
+  await apiFetch('/stories', { method: 'PATCH', body: JSON.stringify({ id, archived: on }) });
+  await fetchStories();
+  render();
+}
+
+async function archiveReply(id, on){
+  await apiFetch('/replies', { method: 'PATCH', body: JSON.stringify({ id, archived: on }) });
+  await fetchReplies();
+  render();
+}
+
+async function recategoriseStory(id, category){
+  await apiFetch('/stories', { method: 'PATCH', body: JSON.stringify({ id, category }) });
+  await fetchStories();
   render();
 }
 
@@ -2142,6 +2856,157 @@ async function downloadLeadCard(id, kind){
   render();
 }
 
+// ---- Admin: reviews ----
+function renderReviewsAdmin(){
+  const pending = reviews.filter(r => r.status === 'pending');
+  const live = reviews.filter(r => r.status === 'approved');
+  const row = (r, isPending) => {
+    const p = products.find(x => x.id === r.product_id);
+    return `
+      <div class="bh-qrow">
+        <span class="txt">
+          <span class="catpill">${escapeHtml(p ? p.name : 'Product')}</span>
+          <span class="bh-stars">${'\u2605'.repeat(r.rating)}${'\u2606'.repeat(5-r.rating)}</span>
+          <span class="bh-author" style="margin-left:6px">${escapeHtml(authorLabel(r))}</span>
+          <br>${escapeHtml(r.text)}
+        </span>
+        <span class="actions">
+          ${isPending ? `<button class="bh-approve" onclick="approveReview('${r.id}')">\u2713 Approve</button>` : ''}
+          ${isPending ? `<button class="bh-reject" onclick="rejectReview('${r.id}')">\u2715 Reject</button>` : ''}
+          <button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteReview('${r.id}')">Delete</button>
+        </span>
+      </div>`;
+  };
+  return `
+    <div class="bh-card" style="margin-bottom:16px;background:var(--blushp);border:none">
+      <p style="font-size:.85rem;color:var(--grey);margin:0">Reviews wait here until you approve them, the same as stories. Approved ones show on the product and count towards its star rating.</p>
+    </div>
+    <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:10px">Waiting (${pending.length})</h3>
+    ${pending.length === 0 ? `<p class="bh-empty">Nothing waiting right now.</p>` : pending.map(r => row(r, true)).join('')}
+    <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin:24px 0 10px">Published (${live.length})</h3>
+    ${live.length === 0 ? `<p class="bh-empty">None yet.</p>` : live.map(r => row(r, false)).join('')}`;
+}
+
+async function approveReview(id){ await apiFetch('/reviews', { method:'PATCH', body: JSON.stringify({ id, status:'approved' }) }); await fetchReviews(); render(); }
+async function rejectReview(id){ await apiFetch('/reviews', { method:'PATCH', body: JSON.stringify({ id, status:'rejected' }) }); await fetchReviews(); render(); }
+async function deleteReview(id){
+  if (!confirm('Delete this review for good?')) return;
+  await apiFetch('/reviews', { method:'DELETE', body: JSON.stringify({ id }) });
+  await fetchReviews(); render();
+}
+
+// ---- Admin: gift cards ----
+function renderGiftsAdmin(){
+  const STATUSES = ['Enquired','Paid','Sent'];
+  return `
+    <div class="bh-card" style="margin-bottom:16px;background:var(--blushp);border:none">
+      <p style="font-size:.85rem;color:var(--grey);margin:0">Gift card orders. Send the payment details, then once the money reflects, send the card itself \u2014 the picture is made for you.</p>
+    </div>
+    ${giftCards.length === 0 ? `<p class="bh-empty">No gift cards ordered yet.</p>` : ''}
+    ${giftCards.map(g => `
+      <div class="bh-lead">
+        <span class="who">
+          <strong>R${escapeHtml(g.amount)}</strong> for <strong>${escapeHtml(g.recipient)}</strong>
+          <br><span style="font-size:.78rem;color:var(--grey)">From ${escapeHtml(g.purchaser)}${g.phone ? ' \u00b7 ' + escapeHtml(g.phone) : ''}</span>
+          ${g.code ? `<br><span style="font-size:.75rem;color:var(--gold);font-weight:700;letter-spacing:.05em">${escapeHtml(g.code)}</span>` : ''}
+          ${g.note ? `<br><span style="font-size:.75rem;color:var(--grey)">\u201c${escapeHtml(g.note)}\u201d</span>` : ''}
+        </span>
+        <span class="bh-statuspill" onclick="cycleGiftStatus('${g.id}')" title="Tap to move it along">${escapeHtml(g.status)}</span>
+        <span class="bh-doc-actions">
+          <span class="bh-doc-group">
+            <span class="bh-doc-label">Payment</span>
+            ${g.phone ? `<button class="bh-wa-mini" onclick="sendGiftWhatsApp('${g.id}','payment')">Send</button>` : ''}
+          </span>
+          <span class="bh-doc-group">
+            <span class="bh-doc-label">The card</span>
+            ${g.phone ? `<button class="bh-wa-mini" onclick="sendGiftWhatsApp('${g.id}','card')">Send</button>` : ''}
+            <button class="bh-doc-mini" onclick="downloadGiftCard('${g.id}')">\u2193</button>
+          </span>
+          <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="deleteGiftCard('${g.id}')">\uD83D\uDDD1</button>
+        </span>
+      </div>`).join('')}
+    <p style="font-size:.78rem;color:var(--ok);min-height:1.1em;margin:6px 0 0">${escapeHtml(transient.giftStatus || '')}</p>
+    <p class="bh-note">Tap the status to move it: Enquired \u2192 Paid \u2192 Sent. \u201cThe card\u201d downloads the picture to attach in WhatsApp.</p>`;
+}
+
+async function cycleGiftStatus(id){
+  const STATUSES = ['Enquired','Paid','Sent'];
+  const g = giftCards.find(x => x.id === id);
+  const next = STATUSES[(STATUSES.indexOf(g.status) + 1) % STATUSES.length];
+  await apiFetch('/giftcards', { method:'PATCH', body: JSON.stringify({ id, status: next }) });
+  await fetchGiftCards(); render();
+}
+
+function sendGiftWhatsApp(id, kind){
+  const g = giftCards.find(x => x.id === id);
+  if (!g || !g.phone){ alert('No WhatsApp number saved for this order.'); return; }
+  let msg;
+  if (kind === 'payment'){
+    msg = `Hi ${g.purchaser}, thanks for your gift card order!\n\nGift card for ${g.recipient} \u2014 R${g.amount}\n\nPlease pay via EFT:\n${setting('bankDetails')}\n\nAs soon as payment reflects we'll send the card through.`;
+  } else {
+    msg = `Hi ${g.purchaser}, here is the gift card for ${g.recipient} \u2014 R${g.amount}.\n\nCode: ${g.code}\n\nThey can use it on anything in the shop. Thank you!`;
+  }
+  window.open(buildWhatsAppLink(g.phone, msg), '_blank');
+}
+
+async function downloadGiftCard(id){
+  const g = giftCards.find(x => x.id === id);
+  transient.giftStatus = 'Preparing the card\u2026';
+  render();
+  const canvas = document.createElement('canvas');
+  await drawGiftCard(canvas, g);
+  await downloadCanvas(canvas, 'bling-gift-card.jpg');
+  transient.giftStatus = 'Downloaded \u2014 attach it in WhatsApp.';
+  render();
+}
+
+async function deleteGiftCard(id){
+  if (!confirm('Delete this gift card order?')) return;
+  await apiFetch('/giftcards', { method:'DELETE', body: JSON.stringify({ id }) });
+  await fetchGiftCards(); render();
+}
+
+// ---- Admin: help messages ----
+function renderHelpAdmin(){
+  const isNew = h => h.status === 'new';
+  return `
+    <div class="bh-card" style="margin-bottom:16px;background:var(--blushp);border:none">
+      <p style="font-size:.85rem;color:var(--grey);margin:0">Messages from the Help page. Reply on WhatsApp, then mark them done so the list stays short.</p>
+    </div>
+    ${helpMessages.length === 0 ? `<p class="bh-empty">No messages.</p>` : ''}
+    ${helpMessages.map(h => `
+      <div class="bh-lead" style="${isNew(h) ? '' : 'opacity:.6'}">
+        <span class="who">
+          <strong>${escapeHtml(h.name || 'Someone')}</strong>
+          ${h.phone ? `<span style="font-size:.78rem;color:var(--grey)"> \u00b7 ${escapeHtml(h.phone)}</span>` : ''}
+          <br><span style="font-size:.85rem">${escapeHtml(h.message)}</span>
+        </span>
+        <span class="bh-statuspill" onclick="cycleHelpStatus('${h.id}')">${escapeHtml(h.status === 'new' ? 'New' : 'Done')}</span>
+        ${h.phone ? `<button class="bh-wa-mini" onclick="replyHelpWhatsApp('${h.id}')">Reply on WhatsApp</button>` : ''}
+        <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="deleteHelp('${h.id}')">\uD83D\uDDD1</button>
+      </div>`).join('')}`;
+}
+
+async function cycleHelpStatus(id){
+  const h = helpMessages.find(x => x.id === id);
+  const next = h.status === 'new' ? 'done' : 'new';
+  await apiFetch('/help', { method:'PATCH', body: JSON.stringify({ id, status: next }) });
+  await fetchHelp(); render();
+}
+
+function replyHelpWhatsApp(id){
+  const h = helpMessages.find(x => x.id === id);
+  if (!h.phone){ alert('No number saved for this message.'); return; }
+  const msg = `Hi ${h.name || 'there'}, thanks for getting in touch with Bling Happiness \u2014 you asked:\n\n\u201c${h.message}\u201d\n\n`;
+  window.open(buildWhatsAppLink(h.phone, msg), '_blank');
+}
+
+async function deleteHelp(id){
+  if (!confirm('Delete this message?')) return;
+  await apiFetch('/help', { method:'DELETE', body: JSON.stringify({ id }) });
+  await fetchHelp(); render();
+}
+
 // ---- Admin: settings ----
 function renderSettings(){
   const field = (key, label, help, rows) => `
@@ -2174,7 +3039,23 @@ function renderSettings(){
 
     <div class="bh-card" style="margin-bottom:18px">
       <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Delivery &amp; payment</h3>
+      ${field('announcement', 'Announcement bar', 'The strip of text right at the top of every page. Leave it empty to hide the bar.')}
       ${field('shippingCost', 'Shipping cost (R)', 'What customers pay for delivery. Collection is always free.')}
+      ${field('freeShippingOver', 'Free shipping over (R)', 'Orders above this amount ship free. Set it to 0 to always charge.')}
+      <div class="bh-set-block">
+        <label class="bh-label">Story categories</label>
+        <p class="bh-set-help">The folders people choose from when sharing a story. Renaming one moves every story already in it.</p>
+        <div id="catList">
+          ${categories().map((cat, i) => `
+            <div class="bh-cat-row">
+              <input class="bh-input bh-cat-input" data-idx="${i}" value="${escapeHtml(cat)}">
+              <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeCategory(${i})">Remove</button>
+            </div>`).join('')}
+        </div>
+        <button class="bh-btn-outline" style="font-size:.8rem;padding:8px 14px;margin-top:6px" onclick="addCategory()">+ Add a category</button>
+        <p id="catStatus" style="font-size:.78rem;color:var(--grey);min-height:1.1em;margin:8px 0 0"></p>
+      </div>
+
       <div class="bh-set-block">
         <label class="bh-label">Card colours</label>
         <p class="bh-set-help">The colour new pictures start with. You can also change it on the Post tab before making each one.</p>
@@ -2212,7 +3093,36 @@ function renderSettings(){
   `;
 }
 
-const SETTING_KEYS = ['shippingCost','leadTimeLabel','storyCardTag','cardTheme','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
+const SETTING_KEYS = ['shippingCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
+
+function readCategoryInputs(){
+  return Array.from(document.querySelectorAll('.bh-cat-input'))
+    .map(el => el.value.trim())
+    .filter(Boolean);
+}
+
+function addCategory(){
+  const list = readCategoryInputs();
+  list.push('New category');
+  settings.categories = JSON.stringify(list);
+  render();
+}
+
+function removeCategory(i){
+  const list = readCategoryInputs();
+  if (list.length <= 1){
+    alert('Keep at least one category.');
+    return;
+  }
+  const inUse = stories.filter(s => s.category === list[i] && s.status === 'approved').length;
+  const msg = inUse
+    ? `${inUse} published ${inUse === 1 ? 'story is' : 'stories are'} in "${list[i]}". Removing it will leave ${inUse === 1 ? 'it' : 'them'} without a folder until you move ${inUse === 1 ? 'it' : 'them'}. Remove anyway?`
+    : `Remove "${list[i]}"?`;
+  if (!confirm(msg)) return;
+  list.splice(i, 1);
+  settings.categories = JSON.stringify(list);
+  render();
+}
 
 async function saveSettings(){
   const status = document.getElementById('settingsStatus');
@@ -2221,6 +3131,15 @@ async function saveSettings(){
     const el = document.getElementById('set_' + k);
     if (el) updates[k] = el.value;
   });
+
+  const cats = readCategoryInputs();
+  if (cats.length){
+    updates.categories = JSON.stringify(cats);
+  } else {
+    status.style.color = 'var(--risk)';
+    status.textContent = 'Keep at least one category.';
+    return;
+  }
   if (updates.shippingCost !== undefined && isNaN(parseFloat(updates.shippingCost))){
     status.style.color = 'var(--risk)';
     status.textContent = 'Shipping cost must be a number, like 99.';
@@ -2242,6 +3161,7 @@ async function saveSettings(){
 function resetSettings(){
   if (!confirm('Put every setting back to how it started? Anything you have changed here will be lost.')) return;
   SETTING_KEYS.forEach(k => {
+    if (k === 'categories') return;
     const el = document.getElementById('set_' + k);
     if (el) el.value = DEFAULT_SETTINGS[k];
   });
@@ -2253,8 +3173,8 @@ function resetSettings(){
 // ---- Admin: post manager ----
 function renderPostManager(){
   const approvedStories = stories.filter(s => s.status === 'approved');
-  const readyToPost = approvedStories.filter(s => !s.posted);
-  const alreadyPosted = approvedStories.filter(s => s.posted);
+  const readyToPost = approvedStories.filter(s => !s.posted && !isArchived(s));
+  const alreadyPosted = approvedStories.filter(s => s.posted && !isArchived(s));
   const compileStory = stories.find(s => s.id === transient.compileStoryId);
   const compileReplies = compileStory ? replies.filter(r => r.storyId === compileStory.id && r.status === 'approved') : [];
 
@@ -2262,6 +3182,9 @@ function renderPostManager(){
     <div class="bh-card" style="margin-bottom:20px">
       <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:10px">Ready to post (${readyToPost.length})</h3>
       <p style="font-size:.83rem;color:var(--grey);margin-bottom:10px">Approved stories, turned into a finished picture with one tap. Sized for Instagram Stories.</p>
+      <p style="font-size:.78rem;color:var(--grey);margin:0 0 14px;background:var(--blushp);border-radius:8px;padding:10px 12px">
+        <strong>To post:</strong> download the picture, then tap <strong>Copy link</strong> and paste it into Instagram's link sticker when you add the Story. That link opens this exact story, so people can read the replies and add their own.
+      </p>
       <div class="bh-grid2" style="margin-bottom:6px">
         <div>
           <label class="bh-label">Wording at the bottom</label>
@@ -2280,8 +3203,11 @@ function renderPostManager(){
       ${readyToPost.length === 0 ? `<p class="bh-empty">Nothing waiting to be posted right now.</p>` : ''}
       ${readyToPost.map(s => `
         <div class="bh-post-item">
-          <span class="snip">"${escapeHtml(s.text.length > 90 ? s.text.slice(0, 90) + '…' : s.text)}"</span>
-          <button class="bh-btn" onclick="downloadStoryCard('${s.id}')">Download as JPEG →</button>
+          <span class="snip">${s.pseudonym ? `<span class="bh-author">${escapeHtml(s.pseudonym)}</span> ` : ''}"${escapeHtml(s.text.length > 90 ? s.text.slice(0, 90) + '…' : s.text)}"</span>
+          <span style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="bh-btn" onclick="downloadStoryCard('${s.id}')">Download as JPEG →</button>
+            <button class="bh-btn-outline" style="font-size:.8rem;padding:9px 14px" onclick="copyStoryLink('${s.id}', this)">Copy link</button>
+          </span>
         </div>
       `).join('')}
       <p style="font-size:.78rem;color:var(--ok);margin-top:8px">${escapeHtml(transient.postDownloadStatus)}</p>
@@ -2291,6 +3217,7 @@ function renderPostManager(){
           <div class="bh-post-item" style="opacity:.6">
             <span class="snip">"${escapeHtml(s.text.length > 90 ? s.text.slice(0, 90) + '…' : s.text)}"</span>
             <span class="bh-postedtag">Downloaded ✓</span>
+            <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveStory('${s.id}', true)">Archive</button>
           </div>
         `).join('')}
       ` : ''}
@@ -2325,11 +3252,24 @@ function toggleCompileCheck(id){ transient.compileChecked[id] = !transient.compi
 
 async function downloadStoryCard(id){
   const story = stories.find(s => s.id === id);
+
+  // Read the wording and colour BEFORE re-rendering.
+  const tagEl = document.getElementById('cardTagInput');
+  let tagText = tagEl ? tagEl.value.trim() : '';
+  const themeEl = document.getElementById('cardThemeSelect');
+  if (themeEl) transient.cardTheme = themeEl.value;
+
+  // If this person chose a pseudonym, and the wording hasn't been
+  // changed by hand, credit them by that pseudonym instead of "Shared anonymously".
+  const pseud = (story && story.pseudonym || '').trim();
+  if (pseud && (!tagText || tagText === setting('storyCardTag'))){
+    tagText = 'Shared by ' + pseud;
+  }
+
   transient.postDownloadStatus = 'Preparing image…';
   render();
   const canvas = document.getElementById('exportCanvas');
-  const tagEl = document.getElementById('cardTagInput');
-  await drawStoryCard(canvas, story.text, tagEl ? tagEl.value.trim() : '');
+  await drawStoryCard(canvas, story.text, tagText);
   await downloadCanvas(canvas, 'bling-happiness-story.jpg');
   await apiFetch('/stories', { method: 'PATCH', body: JSON.stringify({ id, posted: true }) });
   await fetchStories();
@@ -2339,7 +3279,9 @@ async function downloadStoryCard(id){
 
 async function createRoundupCard(){
   const compileReplies = replies.filter(r => r.storyId === transient.compileStoryId && r.status === 'approved');
-  const chosen = compileReplies.filter(r => transient.compileChecked[r.id]).map(r => r.text);
+  const chosen = compileReplies
+    .filter(r => transient.compileChecked[r.id])
+    .map(r => (r.pseudonym ? r.text + '  — ' + r.pseudonym : r.text));
   if (chosen.length === 0){
     transient.compileStatus = 'Pick at least one reply to include.';
     render();
@@ -2365,17 +3307,19 @@ async function createRoundupCard(){
 async function boot(){
   render(); // show the loading state immediately
   try {
-    await Promise.all([fetchStories(), fetchReplies(), fetchProducts(), fetchSettings()]);
+    await Promise.all([fetchStories(), fetchReplies(), fetchProducts(), fetchSettings(), fetchReviews()]);
   } catch (e) {
     transient.loadError = "Couldn't reach the server just now — check your connection and reload.";
   }
+  // If someone arrived on a story link, open that story instead of the home page.
+  openDeepLink();
   render();
 }
 
 async function onAdminLogin(){
   nav.adminUnlocked = true;
   try {
-    await Promise.all([fetchStories(), fetchReplies(), fetchLeads()]);
+    await Promise.all([fetchStories(), fetchReplies(), fetchLeads(), fetchReviews(), fetchHelp(), fetchGiftCards()]);
   } catch (e) {
     transient.loadError = "Logged in, but couldn't load admin data — try reloading.";
   }
