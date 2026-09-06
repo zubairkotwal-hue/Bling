@@ -60,6 +60,7 @@
   .bh-raillbl .s{ font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; opacity:.85; margin-top:5px; }
   .bh-railpill{ position:absolute; top:9px; left:9px; z-index:3; font-size:.57rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:4px 8px; border-radius:20px; }
   .bh-railpill.shop{ background:var(--goldl); color:var(--ink); }
+  .bh-railpill.order{ background:#fdf3e3; color:#a6752f; }
   .bh-railpill.story{ background:rgba(255,255,255,.92); color:var(--plum); }
 
   .bh-badges{ display:grid; grid-template-columns:1fr 1fr; gap:22px 12px; padding:30px 22px 36px; background:#fffdf9; margin-top:26px; }
@@ -90,7 +91,8 @@
   .bh-menu-list{ list-style:none; margin:0; padding:0; }
   .bh-menu-list li{ display:flex; align-items:center; justify-content:space-between; padding:15px 2px; color:#fffdf9; font-size:1.05rem; border-bottom:1px solid rgba(255,255,255,.09); cursor:pointer; }
   .bh-menu-list li.sub{ padding-left:16px; font-size:.92rem; color:rgba(255,253,249,.72); }
-  .bh-menu-list li span{ opacity:.5; }
+  .bh-menu-list li span{ opacity:.5; transition:transform .18s; display:inline-block; }
+  .bh-menu-list li span.open{ transform:rotate(90deg); opacity:.9; }
   .bh-menu-foot{ margin-top:24px; color:rgba(255,255,255,.55); font-size:.82rem; cursor:pointer; }
 
 /* gift card preview */
@@ -1290,10 +1292,11 @@ async function fetchReplies(){
   replies = (rows || []).map(r => ({ ...r, storyId: r.storyId || r.story_id }));
 }
 async function fetchProducts(){ products = await apiFetch('/products'); }
-async function fetchLeads(){ leads = await apiFetch('/leads'); }
+async function fetchLeads(){ leads = await apiFetch('/leads'); clearSoldCache(); }
 async function fetchReviews(){ reviews = await apiFetch('/reviews'); }
 async function fetchHelp(){ helpMessages = await apiFetch('/help'); }
 async function fetchGiftCards(){ giftCards = await apiFetch('/giftcards'); }
+async function fetchDiscounts(){ discounts = await apiFetch('/discounts'); }
 async function fetchSettings(){
   const saved = await apiFetch('/settings');
   settings = Object.assign({}, DEFAULT_SETTINGS, saved || {});
@@ -1307,7 +1310,8 @@ let leads = [];
 let reviews = [];
 let helpMessages = [];
 let giftCards = [];
-let nav = { menuOpen: false, view: 'home', activeFolder: null, activeStoryId: null, adminUnlocked: false, adminTab: 'queue' };
+let discounts = [];
+let nav = { menuOpen: false, menuOpenShop: false, menuOpenStories: false, view: 'home', activeFolder: null, activeStoryId: null, adminUnlocked: false, adminTab: 'queue' };
 let transient = {
   submitSent: false,
   viewingProductId: null,
@@ -1315,12 +1319,16 @@ let transient = {
   checkingOut: false,
   deliveryMethod: 'Collection',
   filterCategory: '',
+  shopSeeAll: '',
   filterColour: '',
   filterSize: '',
-  sortBy: 'newest',
+  sortBy: 'recent',
   voucherAmount: 100,
   cardTag: '',
   giftStatus: '',
+  discountCode: '',
+  discountAmount: 0,
+  discountNote: '',
   cardTheme: '',
   giftAmount: 300,
   giftRecipient: '',
@@ -1368,7 +1376,7 @@ function shippingFor(method){
   if (threshold > 0 && cartSubtotal() >= threshold) return 0;
   return shippingCost();
 }
-function cartTotal(method){ return cartSubtotal() + shippingFor(method || transient.deliveryMethod); }
+function cartTotal(method){ return Math.max(0, cartSubtotal() - (transient.discountAmount || 0)) + shippingFor(method || transient.deliveryMethod); }
 
 function addToCart(productId, size, toOrder){
   const p = products.find(x => x.id === productId);
@@ -1451,7 +1459,11 @@ function toggleMenu(){ nav.menuOpen = !nav.menuOpen; render(); }
 function closeMenu(){ nav.menuOpen = false; }
 
 function renderMenu(){
-  const cats = categoriesInShop();
+  const shopCats = SHOP_CATEGORIES.filter(cat => cat !== 'Gift Voucher');
+  const storyCats = categories();
+  const openShop = nav.menuOpenShop;
+  const openStories = nav.menuOpenStories;
+
   return `
     <div class="bh-menu">
       <div class="bh-menu-top">
@@ -1460,15 +1472,41 @@ function renderMenu(){
         <span style="width:20px"></span>
       </div>
       <ul class="bh-menu-list">
-        <li onclick="closeMenu(); goHome()">Stories <span>\u2192</span></li>
+        <li onclick="toggleMenuSection('Stories')">Stories <span class="${openStories ? 'open' : ''}">\u2192</span></li>
+        ${openStories ? storyCats.map(cat => `
+          <li class="sub" onclick="closeMenu(); openFolder('${escapeHtml(cat)}')">${escapeHtml(cat)}</li>`).join('') : ''}
+
         <li onclick="closeMenu(); goSubmit()">Share your story</li>
-        <li onclick="closeMenu(); goShop()">Shop <span>\u2192</span></li>
-        ${cats.slice(0, 6).map(cat => `<li class="sub" onclick="closeMenu(); goShop(); setFilter('Category','${escapeHtml(cat)}')">${escapeHtml(cat)}</li>`).join('')}
+
+        <li onclick="toggleMenuSection('Shop')">Shop <span class="${openShop ? 'open' : ''}">\u2192</span></li>
+        ${openShop ? `
+          <li class="sub" onclick="closeMenu(); goShop(); clearFilters()">Everything</li>
+          ${shopCats.map(cat => `
+            <li class="sub" onclick="closeMenu(); goShopCategory('${escapeHtml(cat)}')">${escapeHtml(cat)}</li>`).join('')}
+        ` : ''}
+
         <li onclick="closeMenu(); goGiftCard()">Gift Cards</li>
-        <li onclick="closeMenu(); goHelp()">Help <span>\u2192</span></li>
+        <li onclick="closeMenu(); goHelp()">Help</li>
       </ul>
       <div class="bh-menu-foot" onclick="closeMenu(); goAdmin()">\uD83D\uDD12 &nbsp;Admin</div>
     </div>`;
+}
+
+function toggleMenuSection(which){
+  if (which === 'Shop') nav.menuOpenShop = !nav.menuOpenShop;
+  else nav.menuOpenStories = !nav.menuOpenStories;
+  render();
+}
+
+function goShopCategory(cat){
+  nav.view = 'shop';
+  nav.menuOpen = false;
+  transient.viewingProductId = null;
+  transient.viewingCart = false;
+  transient.checkingOut = false;
+  transient.filterCategory = cat;
+  transient.shopSeeAll = cat;
+  render();
 }
 
 function goGiftCard(){
@@ -1480,7 +1518,7 @@ function goGiftCard(){
 }
 function goHelp(){ nav.view = 'help'; nav.menuOpen = false; transient.helpSent = false; render(); }
 
-function goShop(){ nav.menuOpen = false; nav.view = 'shop'; transient.viewingProductId = null; transient.viewingCart = false; transient.checkingOut = false; transient.orderSent = false; render(); }
+function goShop(){ nav.menuOpen = false; nav.view = 'shop'; transient.shopSeeAll = ''; transient.viewingProductId = null; transient.viewingCart = false; transient.checkingOut = false; transient.orderSent = false; render(); }
 async function goAdmin(){ nav.menuOpen = false;
   nav.view = 'admin';
   render();
@@ -1493,7 +1531,7 @@ async function goAdmin(){ nav.menuOpen = false;
   try {
     await Promise.all([
       fetchStories().catch(()=>{}), fetchReplies().catch(()=>{}), fetchLeads().catch(()=>{}),
-      fetchReviews().catch(()=>{}), fetchHelp().catch(()=>{}), fetchGiftCards().catch(()=>{}),
+      fetchReviews().catch(()=>{}), fetchHelp().catch(()=>{}), fetchGiftCards().catch(()=>{}), fetchDiscounts().catch(()=>{}),
     ]);
     transient.loadError = '';
   } catch (e) {
@@ -1848,6 +1886,13 @@ function renderShop(){
           ${renderCheckoutSummary()}
         </div>
 
+        <label class="bh-label">Discount code</label>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <input id="discountInput" class="bh-input" placeholder="Enter a code" value="${escapeHtml(transient.discountCode)}" style="flex:1;text-transform:uppercase">
+          <button class="bh-btn-outline" style="padding:10px 16px;font-size:.82rem" onclick="applyDiscount()">Apply</button>
+        </div>
+        <p id="discountNote" style="font-size:.78rem;min-height:1.1em;margin:0 0 14px;color:${transient.discountAmount ? 'var(--ok)' : 'var(--risk)'}">${escapeHtml(transient.discountNote)}</p>
+
         <label class="bh-label">Your name</label>
         <input id="orderBuyer" class="bh-input" placeholder="Full name" style="margin-bottom:14px">
         <label class="bh-label">WhatsApp number</label>
@@ -1981,96 +2026,181 @@ function renderShop(){
       </div>`;
   }
 
-  // 4. THUMBNAIL GRID
-  const shown = visibleProducts();
-  const cats = categoriesInShop();
+  // 4. THE SHOP
   const cols = coloursInShop();
   const sizes = sizesInShop();
   const filtering = transient.filterCategory || transient.filterColour || transient.filterSize;
+  const seeAll = transient.shopSeeAll;
 
-  return `
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px">
-      <div>
-        <h2 class="bh-serif" style="font-size:1.3rem;color:var(--plum);margin:0 0 2px">Shop</h2>
-        <p style="font-size:.85rem;color:var(--grey);margin:0">Kept separate from the stories, on purpose.</p>
+  const productCard = (p) => `
+    <div class="bh-railcard" onclick="viewProduct('${p.id}')">
+      ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="" loading="lazy">` : `<div class="bh-railcard-fill"></div>`}
+      ${isMadeToOrder(p, (productSizes(p)[0] || '')) && p.stock_status === 'made_to_order' ? `<span class="bh-railpill order">To order</span>` : ''}
+      <div class="bh-railveil"></div>
+      <div class="bh-raillbl">
+        <div class="t">${escapeHtml(p.name)}</div>
+        <div class="s">${isVoucher(p) ? 'Gift card' : 'R' + escapeHtml(p.price)}${reviewsFor(p.id).length ? ' \u00b7 ' + averageRating(p.id).toFixed(1) + '\u2605' : ''}</div>
       </div>
-      <button class="bh-btn-outline" onclick="viewCart()">Basket${cartCount() ? ` (${cartCount()})` : ''}</button>
-    </div>
+    </div>`;
 
-    ${products.length === 0 ? '' : `
+  const controls = `
     <div class="bh-filters">
-      ${cats.length ? `
-        <div class="bh-filter-row">
-          ${cats.map(cat => `<button class="bh-chip ${transient.filterCategory === cat ? 'on' : ''}" onclick="setFilter('Category','${escapeHtml(cat)}')">${escapeHtml(cat)}</button>`).join('')}
-        </div>` : ''}
-
       ${cols.length ? `
         <div class="bh-filter-row">
           <span class="bh-filter-label">Colour</span>
-          ${cols.map(col => `<button class="bh-swatch ${transient.filterColour === col ? 'on' : ''}" title="${escapeHtml(col)}" onclick="setFilter('Colour','${escapeHtml(col)}')"><span style="background:${colourHex(col)}"></span>${escapeHtml(col)}</button>`).join('')}
+          ${cols.map(col => `<button class="bh-swatch ${transient.filterColour === col ? 'on' : ''}" onclick="setFilter('Colour','${escapeHtml(col)}')"><span style="background:${colourHex(col)}"></span>${escapeHtml(col)}</button>`).join('')}
         </div>` : ''}
-
       ${sizes.length ? `
         <div class="bh-filter-row">
           <span class="bh-filter-label">Size</span>
           ${sizes.map(s => `<button class="bh-chip sm ${transient.filterSize === s ? 'on' : ''}" onclick="setFilter('Size','${escapeHtml(s)}')">${escapeHtml(s)}</button>`).join('')}
         </div>` : ''}
-
       <div class="bh-filter-row">
         <span class="bh-filter-label">Sort</span>
         <select class="bh-sort" onchange="setSort(this.value)">
-          <option value="newest"     ${transient.sortBy==='newest'?'selected':''}>Newest first</option>
-          <option value="oldest"     ${transient.sortBy==='oldest'?'selected':''}>Oldest first</option>
+          <option value="recent"     ${transient.sortBy==='recent'?'selected':''}>Recently sold</option>
+          <option value="in_stock"   ${transient.sortBy==='in_stock'?'selected':''}>In stock first</option>
+          <option value="size"       ${transient.sortBy==='size'?'selected':''}>By size</option>
           <option value="price_low"  ${transient.sortBy==='price_low'?'selected':''}>Price: low to high</option>
           <option value="price_high" ${transient.sortBy==='price_high'?'selected':''}>Price: high to low</option>
-          <option value="name"       ${transient.sortBy==='name'?'selected':''}>Name A\u2013Z</option>
+          <option value="newest"     ${transient.sortBy==='newest'?'selected':''}>Newest first</option>
         </select>
-        ${filtering ? `<button class="bh-btn-ghost" style="font-size:.78rem" onclick="clearFilters()">Clear filters</button>` : ''}
+        ${filtering ? `<button class="bh-btn-ghost" style="font-size:.78rem" onclick="clearFilters()">Clear</button>` : ''}
       </div>
-    </div>`}
+    </div>`;
 
-    ${products.length === 0 ? `<p class="bh-empty">Nothing in the shop yet \u2014 check back soon.</p>` : ''}
-    ${products.length && shown.length === 0 ? `<p class="bh-empty">Nothing matches those filters. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearFilters()">Clear them</button></p>` : ''}
-
-    <div class="bh-shop-grid">
-      ${shown.map(p => {
-        const sz = allSizesFor(p).all;
-        const pc = productColours(p);
-        return `
+  // ---- "See all" view: one category, full grid ----
+  if (seeAll){
+    const shown = visibleProducts(products.filter(p => p.category === seeAll));
+    return `
+      <button class="bh-btn-ghost" onclick="backToShop()" style="margin-bottom:12px">\u2190 All departments</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
+        <h2 class="bh-serif" style="font-size:1.35rem;color:var(--plum);margin:0">${escapeHtml(seeAll)}</h2>
+        <button class="bh-btn-outline" onclick="viewCart()">Basket${cartCount() ? ` (${cartCount()})` : ''}</button>
+      </div>
+      ${controls}
+      ${shown.length === 0 ? `<p class="bh-empty">Nothing matches those filters. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearFilters()">Clear them</button></p>` : ''}
+      <div class="bh-shop-grid">${shown.map(p => `
         <div class="bh-shop-card" onclick="viewProduct('${p.id}')">
-          ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async">` : `<div style="aspect-ratio:1;background:var(--blushp)"></div>`}
+          ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="${escapeHtml(p.name)}" loading="lazy">` : `<div style="aspect-ratio:1;background:var(--blushp)"></div>`}
           <div class="body">
             <div class="name">${escapeHtml(p.name)}</div>
             <div class="price">${isVoucher(p) ? 'From R' + VOUCHER_MIN : 'R' + escapeHtml(p.price)}</div>
-            ${pc.length ? `<div class="bh-card-swatches">${pc.slice(0,5).map(col => `<i title="${escapeHtml(col)}" style="background:${colourHex(col)}"></i>`).join('')}</div>` : ''}
-            ${!isVoucher(p) && sz.length ? `<div class="bh-shop-sizes">${sz.length === 1 ? escapeHtml(sz[0]) : sz.length + ' sizes'}</div>` : ''}
+            ${productColours(p).length ? `<div class="bh-card-swatches">${productColours(p).slice(0,5).map(col => `<i style="background:${colourHex(col)}"></i>`).join('')}</div>` : ''}
             ${reviewsFor(p.id).length ? `<div class="bh-shop-sizes">${stars(averageRating(p.id), '.72rem')} <span style="opacity:.7">(${reviewsFor(p.id).length})</span></div>` : ''}
             ${p.stock_status === 'made_to_order' ? `<div class="bh-shop-sizes" style="color:#a6752f;font-weight:700">${escapeHtml(setting('leadTimeLabel'))}</div>` : ''}
           </div>
-        </div>`;
-      }).join('')}
-    </div>`;
+        </div>`).join('')}</div>`;
+  }
+
+  // ---- filtering by colour/size cuts across categories: show one grid ----
+  if (transient.filterColour || transient.filterSize || transient.filterCategory){
+    const shown = visibleProducts();
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
+        <h2 class="bh-serif" style="font-size:1.35rem;color:var(--plum);margin:0">${escapeHtml(transient.filterCategory || 'Shop')}</h2>
+        <button class="bh-btn-outline" onclick="viewCart()">Basket${cartCount() ? ` (${cartCount()})` : ''}</button>
+      </div>
+      ${controls}
+      ${shown.length === 0 ? `<p class="bh-empty">Nothing matches those filters. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearFilters()">Clear them</button></p>` : ''}
+      <div class="bh-shop-grid">${shown.map(p => `
+        <div class="bh-shop-card" onclick="viewProduct('${p.id}')">
+          ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="${escapeHtml(p.name)}" loading="lazy">` : `<div style="aspect-ratio:1;background:var(--blushp)"></div>`}
+          <div class="body">
+            <div class="name">${escapeHtml(p.name)}</div>
+            <div class="price">${isVoucher(p) ? 'From R' + VOUCHER_MIN : 'R' + escapeHtml(p.price)}</div>
+            ${reviewsFor(p.id).length ? `<div class="bh-shop-sizes">${stars(averageRating(p.id), '.72rem')}</div>` : ''}
+          </div>
+        </div>`).join('')}</div>`;
+  }
+
+  // ---- default: a carousel per category, each with See all ----
+  const groups = SHOP_CATEGORIES
+    .map(cat => ({ cat, items: visibleProducts(products.filter(p => p.category === cat)) }))
+    .filter(g => g.items.length);
+  const uncategorised = visibleProducts(products.filter(p => !p.category));
+
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+      <div>
+        <h2 class="bh-serif" style="font-size:1.35rem;color:var(--plum);margin:0 0 2px">Shop</h2>
+        <p style="font-size:.85rem;color:var(--grey);margin:0">Kept separate from the stories, on purpose.</p>
+      </div>
+      <button class="bh-btn-outline" onclick="viewCart()">Basket${cartCount() ? ` (${cartCount()})` : ''}</button>
+    </div>
+
+    ${products.length === 0 ? `<p class="bh-empty">Nothing in the shop yet \u2014 check back soon.</p>` : controls}
+
+    ${groups.map(g => `
+      <div class="bh-rail-wrap" style="padding:14px 0 4px">
+        <div class="bh-rail-head" style="padding:0 0 10px">
+          <h3 class="bh-serif">${escapeHtml(g.cat)}</h3>
+          <button class="bh-btn-ghost" style="font-size:.78rem" onclick="showCategory('${escapeHtml(g.cat)}')">See all (${g.items.length}) \u2192</button>
+        </div>
+        <div class="bh-rail" style="padding-left:0;padding-right:0">
+          ${g.items.slice(0, 8).map(productCard).join('')}
+        </div>
+      </div>`).join('')}
+
+    ${uncategorised.length ? `
+      <div class="bh-rail-wrap" style="padding:14px 0 4px">
+        <div class="bh-rail-head" style="padding:0 0 10px"><h3 class="bh-serif">More</h3></div>
+        <div class="bh-rail" style="padding-left:0;padding-right:0">
+          ${uncategorised.slice(0, 8).map(productCard).join('')}
+        </div>
+      </div>` : ''}`;
 }
 
-function visibleProducts(){
-  let list = products.slice();
+// How recently each product last sold, worked out from real orders.
+let _soldCache = null;
+function lastSoldAt(productId){
+  if (!_soldCache){
+    _soldCache = {};
+    leads.forEach(l => {
+      let items = [];
+      try { items = typeof l.items === 'string' ? JSON.parse(l.items || '[]') : (l.items || []); } catch (e) {}
+      const when = new Date(l.created_at || 0).getTime();
+      (items || []).forEach(i => {
+        if (!i.productId) return;
+        if (!_soldCache[i.productId] || when > _soldCache[i.productId]) _soldCache[i.productId] = when;
+      });
+    });
+  }
+  return _soldCache[productId] || 0;
+}
+function clearSoldCache(){ _soldCache = null; }
 
-  if (transient.filterCategory) list = list.filter(p => p.category === transient.filterCategory);
-  if (transient.filterColour)   list = list.filter(p => productColours(p).includes(transient.filterColour));
-  if (transient.filterSize)     list = list.filter(p => allSizesFor(p).all.includes(transient.filterSize));
+function inStockCount(p){ return productSizes(p).length; }
+
+function visibleProducts(list){
+  let out = (list || products).slice();
+
+  if (transient.filterCategory) out = out.filter(p => p.category === transient.filterCategory);
+  if (transient.filterColour)   out = out.filter(p => productColours(p).includes(transient.filterColour));
+  if (transient.filterSize)     out = out.filter(p => allSizesFor(p).all.includes(transient.filterSize));
 
   const num = v => parseFloat(v) || 0;
+  const newest = (a,b) => new Date(b.created_at||0) - new Date(a.created_at||0);
+
   switch (transient.sortBy){
-    case 'price_low':  list.sort((a,b) => num(a.price) - num(b.price)); break;
-    case 'price_high': list.sort((a,b) => num(b.price) - num(a.price)); break;
-    case 'name':       list.sort((a,b) => String(a.name).localeCompare(String(b.name))); break;
-    case 'oldest':     list.sort((a,b) => new Date(a.created_at||0) - new Date(b.created_at||0)); break;
-    default:           list.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
+    case 'in_stock':
+      out.sort((a,b) => (inStockCount(b) > 0) - (inStockCount(a) > 0) || newest(a,b));
+      break;
+    case 'size':
+      out.sort((a,b) => String(a.size_type||'').localeCompare(String(b.size_type||''))
+        || allSizesFor(b).all.length - allSizesFor(a).all.length || newest(a,b));
+      break;
+    case 'price_low':  out.sort((a,b) => num(a.price) - num(b.price)); break;
+    case 'price_high': out.sort((a,b) => num(b.price) - num(a.price)); break;
+    case 'newest':     out.sort(newest); break;
+    default:
+      // Recently sold first — what is actually moving.
+      out.sort((a,b) => lastSoldAt(b.id) - lastSoldAt(a.id) || newest(a,b));
   }
-  return list;
+  return out;
 }
 
-// Only offer sizes/colours that actually exist in the shop.
+// Only offer sizes and colours that actually exist in the shop.
 function sizesInShop(){
   const set = new Set();
   products.forEach(p => allSizesFor(p).all.forEach(s => set.add(s)));
@@ -2094,7 +2224,18 @@ function clearFilters(){
   transient.filterCategory = '';
   transient.filterColour = '';
   transient.filterSize = '';
+  transient.shopSeeAll = '';
   render();
+}
+
+function showCategory(cat){
+  transient.shopSeeAll = cat;
+  transient.filterCategory = '';
+  render();
+}
+function backToShop(){
+  transient.shopSeeAll = '';
+  clearFilters();
 }
 
 function viewProduct(id){
@@ -2175,8 +2316,42 @@ function renderCheckoutSummary(){
   return `
     ${cart.map(i => `<div class="bh-cart-line"><span>${i.qty} \u00d7 ${escapeHtml(i.name)}${i.size ? ' (' + escapeHtml(i.size) + ')' : ''}${i.toOrder ? ' \u2014 ' + escapeHtml(setting('leadTimeLabel')) : ''}</span><span>R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}</span></div>`).join('')}
     <div class="bh-cart-line"><span>Subtotal</span><span>R${cartSubtotal().toFixed(0)}</span></div>
+    ${transient.discountAmount ? `<div class="bh-cart-line" style="color:var(--ok)"><span>Discount (${escapeHtml(transient.discountCode)})</span><span>\u2212R${transient.discountAmount.toFixed(0)}</span></div>` : ''}
     <div class="bh-cart-line"><span>${method === 'Shipping' ? 'Shipping' : 'Collection'}</span><span>${ship ? 'R' + ship.toFixed(0) : 'Free'}</span></div>
     <div class="bh-cart-line bh-cart-total"><span>Total</span><span>R${cartTotal(method).toFixed(0)}</span></div>`;
+}
+
+async function applyDiscount(){
+  const input = document.getElementById('discountInput');
+  const note = document.getElementById('discountNote');
+  const code = (input ? input.value : '').trim().toUpperCase();
+  if (!code){
+    transient.discountCode = ''; transient.discountAmount = 0; transient.discountNote = '';
+    render(); return;
+  }
+  note.textContent = 'Checking\u2026';
+  try {
+    const res = await fetch(API + '/discounts?check=1', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, subtotal: cartSubtotal() }),
+    }).then(r => r.json());
+
+    if (res.ok){
+      transient.discountCode = res.code;
+      transient.discountAmount = res.amount;
+      transient.discountNote = res.kind === 'percent'
+        ? `${res.value}% off applied \u2014 R${res.amount} saved.`
+        : `R${res.amount} off applied.`;
+    } else {
+      transient.discountCode = ''; transient.discountAmount = 0;
+      transient.discountNote = res.reason || 'That code cannot be used.';
+    }
+  } catch (e) {
+    transient.discountCode = ''; transient.discountAmount = 0;
+    transient.discountNote = "Couldn't check that code \u2014 please try again.";
+  }
+  render();
 }
 
 function toggleShippingField(){
@@ -2209,11 +2384,13 @@ async function submitOrder(){
         items: cart,
         leadTime: cart.some(i => i.toOrder) ? setting('leadTimeLabel') : '',
         subtotal: cartSubtotal().toFixed(0),
+        discountCode: transient.discountCode || '',
         shipping: shippingFor(deliveryMethod).toFixed(0),
         total: cartTotal(deliveryMethod).toFixed(0),
       }),
     });
     clearCart();
+    transient.discountCode = ''; transient.discountAmount = 0; transient.discountNote = '';
     transient.orderSent = true;
     transient.loadError = '';
   } catch (e) {
@@ -2400,6 +2577,7 @@ function renderAdmin(){
       <button class="bh-tab ${nav.adminTab === 'leads' ? 'on' : ''}" onclick="setAdminTab('leads')">Leads</button>
       <button class="bh-tab ${nav.adminTab === 'reviews' ? 'on' : ''}" onclick="setAdminTab('reviews')">Reviews${reviews.filter(r=>r.status==='pending').length ? ` (${reviews.filter(r=>r.status==='pending').length})` : ''}</button>
       <button class="bh-tab ${nav.adminTab === 'gifts' ? 'on' : ''}" onclick="setAdminTab('gifts')">Gift cards</button>
+      <button class="bh-tab ${nav.adminTab === 'discounts' ? 'on' : ''}" onclick="setAdminTab('discounts')">Discounts</button>
       <button class="bh-tab ${nav.adminTab === 'help' ? 'on' : ''}" onclick="setAdminTab('help')">Help${helpMessages.filter(h=>h.status==='new').length ? ` (${helpMessages.filter(h=>h.status==='new').length})` : ''}</button>
       <button class="bh-tab ${nav.adminTab === 'settings' ? 'on' : ''}" onclick="setAdminTab('settings')">Settings</button>
     </div>
@@ -2409,6 +2587,7 @@ function renderAdmin(){
     ${nav.adminTab === 'leads' ? renderLeadsManager() : ''}
     ${nav.adminTab === 'reviews' ? renderReviewsAdmin() : ''}
     ${nav.adminTab === 'gifts' ? renderGiftsAdmin() : ''}
+    ${nav.adminTab === 'discounts' ? renderDiscountsAdmin() : ''}
     ${nav.adminTab === 'help' ? renderHelpAdmin() : ''}
     ${nav.adminTab === 'settings' ? renderSettings() : ''}
   `;
@@ -2813,7 +2992,8 @@ function renderLeadsManager(){
         <br><span style="font-size:.8rem;color:var(--ink)">${escapeHtml(leadItemList(l)).replace(/\n/g, '<br>')}</span>
         ${l.phone ? `<br><span style="font-size:.78rem;color:var(--grey)">${escapeHtml(l.phone)} · ${escapeHtml(l.delivery_method || l.deliveryMethod || 'Collection')}</span>` : ''}
         ${l.address ? `<br><span style="font-size:.75rem;color:var(--grey)">${escapeHtml(l.address)}</span>` : ''}
-        ${l.lead_time ? `<br><span style="font-size:.75rem;color:#a6752f;font-weight:700">${escapeHtml(l.lead_time)}</span>` : ''}</span>
+        ${l.lead_time ? `<br><span style="font-size:.75rem;color:#a6752f;font-weight:700">${escapeHtml(l.lead_time)}</span>` : ''}
+        ${l.discount_code ? `<br><span style="font-size:.75rem;color:var(--ok);font-weight:700">${escapeHtml(l.discount_code)} \u2212R${escapeHtml(l.discount_amount || '0')}</span>` : ''}</span>
         <span class="bh-statuspill" onclick="cycleLeadStatus('${l.id}')" title="Tap to move to the next status">${escapeHtml(l.status)}</span>
         <span class="bh-doc-actions">
           ${['order','receipt','delivery'].map(k => `
@@ -2991,6 +3171,91 @@ async function deleteGiftCard(id){
   if (!confirm('Delete this gift card order?')) return;
   await apiFetch('/giftcards', { method:'DELETE', body: JSON.stringify({ id }) });
   await fetchGiftCards(); render();
+}
+
+// ---- Admin: discount codes ----
+function renderDiscountsAdmin(){
+  return `
+    <div class="bh-card" style="margin-bottom:18px">
+      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Create a code</h3>
+      <label class="bh-label">Code</label>
+      <input id="dcCode" class="bh-input" placeholder="e.g. SUMMER10" style="margin-bottom:12px;text-transform:uppercase">
+
+      <div class="bh-grid2">
+        <div>
+          <label class="bh-label">Type</label>
+          <select id="dcKind" class="bh-select" style="margin-bottom:12px">
+            <option value="percent">Percentage off</option>
+            <option value="amount">Rand amount off</option>
+          </select>
+        </div>
+        <div>
+          <label class="bh-label">Value</label>
+          <input id="dcValue" type="number" class="bh-input" placeholder="10" style="margin-bottom:12px">
+        </div>
+      </div>
+
+      <label class="bh-label">How many people can use it?</label>
+      <input id="dcMax" type="number" class="bh-input" placeholder="e.g. 10" style="margin-bottom:6px">
+      <p style="font-size:.75rem;color:var(--grey);margin:0 0 14px">After this many orders the code stops working. Leave it empty or 0 for no limit.</p>
+
+      <p id="dcError" style="color:var(--risk);font-size:.8rem;min-height:1.1em;margin:0 0 8px"></p>
+      <button class="bh-btn" onclick="createDiscount()">+ Create code</button>
+    </div>
+
+    <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:12px">Codes (${discounts.length})</h3>
+    ${discounts.length === 0 ? `<p class="bh-empty">No codes yet.</p>` : ''}
+    ${discounts.map(d => {
+      const used = parseInt(d.used_count,10) || 0;
+      const max = parseInt(d.max_uses,10) || 0;
+      const spent = max > 0 && used >= max;
+      return `
+      <div class="bh-lead" style="${(!d.active || spent) ? 'opacity:.55' : ''}">
+        <span class="who">
+          <strong style="letter-spacing:.06em">${escapeHtml(d.code)}</strong>
+          \u00b7 ${d.kind === 'percent' ? escapeHtml(String(d.value)) + '% off' : 'R' + escapeHtml(String(d.value)) + ' off'}
+          <br><span style="font-size:.78rem;color:var(--grey)">
+            Used ${used}${max > 0 ? ' of ' + max : ' times (no limit)'}
+            ${spent ? ' \u00b7 finished' : ''}${!d.active ? ' \u00b7 switched off' : ''}
+          </span>
+        </span>
+        <button class="bh-statuspill" onclick="toggleDiscount('${d.id}', ${d.active ? 'false' : 'true'})">${d.active ? 'On' : 'Off'}</button>
+        <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="deleteDiscount('${d.id}')">\uD83D\uDDD1</button>
+      </div>`;
+    }).join('')}
+    <p class="bh-note">A code stops working on its own once it hits its limit \u2014 the check happens on the server when the order is placed, so it can't be got around.</p>`;
+}
+
+async function createDiscount(){
+  const code = document.getElementById('dcCode').value.trim().toUpperCase();
+  const kind = document.getElementById('dcKind').value;
+  const value = document.getElementById('dcValue').value;
+  const maxUses = document.getElementById('dcMax').value;
+  const err = document.getElementById('dcError');
+
+  if (!code){ err.textContent = 'Give the code a name.'; return; }
+  if (!value || parseFloat(value) <= 0){ err.textContent = 'Give it a value.'; return; }
+  if (kind === 'percent' && parseFloat(value) > 100){ err.textContent = "A percentage can't be more than 100."; return; }
+
+  err.textContent = 'Creating\u2026';
+  try {
+    await apiFetch('/discounts', { method:'POST', body: JSON.stringify({ code, kind, value, maxUses }) });
+    await fetchDiscounts();
+    err.textContent = '';
+  } catch (e) {
+    err.textContent = String(e.message || '').includes('already') ? 'That code already exists.' : "Couldn't create that code.";
+  }
+  render();
+}
+
+async function toggleDiscount(id, active){
+  await apiFetch('/discounts', { method:'PATCH', body: JSON.stringify({ id, active }) });
+  await fetchDiscounts(); render();
+}
+async function deleteDiscount(id){
+  if (!confirm('Delete this code? Anyone still holding it will no longer be able to use it.')) return;
+  await apiFetch('/discounts', { method:'DELETE', body: JSON.stringify({ id }) });
+  await fetchDiscounts(); render();
 }
 
 // ---- Admin: help messages ----
@@ -3367,7 +3632,7 @@ async function onAdminLogin(){
   try {
     await Promise.all([
       fetchStories().catch(()=>{}), fetchReplies().catch(()=>{}), fetchLeads().catch(()=>{}),
-      fetchReviews().catch(()=>{}), fetchHelp().catch(()=>{}), fetchGiftCards().catch(()=>{}),
+      fetchReviews().catch(()=>{}), fetchHelp().catch(()=>{}), fetchGiftCards().catch(()=>{}), fetchDiscounts().catch(()=>{}),
     ]);
   } catch (e) {
     transient.loadError = "Logged in, but couldn't load admin data — try reloading.";
