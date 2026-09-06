@@ -1924,7 +1924,7 @@ async function submitReply(){
     el.value = '';
     statusEl.textContent = "Sent — it'll appear here once it's been read and approved.";
   } catch (e) {
-    statusEl.textContent = "Couldn't send that — please try again.";
+    statusEl.textContent = failureText(e, "Couldn't send that");
   }
 }
 
@@ -1988,7 +1988,7 @@ async function submitStory(){
     transient.submitSent = true;
     transient.loadError = '';
   } catch (e) {
-    transient.loadError = "Couldn't submit that — please try again in a moment.";
+    transient.loadError = failureText(e, "Couldn't submit that");
   }
   render();
 }
@@ -2241,7 +2241,7 @@ function renderShop(){
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
       <div>
         <h2 class="bh-serif" style="font-size:1.35rem;color:var(--plum);margin:0 0 2px">Shop</h2>
-        <p style="font-size:.85rem;color:var(--grey);margin:0">Kept separate from the stories, on purpose.</p>
+        <p style="font-size:.85rem;color:var(--grey);margin:0">Pieces to feel good in, whether anyone sees them or not.</p>
       </div>
     </div>
 
@@ -2792,7 +2792,7 @@ async function submitReview(productId){
       productId, rating: transient.reviewRating || 5, text, pseudonym }) });
     transient.reviewSent = true;
   } catch (e) {
-    err.textContent = "Couldn't send that \u2014 please try again.";
+    err.textContent = failureText(e, "Couldn't send that");
     return;
   }
   render();
@@ -2856,6 +2856,16 @@ function renderHelp(){
     </div>`;
 }
 
+// Turn a thrown apiFetch error into something worth showing. The generic
+// "please try again" hid the real cause for a whole afternoon: the server
+// says exactly what is wrong (a missing table, for instance) and there is no
+// reason to throw that away.
+function failureText(e, fallback){
+  const msg = (e && e.message) ? String(e.message) : '';
+  if (!msg || /^Failed to fetch$/i.test(msg)) return fallback + ' (no connection to the server)';
+  return fallback + ' \u2014 ' + msg;
+}
+
 async function submitHelp(){
   const name = document.getElementById('helpName').value.trim();
   const phone = document.getElementById('helpPhone').value.trim();
@@ -2867,7 +2877,7 @@ async function submitHelp(){
     await apiFetch('/help', { method: 'POST', body: JSON.stringify({ name, phone, message }) });
     transient.helpSent = true;
   } catch (e) {
-    err.textContent = "Couldn't send that \u2014 please try again.";
+    err.textContent = failureText(e, "Couldn't send that");
     return;
   }
   render();
