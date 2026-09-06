@@ -1,48 +1,78 @@
-# Bling Happiness — update: picture handling (do this before importing products)
+# Bling Happiness — new look, gift cards, reviews, help
 
 ## STEP 1 — update on GitHub
 
-  public/index.html                 (replaced)
-  netlify/functions/products.js     (replaced)
-  netlify/functions/image.js        (NEW)
-  netlify/functions/leads.js        (replaced)
-  netlify/functions/stories.js      (replaced)
-  netlify/functions/replies.js      (replaced)
-  netlify/functions/settings.js     (NEW if not already there)
-  netlify/functions/migrate.js      (run once, then delete)
+  public/index.html                    (replaced)
+  netlify/functions/reviews.js         (NEW)
+  netlify/functions/help.js            (NEW)
+  netlify/functions/giftcards.js       (NEW)
+  netlify/functions/migrate.js         (run once, then delete)
+
+Everything else stays as it is. If fix-images.js is still in the repo,
+delete it.
 
 ## STEP 2 — run the database update ONCE
 
   https://blinghappiness.netlify.app/.netlify/functions/migrate
 
-Then delete migrate.js.
+Then delete migrate.js. Safe to run more than once.
 
-## Why this update matters
+## The new landing page
 
-Before: every photo was stored as text inside the product record, and the
-shop downloaded EVERY photo, at full phone-camera size, every time
-someone opened it. Three products with real photos meant about 18 MB
-downloaded on every visit. That is why it would have crawled once the
-catalogue grew.
+Option B, in our colours. Announcement bar, dark header with the full
+"Bling . Happiness" name, then a full-width hero with BLING. over it.
 
-After: 0.9 MB became 0.9 KB for the same three products - the list no
-longer carries pictures at all.
+Below that, two carousels exactly like the mockup:
 
-Three things changed:
+  Shop by mood     - one card per shop category, using a real product
+                     photo where there is one. Tapping opens the shop
+                     already filtered to that category.
+  From the stories - the newest stories. Tapping opens the story.
 
-1. Photos are shrunk when uploaded. A 6 MB phone photo becomes a 7 KB
-   thumbnail for the grid and a 211 KB version for the product page.
+Then a slim row of story-category chips with their counts, and the trust
+badges. The old grid of plain white folder boxes is gone.
 
-2. Pictures are stored separately and fetched one at a time, with
-   caching, so the browser downloads each picture once and remembers it.
+A slide-out menu behind the hamburger holds everything: Stories, Share
+your story, Shop with its categories, Gift Cards, Help, and Admin.
 
-3. Grid pictures only load as they scroll into view.
+## The Instagram link — this did not exist before
 
-Existing products keep working - old pictures are still found and served.
+You asked where it was. It had never been built, and it needed something
+else first: stories had no web address of their own.
 
-## What this means for the catalogue
+Now every story has one. On the Post tab there is a **Copy link** button
+beside the download. Download the picture, tap Copy link, and paste that
+into Instagram's link sticker. Anyone tapping it lands directly on that
+story, ready to read the replies and add their own.
 
-The shop will now stay quick into the hundreds of products, rather than
-slowing down after about fifteen. Nothing about how she adds a product
-has changed, except that she now sees the picture size after choosing
-one.
+## Gift cards
+
+A proper Gift Cards page. Amounts from R300 in R100 steps, chosen from a
+dropdown. The buyer enters their own name, the recipient's name and a
+message; only the recipient's name appears on the card. A live preview
+updates as they type.
+
+**Admin -> Gift cards** lists every order with its own code. Two WhatsApp
+buttons: one sends banking details, the other sends the finished card.
+The card itself is generated automatically at credit-card proportions -
+plum, BLING. in the middle, the value and recipient, and the code.
+
+## Reviews
+
+Customers can review any product with a star rating and a comment, either
+anonymously or under a pseudonym. Reviews wait for approval like stories
+do. Approved ones show on the product page and give it a star rating on
+the shop grid. **Admin -> Reviews.**
+
+## Help
+
+A Help page where someone leaves their name, WhatsApp number and message.
+**Admin -> Help** lists them with a "Reply on WhatsApp" button that opens
+the chat with their question already quoted, and a New/Done status.
+
+## Also
+
+- "Made-up name" now reads **pseudonym** everywhere, including stories.
+- **Announcement bar text is editable** in Settings.
+- **Free shipping over R1500** by default, editable in Settings. Orders
+  above it ship free automatically.
