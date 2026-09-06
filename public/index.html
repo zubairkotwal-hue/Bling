@@ -1491,7 +1491,10 @@ async function goAdmin(){ nav.menuOpen = false;
   // so anything submitted elsewhere in the meantime (a new story, a new
   // reply) actually shows up instead of showing what was last loaded.
   try {
-    await Promise.all([fetchStories(), fetchReplies(), fetchLeads(), fetchReviews(), fetchHelp(), fetchGiftCards()]);
+    await Promise.all([
+      fetchStories().catch(()=>{}), fetchReplies().catch(()=>{}), fetchLeads().catch(()=>{}),
+      fetchReviews().catch(()=>{}), fetchHelp().catch(()=>{}), fetchGiftCards().catch(()=>{}),
+    ]);
     transient.loadError = '';
   } catch (e) {
     transient.loadError = "Couldn't refresh admin data — showing what was last loaded.";
@@ -1561,6 +1564,10 @@ function renderHome(){
     .map(cat => ({ cat, items: products.filter(p => p.category === cat) }))
     .filter(m => m.items.length);
 
+  // If nothing has a category yet (older products, or a fresh catalogue),
+  // show the products themselves rather than an empty gap.
+  const showProductsInstead = moods.length === 0 && products.length > 0;
+
   // From the stories — newest approved stories, plus their category counts.
   const recent = approved.slice(0, 8);
   const storyCats = categories().map(cat => ({ cat, count: approved.filter(s => s.category === cat).length }));
@@ -1582,6 +1589,26 @@ function renderHome(){
         </div>
       </div>
     </div>
+
+    ${showProductsInstead ? `
+    <div class="bh-rail-wrap">
+      <div class="bh-rail-head">
+        <h3 class="bh-serif">New in</h3>
+        <button class="bh-btn-ghost" style="font-size:.78rem" onclick="goShop()">See all \u2192</button>
+      </div>
+      <div class="bh-rail">
+        ${products.slice(0, 8).map((p, i) => `
+          <div class="bh-railcard" onclick="viewProduct('${p.id}')">
+            ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="" loading="lazy">` : `<div class="bh-railcard-fill ${['mf1','mf2','mf3','mf4','mf5','mf6'][i % 6]}"></div>`}
+            <span class="bh-railpill shop">Shop</span>
+            <div class="bh-railveil"></div>
+            <div class="bh-raillbl">
+              <div class="t">${escapeHtml(p.name)}</div>
+              <div class="s">${isVoucher(p) ? 'Gift card' : 'R' + escapeHtml(p.price)}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>` : ''}
 
     ${moods.length ? `
     <div class="bh-rail-wrap">
@@ -3305,13 +3332,32 @@ async function createRoundupCard(){
 
 // ---- Boot ----
 async function boot(){
-  render(); // show the loading state immediately
-  try {
-    await Promise.all([fetchStories(), fetchReplies(), fetchProducts(), fetchSettings(), fetchReviews()]);
-  } catch (e) {
-    transient.loadError = "Couldn't reach the server just now — check your connection and reload.";
+  render(); // show something immediately
+
+  // Load each thing on its own. If one fails — say a feature hasn't been
+  // deployed yet — the rest of the site still works instead of the whole
+  // page showing an error.
+  const jobs = [
+    ['stories',  fetchStories],
+    ['replies',  fetchReplies],
+    ['products', fetchProducts],
+    ['settings', fetchSettings],
+    ['reviews',  fetchReviews],
+  ];
+
+  const failed = [];
+  await Promise.all(jobs.map(async ([name, fn]) => {
+    try { await fn(); } catch (e) { failed.push(name); }
+  }));
+
+  // Only complain if something people actually need didn't load.
+  const essential = failed.filter(n => n === 'stories' || n === 'products');
+  if (essential.length){
+    transient.loadError = "Couldn't reach the server just now \u2014 check your connection and reload.";
+  } else {
+    transient.loadError = '';
   }
-  // If someone arrived on a story link, open that story instead of the home page.
+
   openDeepLink();
   render();
 }
@@ -3319,7 +3365,10 @@ async function boot(){
 async function onAdminLogin(){
   nav.adminUnlocked = true;
   try {
-    await Promise.all([fetchStories(), fetchReplies(), fetchLeads(), fetchReviews(), fetchHelp(), fetchGiftCards()]);
+    await Promise.all([
+      fetchStories().catch(()=>{}), fetchReplies().catch(()=>{}), fetchLeads().catch(()=>{}),
+      fetchReviews().catch(()=>{}), fetchHelp().catch(()=>{}), fetchGiftCards().catch(()=>{}),
+    ]);
   } catch (e) {
     transient.loadError = "Logged in, but couldn't load admin data — try reloading.";
   }
