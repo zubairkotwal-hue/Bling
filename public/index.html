@@ -2195,7 +2195,6 @@ function renderShop(){
       <button class="bh-btn-ghost" onclick="backToShop()" style="margin-bottom:12px">\u2190 All departments</button>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
         <h2 class="bh-serif" style="font-size:1.35rem;color:var(--plum);margin:0">${escapeHtml(seeAll)}</h2>
-        <button class="bh-btn-outline" onclick="viewCart()">Basket${cartCount() ? ` (${cartCount()})` : ''}</button>
       </div>
       ${controls}
       ${shown.length === 0 ? `<p class="bh-empty">Nothing matches those filters. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearFilters()">Clear them</button></p>` : ''}
@@ -2218,7 +2217,6 @@ function renderShop(){
     return `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
         <h2 class="bh-serif" style="font-size:1.35rem;color:var(--plum);margin:0">${escapeHtml(transient.filterCategory || 'Shop')}</h2>
-        <button class="bh-btn-outline" onclick="viewCart()">Basket${cartCount() ? ` (${cartCount()})` : ''}</button>
       </div>
       ${controls}
       ${shown.length === 0 ? `<p class="bh-empty">Nothing matches those filters. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearFilters()">Clear them</button></p>` : ''}
@@ -2245,7 +2243,6 @@ function renderShop(){
         <h2 class="bh-serif" style="font-size:1.35rem;color:var(--plum);margin:0 0 2px">Shop</h2>
         <p style="font-size:.85rem;color:var(--grey);margin:0">Kept separate from the stories, on purpose.</p>
       </div>
-      <button class="bh-btn-outline" onclick="viewCart()">Basket${cartCount() ? ` (${cartCount()})` : ''}</button>
     </div>
 
     ${products.length === 0 ? `<p class="bh-empty">Nothing in the shop yet \u2014 check back soon.</p>` : controls}
