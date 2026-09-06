@@ -73,6 +73,20 @@ exports.handler = async () => {
         created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
       );
 
+      -- Discount codes
+      CREATE TABLE IF NOT EXISTS discount_codes (
+        id          TEXT PRIMARY KEY,
+        code        TEXT UNIQUE NOT NULL,
+        kind        TEXT NOT NULL DEFAULT 'percent',
+        value       NUMERIC NOT NULL,
+        max_uses    INTEGER NOT NULL DEFAULT 0,
+        used_count  INTEGER NOT NULL DEFAULT 0,
+        active      BOOLEAN NOT NULL DEFAULT TRUE,
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+      );
+      ALTER TABLE leads ADD COLUMN IF NOT EXISTS discount_code TEXT;
+      ALTER TABLE leads ADD COLUMN IF NOT EXISTS discount_amount TEXT;
+
       CREATE TABLE IF NOT EXISTS settings (
         key   TEXT PRIMARY KEY,
         value TEXT
