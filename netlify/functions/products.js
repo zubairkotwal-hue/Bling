@@ -4,9 +4,36 @@ const { getPool, json, isAdmin, newId } = require('./_utils');
 // product_images and fetched one at a time by the image function, which
 // lets the browser cache them. Sending every picture with every list
 // request is what makes a shop crawl once it has more than a few items.
-const PRODUCT_FIELDS = `id, name, price, size_type, sizes, description,
-  stock_status, order_sizes, category, colours, product_type, has_image,
-  image_version, created_at`;
+const BASE_FIELDS = `id, name, price, size_type, sizes, description,
+  stock_status, order_sizes, category, colours, product_type, has_image, created_at`;
+
+// image_version is added by migrate.js. Between deploying this file and
+// visiting the migrate URL the column does not exist yet, and asking for a
+// column Postgres doesn't have fails the whole query — which took the shop
+// down. So check once whether it's there and work either way. Deploy order
+// stops mattering, and it starts being used on its own once migrate has run.
+let hasImageVersion = null;
+let checkedAt = 0;
+
+async function imageVersionReady(pool){
+  const now = Date.now();
+  if (hasImageVersion !== null && now - checkedAt < 60000) return hasImageVersion;
+  try {
+    const r = await pool.query(
+      `SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'products' AND column_name = 'image_version' LIMIT 1`
+    );
+    hasImageVersion = r.rows.length > 0;
+  } catch (e) {
+    hasImageVersion = false;
+  }
+  checkedAt = now;
+  return hasImageVersion;
+}
+
+async function productFields(pool){
+  return (await imageVersionReady(pool)) ? `${BASE_FIELDS}, image_version` : BASE_FIELDS;
+}
 
 // Returns the new image_version, or false if nothing was saved. The version
 // goes into the picture's URL: image.js caches for a year, so without it a
@@ -34,7 +61,8 @@ exports.handler = async (event) => {
 
   try {
     if (event.httpMethod === 'GET'){
-      const result = await pool.query(`SELECT ${PRODUCT_FIELDS} FROM products ORDER BY created_at DESC`);
+      const fields = await productFields(pool);
+      const result = await pool.query(`SELECT ${fields} FROM products ORDER BY created_at DESC`);
       return json(200, result.rows);
     }
 
@@ -47,13 +75,19 @@ exports.handler = async (event) => {
       const id = newId();
       const hasImage = !!(images && (images.thumb || images.full));
       const version = await saveImages(pool, id, images);
+      const withVersion = await imageVersionReady(pool);
+
+      const cols = ['id','name','price','size_type','sizes','description',
+        'stock_status','order_sizes','category','colours','product_type','has_image'];
+      const vals = [id, name, price, sizeType || 'freesize', JSON.stringify(sizes || []),
+        description || null, stockStatus || 'in_stock', JSON.stringify(orderSizes || []),
+        category || null, JSON.stringify(colours || []), productType || 'item', hasImage];
+      if (withVersion){ cols.push('image_version'); vals.push(version || null); }
+
       await pool.query(
-        `INSERT INTO products (id, name, price, size_type, sizes, description,
-           stock_status, order_sizes, category, colours, product_type, has_image, image_version)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-        [id, name, price, sizeType || 'freesize', JSON.stringify(sizes || []), description || null,
-         stockStatus || 'in_stock', JSON.stringify(orderSizes || []), category || null,
-         JSON.stringify(colours || []), productType || 'item', hasImage, version || null]
+        `INSERT INTO products (${cols.join(', ')})
+         VALUES (${vals.map((_, i) => '$' + (i + 1)).join(',')})`,
+        vals
       );
       return json(201, { id, imageVersion: version || null });
     }
@@ -97,14 +131,16 @@ exports.handler = async (event) => {
       // existing one.
       if (images && (images.thumb || images.full)){
         const version = await saveImages(pool, id, images);
-        values.push(true);       sets.push(`has_image = $${values.length}`);
-        values.push(version);    sets.push(`image_version = $${values.length}`);
+        values.push(true); sets.push(`has_image = $${values.length}`);
+        if (await imageVersionReady(pool)){
+          values.push(version); sets.push(`image_version = $${values.length}`);
+        }
       }
 
       if (!sets.length) return json(400, { error: 'nothing to update' });
 
       const result = await pool.query(
-        `UPDATE products SET ${sets.join(', ')} WHERE id = $1 RETURNING ${PRODUCT_FIELDS}`,
+        `UPDATE products SET ${sets.join(', ')} WHERE id = $1 RETURNING ${await productFields(pool)}`,
         values
       );
       if (!result.rows.length) return json(404, { error: 'product not found' });
