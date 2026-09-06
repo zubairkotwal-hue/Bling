@@ -12,11 +12,27 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+  /* Site UI: Cormorant Garamond (delicate, high-contrast, beautiful italic)
+     with Jost (light geometric sans) for buttons and labels. Fraunces +
+     Instrument Sans are still loaded because the story-card and gift-card
+     canvas generators draw with them — changing those would change every card
+     she posts, so they are left alone deliberately. */
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,700;9..144,1,400&family=Instrument+Sans:wght@400;700&display=swap');
   .bh-root{ --ink:#241521; --plum:#3d1e3a; --plum2:#6b3560; --plum3:#8a4877; --blush:#f0c4cf; --blushp:#fbf1ef; --gold:#c9a15a; --goldl:#e4c989; --line:#ead9dc; --grey:#6b5a67; --ok:#5c7a5e; --risk:#a13d4c;
-    font-family:'Instrument Sans',sans-serif; color:var(--ink); background:var(--blushp); min-height:100vh; }
+    /* Swap the whole site's typography by changing these two lines. */
+    --f-display:'Cormorant Garamond', Georgia, serif;
+    --f-ui:'Jost', -apple-system, sans-serif;
+    font-family:var(--f-ui); color:var(--ink); background:var(--blushp); min-height:100vh;
+    font-weight:300; -webkit-font-smoothing:antialiased; }
+  /* Cormorant has a small x-height, so it needs a touch more size and weight
+     than a normal serif to read at the same visual scale. */
+  .bh-root .bh-serif, .bh-root h1, .bh-root h2, .bh-root h3{
+    font-family:var(--f-display); font-weight:600; letter-spacing:.005em; font-size:1.12em; }
+  .bh-root button, .bh-root input, .bh-root select, .bh-root textarea{ font-family:var(--f-ui); }
+  /* Jost is geometric and reads better with a little air in small caps labels. */
+  .bh-root .bh-label, .bh-root .bh-kicker{ letter-spacing:.09em; }
   .bh-root *{ box-sizing:border-box; }
-  .bh-serif{ font-family:'Fraunces',serif; }
+  .bh-serif{ font-family:var(--f-display); }
 /* hero, rail and badges */
   .bh-hero2{ position:relative; min-height:420px; display:flex; align-items:center; justify-content:center; text-align:center; overflow:hidden; color:#fff; }
   .bh-hero2-bg{ position:absolute; inset:0; background:linear-gradient(160deg,#2b1524 0%,#5e2a4c 55%,#8a4877 100%); }
@@ -26,7 +42,7 @@
   .bh-hero2-title{ font-weight:400; font-size:clamp(2.2rem,9vw,3.1rem); margin:0; letter-spacing:.02em; }
   .bh-hero2-sub{ font-size:.9rem; color:#efe2ea; margin:14px auto 0; max-width:32ch; line-height:1.55; }
   .bh-hero2-ctas{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:24px; }
-  .bh-hero2-cta{ background:#fffdf9; color:var(--ink); border:none; font-family:'Instrument Sans',sans-serif; font-weight:600; font-size:.86rem; padding:13px 26px; cursor:pointer; letter-spacing:.02em; }
+  .bh-hero2-cta{ background:#fffdf9; color:var(--ink); border:none; font-family:var(--f-ui); font-weight:600; font-size:.86rem; padding:13px 26px; cursor:pointer; letter-spacing:.02em; }
   .bh-hero2-cta.ghost{ background:transparent; border:1.4px solid rgba(255,255,255,.7); color:#fff; }
 
   .bh-rail-wrap{ padding:26px 0 6px; }
@@ -52,11 +68,11 @@
   .bh-catstrip-inner{ display:flex; gap:8px; overflow-x:auto; padding:0 20px 6px; scrollbar-width:none; max-width:900px; margin:0 auto; }
   .bh-catstrip-inner::-webkit-scrollbar{ display:none; }
   .bh-catchip{ flex:0 0 auto; background:#fff; border:1px solid var(--line); border-radius:20px; padding:9px 15px;
-    font-family:'Instrument Sans',sans-serif; font-size:.82rem; font-weight:600; color:var(--plum); cursor:pointer; white-space:nowrap; }
+    font-family:var(--f-ui); font-size:.82rem; font-weight:600; color:var(--plum); cursor:pointer; white-space:nowrap; }
   .bh-catchip b{ color:var(--gold); margin-left:4px; }
   .bh-railveil{ position:absolute; inset:0; background:linear-gradient(0deg, rgba(20,8,16,.8) 6%, rgba(20,8,16,.04) 62%); }
   .bh-raillbl{ position:absolute; left:0; right:0; bottom:0; padding:13px; color:#fff; z-index:2; }
-  .bh-raillbl .t{ font-family:'Fraunces',serif; font-size:.94rem; font-weight:500; line-height:1.2; }
+  .bh-raillbl .t{ font-family:var(--f-display); font-size:.94rem; font-weight:500; line-height:1.2; }
   .bh-raillbl .s{ font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; opacity:.85; margin-top:5px; }
   .bh-railpill{ position:absolute; top:9px; left:9px; z-index:3; font-size:.57rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:4px 8px; border-radius:20px; }
   .bh-railpill.shop{ background:var(--goldl); color:var(--ink); }
@@ -71,11 +87,11 @@
   @media (min-width:700px){ .bh-badges{ grid-template-columns:repeat(4,1fr); max-width:900px; margin:26px auto 0; } }
 
 /* announcement bar + header */
-  .bh-announce{ background:var(--ink); color:var(--goldl); text-align:center; font-family:'Fraunces',serif; font-weight:500; font-size:.78rem; padding:9px 12px; letter-spacing:.02em; }
+  .bh-announce{ background:var(--ink); color:var(--goldl); text-align:center; font-family:var(--f-display); font-weight:500; font-size:.78rem; padding:9px 12px; letter-spacing:.02em; }
   .bh-hdr{ background:var(--plum); display:flex; align-items:center; justify-content:space-between; padding:13px 16px; position:sticky; top:0; z-index:40; }
   .bh-burger{ background:none; border:none; display:flex; flex-direction:column; gap:4px; cursor:pointer; padding:6px; }
   .bh-burger i{ display:block; width:21px; height:1.7px; background:#fffdf9; }
-  .bh-brand{ background:none; border:none; display:flex; align-items:center; gap:8px; cursor:pointer; color:#fffdf9; font-family:'Fraunces',serif; font-weight:500; font-size:1.02rem; letter-spacing:.02em; }
+  .bh-brand{ background:none; border:none; display:flex; align-items:center; gap:8px; cursor:pointer; color:#fffdf9; font-family:var(--f-display); font-weight:500; font-size:1.02rem; letter-spacing:.02em; }
   .bh-brand-mark{ height:24px; width:auto; opacity:.95; }
   .bh-brand .dot{ color:var(--gold); }
   .bh-cartbtn{ background:none; border:none; cursor:pointer; position:relative; padding:6px; }
@@ -96,7 +112,7 @@
   html, body{ overflow-x:hidden; max-width:100%; }
   .bh-menu-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
   .bh-menu-x{ background:none; border:none; color:#fffdf9; font-size:1.25rem; cursor:pointer; }
-  .bh-menu-brand{ font-family:'Fraunces',serif; color:#fffdf9; font-size:1.02rem; }
+  .bh-menu-brand{ font-family:var(--f-display); color:#fffdf9; font-size:1.02rem; }
   .bh-menu-brand .dot{ color:var(--gold); }
   .bh-menu-list{ list-style:none; margin:0; padding:0; }
   .bh-menu-list li{ display:flex; align-items:center; justify-content:space-between; padding:15px 2px; color:#fffdf9; font-size:1.05rem; border-bottom:1px solid rgba(255,255,255,.09); cursor:pointer; }
@@ -111,8 +127,8 @@
     background:linear-gradient(135deg,var(--plum),var(--plum3)); box-shadow:0 10px 26px rgba(61,30,58,.28); }
   .bh-gc::after{ content:''; position:absolute; inset:9px; border:1px solid rgba(228,201,137,.4); border-radius:7px; }
   .bh-gc-label{ position:absolute; top:22px; left:24px; color:var(--goldl); font-size:.6rem; font-weight:800; letter-spacing:.24em; text-transform:uppercase; z-index:2; }
-  .bh-gc-brand{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:500; color:#fffdf9; font-size:1.9rem; z-index:2; }
-  .bh-gc-amt{ position:absolute; left:24px; bottom:34px; font-family:'Fraunces',serif; font-weight:600; color:var(--goldl); font-size:1.5rem; z-index:2; }
+  .bh-gc-brand{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--f-display); font-weight:500; color:#fffdf9; font-size:1.9rem; z-index:2; }
+  .bh-gc-amt{ position:absolute; left:24px; bottom:34px; font-family:var(--f-display); font-weight:600; color:var(--goldl); font-size:1.5rem; z-index:2; }
   .bh-gc-for{ position:absolute; left:24px; bottom:18px; color:rgba(255,253,249,.8); font-size:.72rem; z-index:2; }
   .bh-gc-mark{ position:absolute; right:16px; bottom:14px; height:74px; opacity:.16; z-index:1; }
 
@@ -126,7 +142,7 @@
   .bh-rate-pick button.on{ color:var(--gold); }
 
   .bh-nav{ display:flex; align-items:center; justify-content:space-between; padding:18px 24px; flex-wrap:wrap; gap:10px; }
-  .bh-logo{ font-family:'Fraunces',serif; font-weight:600; font-size:1.15rem; color:var(--plum); cursor:pointer; background:none; border:none; display:flex; align-items:center; gap:9px; padding:0; }
+  .bh-logo{ font-family:var(--f-display); font-weight:600; font-size:1.15rem; color:var(--plum); cursor:pointer; background:none; border:none; display:flex; align-items:center; gap:9px; padding:0; }
   .bh-logo-mark{ height:30px; width:auto; display:block; }
   .bh-logo .dot{ color:var(--gold); }
   .bh-navlinks{ display:flex; gap:10px; flex-wrap:wrap; }
@@ -145,21 +161,21 @@
   .bh-folder-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:12px; margin-top:4px; }
   .bh-folder{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; cursor:pointer; transition:transform .15s, box-shadow .15s; }
   .bh-folder{ transition:box-shadow .15s; }
-  .bh-folder .count{ font-family:'Fraunces',serif; font-size:1.7rem; color:var(--gold); font-weight:600; }
+  .bh-folder .count{ font-family:var(--f-display); font-size:1.7rem; color:var(--gold); font-weight:600; }
   .bh-folder .name{ font-weight:700; color:var(--plum); font-size:.92rem; margin-top:2px; }
   .bh-tile{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:10px; cursor:pointer; }
   .bh-tile:hover{ border-color:var(--gold); }
-  .bh-tile p{ font-family:'Fraunces',serif; font-style:italic; font-size:.95rem; margin:0 0 6px; }
+  .bh-tile p{ font-family:var(--f-display); font-style:italic; font-size:.95rem; margin:0 0 6px; }
   .bh-tile .sub{ font-size:.75rem; color:var(--grey); }
   .bh-storyhero{ background:linear-gradient(155deg,var(--plum),var(--plum2)); color:#fff; border-radius:18px; padding:28px; }
-  .bh-storyhero .mark{ font-family:'Fraunces',serif; font-size:2.2rem; color:var(--gold); line-height:1; }
-  .bh-storyhero p{ font-family:'Fraunces',serif; font-style:italic; font-size:1.1rem; line-height:1.5; margin:6px 0 14px; }
+  .bh-storyhero .mark{ font-family:var(--f-display); font-size:2.2rem; color:var(--gold); line-height:1; }
+  .bh-storyhero p{ font-family:var(--f-display); font-style:italic; font-size:1.1rem; line-height:1.5; margin:6px 0 14px; }
   .bh-storyhero .tag{ font-size:.72rem; letter-spacing:.06em; color:var(--goldl); font-weight:700; }
   .bh-btn{ background:linear-gradient(135deg,var(--goldl),var(--gold)); color:var(--ink); font-weight:700; padding:11px 20px; border-radius:9px; font-size:.88rem; border:none; cursor:pointer; }
   .bh-btn:disabled{ opacity:.5; cursor:not-allowed; }
   .bh-btn-outline{ background:#fff; border:1.5px solid var(--plum); color:var(--plum); font-weight:700; padding:10px 18px; border-radius:9px; font-size:.85rem; cursor:pointer; }
   .bh-btn-ghost{ background:none; border:none; color:var(--plum); font-weight:600; font-size:.85rem; cursor:pointer; display:flex; align-items:center; gap:6px; padding:0; }
-  .bh-input, .bh-textarea, .bh-select{ width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:9px; font-family:'Instrument Sans',sans-serif; font-size:.88rem; background:#fff; }
+  .bh-input, .bh-textarea, .bh-select{ width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:9px; font-family:var(--f-ui); font-size:.88rem; background:#fff; }
   .bh-textarea{ min-height:110px; resize:vertical; }
   .bh-label{ display:block; font-weight:700; font-size:.82rem; color:var(--plum); margin-bottom:6px; }
   .bh-card{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; }
@@ -192,19 +208,70 @@
   .bh-lead .who strong{ color:var(--plum); }
   .bh-statuspill{ font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; padding:5px 11px; border-radius:20px; background:var(--blushp); color:var(--plum); border:1px solid var(--line); cursor:pointer; }
   .bh-post-item{ display:flex; align-items:center; gap:14px; padding:14px; border:1px solid var(--line); border-radius:12px; margin-bottom:10px; background:#fff; flex-wrap:wrap; }
-  .bh-post-item .snip{ flex:1; font-family:'Fraunces',serif; font-style:italic; font-size:.9rem; min-width:180px; }
+  .bh-post-item .snip{ flex:1; font-family:var(--f-display); font-style:italic; font-size:.9rem; min-width:180px; }
   .bh-postedtag{ font-size:.68rem; font-weight:700; color:var(--ok); text-transform:uppercase; }
   .bh-checkrow{ display:flex; align-items:flex-start; gap:10px; font-size:.86rem; padding:9px 0; border-bottom:1px solid var(--line); }
-.bh-filters{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:16px; }
-  .bh-filter-row{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; padding:5px 0; }
-  .bh-filter-label{ font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--grey); margin-right:3px; }
-  .bh-chip{ background:var(--blushp); border:1px solid var(--line); color:var(--plum); font-size:.78rem; font-weight:700; padding:6px 13px; border-radius:20px; cursor:pointer; font-family:'Instrument Sans',sans-serif; }
+/* ---- Filter and sort: trigger row + right-hand drawer (KAAL pattern) ---- */
+  .bh-filterbar{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px 2px; margin-bottom:10px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .bh-filterbtn{ display:inline-flex; align-items:center; gap:11px; background:none; border:none; padding:0;
+    cursor:pointer; color:var(--ink); font-family:var(--f-ui); font-size:.86rem; letter-spacing:.01em; }
+  .bh-filterbtn svg{ width:19px; height:19px; stroke:currentColor; fill:none; stroke-width:1.4; }
+  .bh-filterbtn .n{ background:var(--plum); color:#fff; font-size:.62rem; font-weight:700; min-width:17px;
+    height:17px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; padding:0 5px; }
+  .bh-filtercount{ font-size:.82rem; color:var(--grey); }
+
+  .bh-fscrim{ position:fixed; inset:0; background:rgba(20,10,18,.42); z-index:70; }
+  .bh-fdrawer{ position:fixed; top:0; right:0; bottom:0; z-index:71;
+    width:min(430px, calc(100vw - 46px)); background:#fff; display:flex; flex-direction:column;
+    box-shadow:-12px 0 34px rgba(20,10,18,.16); animation:bh-fslide .22s ease-out; }
+  @keyframes bh-fslide{ from{ transform:translateX(100%);} to{ transform:translateX(0);} }
+  body.bh-filters-open{ overflow:hidden; }
+
+  .bh-fhead{ position:relative; padding:20px 20px 16px; border-bottom:1px solid var(--line); text-align:center; flex:none; }
+  .bh-fhead h3{ font-family:var(--f-display); font-weight:700; font-size:1.28rem; color:var(--ink); margin:0; }
+  .bh-fhead .sub{ font-size:.82rem; color:var(--grey); margin-top:3px; }
+  .bh-fx{ position:absolute; top:18px; right:16px; background:none; border:none; cursor:pointer;
+    color:var(--ink); font-size:1.5rem; line-height:1; padding:4px 6px; }
+
+  .bh-fbody{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:8px 0 20px; }
+  .bh-frow{ display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;
+    background:none; border:none; border-bottom:1px solid var(--line); padding:20px; cursor:pointer;
+    font-family:var(--f-ui); font-size:.95rem; color:var(--ink); text-align:left; }
+  .bh-frow .arrow{ color:var(--grey); font-size:1.05rem; }
+  .bh-frow .on{ color:var(--plum); font-weight:700; font-size:.78rem; }
+  .bh-fback{ display:flex; align-items:center; gap:14px; background:none; border:none; cursor:pointer;
+    padding:20px; font-family:var(--f-ui); font-size:.95rem; color:var(--ink); }
+
+  .bh-fopt{ display:flex; align-items:center; gap:16px; padding:13px 20px; cursor:pointer;
+    font-size:.92rem; color:var(--grey); }
+  .bh-fopt i{ width:22px; height:22px; border:1px solid #8f8f8f; flex:none; display:inline-flex;
+    align-items:center; justify-content:center; background:#fff; }
+  .bh-fopt.on i{ background:var(--plum); border-color:var(--plum); }
+  .bh-fopt.on i::after{ content:'✓'; color:#fff; font-size:.8rem; line-height:1; }
+  .bh-fopt .sw{ width:15px; height:15px; border-radius:50%; border:1px solid var(--line); flex:none; }
+
+  .bh-fprice{ display:flex; align-items:center; gap:12px; padding:6px 20px; }
+  .bh-fprice input{ flex:1; min-width:0; padding:11px 12px; border:1px solid var(--line);
+    font-family:var(--f-ui); font-size:.88rem; background:#fff; color:var(--ink); }
+  .bh-fsortrow{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:20px; }
+  .bh-fsortrow label{ font-size:.95rem; color:var(--ink); }
+  .bh-fsortrow select{ border:none; background:none; font-family:var(--f-ui); font-size:.9rem;
+    color:var(--ink); text-align:right; cursor:pointer; max-width:62%; }
+
+  .bh-ffoot{ flex:none; display:flex; align-items:center; justify-content:space-between; gap:14px;
+    padding:16px 20px calc(16px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:#fff; }
+  .bh-fclear{ background:none; border:none; cursor:pointer; font-family:var(--f-ui); font-size:.9rem;
+    color:var(--ink); text-decoration:underline; text-underline-offset:4px; padding:6px 2px; }
+  .bh-fapply{ background:var(--plum); color:#fffdf9; border:none; cursor:pointer; font-family:var(--f-ui);
+    font-size:.95rem; padding:16px 44px; }
+  .bh-chip{ background:var(--blushp); border:1px solid var(--line); color:var(--plum); font-size:.78rem; font-weight:700; padding:6px 13px; border-radius:20px; cursor:pointer; font-family:var(--f-ui); }
   .bh-chip.sm{ font-size:.72rem; padding:5px 10px; }
   .bh-chip.on{ background:var(--plum); color:#fff; border-color:var(--plum); }
-  .bh-swatch{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); color:var(--plum); font-size:.74rem; font-weight:700; padding:4px 11px 4px 5px; border-radius:20px; cursor:pointer; font-family:'Instrument Sans',sans-serif; }
+  .bh-swatch{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); color:var(--plum); font-size:.74rem; font-weight:700; padding:4px 11px 4px 5px; border-radius:20px; cursor:pointer; font-family:var(--f-ui); }
   .bh-swatch span{ width:15px; height:15px; border-radius:50%; border:1px solid rgba(0,0,0,.15); display:block; }
   .bh-swatch.on{ background:var(--plum); color:#fff; border-color:var(--plum); }
-  .bh-sort{ border:1px solid var(--line); border-radius:20px; padding:6px 11px; font-size:.78rem; font-family:'Instrument Sans',sans-serif; color:var(--plum); background:#fff; font-weight:600; }
+  .bh-sort{ border:1px solid var(--line); border-radius:20px; padding:6px 11px; font-size:.78rem; font-family:var(--f-ui); color:var(--plum); background:#fff; font-weight:600; }
   .bh-card-swatches{ display:flex; gap:4px; margin-top:5px; }
   .bh-card-swatches i{ width:11px; height:11px; border-radius:50%; border:1px solid rgba(0,0,0,.15); display:block; }
   .bh-shop-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px 12px; margin-top:18px; }
@@ -214,7 +281,7 @@
   .bh-shop-card img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:var(--blushp); border-radius:2px; }
   .bh-shop-card .noimg{ width:100%; aspect-ratio:3/4; background:linear-gradient(150deg,#e8d5da,#f6ebee); border-radius:2px; }
   .bh-shop-card .body{ padding:10px 2px 0; }
-  .bh-shop-card .name{ font-family:'Fraunces',serif; font-weight:500; font-size:.95rem; color:var(--ink); line-height:1.25; }
+  .bh-shop-card .name{ font-family:var(--f-display); font-weight:500; font-size:.95rem; color:var(--ink); line-height:1.25; }
   .bh-shop-card .price{ font-size:.86rem; color:var(--grey); font-weight:500; margin-top:5px; letter-spacing:.01em; }
   .bh-wa-btn{ background:#25d366; color:#fff; font-weight:700; padding:11px 20px; border-radius:9px; font-size:.86rem; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
   .bh-radio-row{ display:flex; gap:16px; margin-bottom:16px; }
@@ -223,7 +290,7 @@
   .bh-detail-body{ padding:22px; }
   .bh-size-grid{ display:flex; flex-wrap:wrap; gap:8px; }
   .bh-size-tag{ display:inline-block; background:var(--blushp); border:1px solid var(--line); color:var(--plum); font-size:.8rem; font-weight:700; padding:6px 13px; border-radius:20px; }
-  .bh-size-opt{ background:#fff; border:1.5px solid var(--line); color:var(--plum); font-size:.82rem; font-weight:700; padding:9px 15px; border-radius:20px; cursor:pointer; font-family:'Instrument Sans',sans-serif; }
+  .bh-size-opt{ background:#fff; border:1.5px solid var(--line); color:var(--plum); font-size:.82rem; font-weight:700; padding:9px 15px; border-radius:20px; cursor:pointer; font-family:var(--f-ui); }
   .bh-size-opt:hover{ border-color:var(--gold); background:var(--blushp); }
 .bh-size-opt.to-order{ opacity:.45; border-style:dashed; }
   .bh-size-opt.to-order.on{ opacity:1; background:var(--gold); color:var(--ink); border-color:var(--gold); border-style:solid; }
@@ -263,6 +330,7 @@ const DEFAULT_SETTINGS = {
 
   storyCardTag: 'Shared anonymously',
   cardTheme: 'plum',
+  shopCategories: JSON.stringify(['Bride', 'Date Night', 'Sleepwear', 'Dressing gowns', 'Undies', 'Mum to be', 'Slippers', 'Slips', 'Bedroom Accessories', 'Gift Voucher', 'Fun-Size']),
   categories: JSON.stringify(['Relationships', 'Intimacy', 'Health', 'Beauty', 'Faith', "Men's Health"]),
 
 
@@ -322,11 +390,21 @@ function fillTemplate(tpl, vars){
   );
 }
 
-const SHOP_CATEGORIES = [
+// Shop departments are editable in Settings. This is only the starting list.
+const DEFAULT_SHOP_CATEGORIES = [
   'Bride', 'Date Night', 'Sleepwear', 'Dressing gowns', 'Undies',
   'Mum to be', 'Slippers', 'Slips', 'Bedroom Accessories',
   'Gift Voucher', 'Fun-Size',
 ];
+
+function shopCategories(){
+  try {
+    const raw = settings.shopCategories;
+    const list = raw ? JSON.parse(raw) : null;
+    if (Array.isArray(list) && list.length) return list;
+  } catch (e) {}
+  return DEFAULT_SHOP_CATEGORIES;
+}
 
 // Swatch colours shown when adding a product and when filtering.
 const COLOURS = [
@@ -432,7 +510,11 @@ function resizeImage(file, maxSize, quality){
 // Pictures come from their own address so the browser caches them.
 function productImageUrl(p, size){
   if (!p || !p.has_image) return '';
-  return `${API}/image?id=${encodeURIComponent(p.id)}&size=${size || 'thumb'}`;
+  // Pictures are cached by the browser for a year. When a product's photo is
+  // replaced the id stays the same, so the version is what tells the browser
+  // it is looking at a different file.
+  const v = p.image_version ? `&v=${encodeURIComponent(p.image_version)}` : '';
+  return `${API}/image?id=${encodeURIComponent(p.id)}&size=${size || 'thumb'}${v}`;
 }
 
 function isVoucher(p){ return p && p.product_type === 'voucher'; }
@@ -1332,9 +1414,18 @@ let transient = {
   deliveryMethod: 'Collection',
   filterCategory: '',
   shopSeeAll: '',
-  filterColour: '',
-  filterSize: '',
+  // Colour, size and availability are multi-select (tick boxes), like KAAL.
+  filterColour: [],
+  filterSize: [],
+  filterAvail: [],
+  priceMin: '',
+  priceMax: '',
   sortBy: 'recent',
+  // Drawer state. filterDraft holds the choices while the drawer is open; they
+  // only take effect when Apply is pressed.
+  filterOpen: false,
+  filterPanel: '',
+  filterDraft: null,
   voucherAmount: 100,
   cardTag: '',
   giftStatus: '',
@@ -1356,6 +1447,15 @@ let transient = {
   stockStatus: 'in_stock',
   category: '',
   colours: [],
+  // Set to a product id while that product is being edited; null means the
+  // form is adding a new product.
+  editingProductId: null,
+  editingHasImage: false,
+  // The name/price/description boxes are kept here as they are typed, so a
+  // re-render (choosing a category, a validation message) cannot wipe them.
+  shopName: '',
+  shopPrice: '',
+  shopDesc: '',
   shopImages: null,
   imageStatus: '',
   orderSent: false,
@@ -1475,7 +1575,7 @@ function toggleMenu(){
 function closeMenu(){ nav.menuOpen = false; document.body.classList.remove('bh-menu-open'); document.body.classList.remove('bh-menu-open'); }
 
 function renderMenu(){
-  const shopCats = SHOP_CATEGORIES.filter(cat => cat !== 'Gift Voucher');
+  const shopCats = shopCategories().filter(cat => cat !== 'Gift Voucher');
   const storyCats = categories();
   const openShop = nav.menuOpenShop;
   const openStories = nav.menuOpenStories;
@@ -1565,6 +1665,15 @@ function openStory(id){ nav.activeStoryId = id; nav.view = 'story'; render(); }
 
 // ---- Root render ----
 function render(){
+  // The drawer only belongs over the shop grid. Navigating away with it open
+  // would otherwise leave the page scroll locked.
+  if (transient.filterOpen && (nav.view !== 'shop' || transient.viewingProductId || transient.viewingCart || transient.checkingOut)){
+    transient.filterOpen = false;
+    transient.filterPanel = '';
+    transient.filterDraft = null;
+  }
+  document.body.classList.toggle('bh-filters-open', !!transient.filterOpen);
+
   const root = document.getElementById('root');
   root.innerHTML = `
     <div class="bh-root">
@@ -1583,6 +1692,7 @@ function render(){
       </header>
 
       ${nav.menuOpen ? renderMenu() : ''}
+      ${renderFilterDrawer()}
       ${transient.loadError ? `
         <div style="max-width:900px;margin:14px auto 0;padding:0 24px;">
           <div style="background:var(--riskbg,#fbeaec);border:1px solid #e3b8bf;color:var(--risk);border-radius:10px;padding:12px 16px;font-size:.85rem;font-weight:600;">
@@ -1614,7 +1724,7 @@ function renderHome(){
   const approved = stories.filter(s => s.status === 'approved');
 
   // Shop by mood — one card per category that actually has products.
-  const moods = SHOP_CATEGORIES
+  const moods = shopCategories()
     .map(cat => ({ cat, items: products.filter(p => p.category === cat) }))
     .filter(m => m.items.length);
 
@@ -2045,7 +2155,7 @@ function renderShop(){
   // 4. THE SHOP
   const cols = coloursInShop();
   const sizes = sizesInShop();
-  const filtering = transient.filterCategory || transient.filterColour || transient.filterSize;
+  const filtering = anyFilterActive();
   const seeAll = transient.shopSeeAll;
 
   const productCard = (p) => `
@@ -2059,30 +2169,19 @@ function renderShop(){
       </div>
     </div>`;
 
+  const shownCount = visibleProducts(filterScope()).length;
+  const nActive = activeFilterCount();
   const controls = `
-    <div class="bh-filters">
-      ${cols.length ? `
-        <div class="bh-filter-row">
-          <span class="bh-filter-label">Colour</span>
-          ${cols.map(col => `<button class="bh-swatch ${transient.filterColour === col ? 'on' : ''}" onclick="setFilter('Colour','${escapeHtml(col)}')"><span style="background:${colourHex(col)}"></span>${escapeHtml(col)}</button>`).join('')}
-        </div>` : ''}
-      ${sizes.length ? `
-        <div class="bh-filter-row">
-          <span class="bh-filter-label">Size</span>
-          ${sizes.map(s => `<button class="bh-chip sm ${transient.filterSize === s ? 'on' : ''}" onclick="setFilter('Size','${escapeHtml(s)}')">${escapeHtml(s)}</button>`).join('')}
-        </div>` : ''}
-      <div class="bh-filter-row">
-        <span class="bh-filter-label">Sort</span>
-        <select class="bh-sort" onchange="setSort(this.value)">
-          <option value="recent"     ${transient.sortBy==='recent'?'selected':''}>Recently sold</option>
-          <option value="in_stock"   ${transient.sortBy==='in_stock'?'selected':''}>In stock first</option>
-          <option value="size"       ${transient.sortBy==='size'?'selected':''}>By size</option>
-          <option value="price_low"  ${transient.sortBy==='price_low'?'selected':''}>Price: low to high</option>
-          <option value="price_high" ${transient.sortBy==='price_high'?'selected':''}>Price: high to low</option>
-          <option value="newest"     ${transient.sortBy==='newest'?'selected':''}>Newest first</option>
-        </select>
-        ${filtering ? `<button class="bh-btn-ghost" style="font-size:.78rem" onclick="clearFilters()">Clear</button>` : ''}
-      </div>
+    <div class="bh-filterbar">
+      <button class="bh-filterbtn" onclick="openFilters()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 7h13M19 7h2M3 17h5M11 17h10"/>
+          <circle cx="17.5" cy="7" r="2.2"/><circle cx="9.5" cy="17" r="2.2"/>
+        </svg>
+        <span>Filter and sort</span>
+        ${nActive ? `<span class="n">${nActive}</span>` : ''}
+      </button>
+      <span class="bh-filtercount">${shownCount} product${shownCount === 1 ? '' : 's'}</span>
     </div>`;
 
   // ---- "See all" view: one category, full grid ----
@@ -2110,7 +2209,7 @@ function renderShop(){
   }
 
   // ---- filtering by colour/size cuts across categories: show one grid ----
-  if (transient.filterColour || transient.filterSize || transient.filterCategory){
+  if (anyFilterActive()){
     const shown = visibleProducts();
     return `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
@@ -2131,7 +2230,7 @@ function renderShop(){
   }
 
   // ---- default: a carousel per category, each with See all ----
-  const groups = SHOP_CATEGORIES
+  const groups = shopCategories()
     .map(cat => ({ cat, items: visibleProducts(products.filter(p => p.category === cat)) }))
     .filter(g => g.items.length);
   const uncategorised = visibleProducts(products.filter(p => !p.category));
@@ -2192,8 +2291,17 @@ function visibleProducts(list){
   let out = (list || products).slice();
 
   if (transient.filterCategory) out = out.filter(p => p.category === transient.filterCategory);
-  if (transient.filterColour)   out = out.filter(p => productColours(p).includes(transient.filterColour));
-  if (transient.filterSize)     out = out.filter(p => allSizesFor(p).all.includes(transient.filterSize));
+  if (transient.filterAvail.length)
+    out = out.filter(p => transient.filterAvail.includes(availabilityOf(p)));
+  if (transient.filterColour.length)
+    out = out.filter(p => productColours(p).some(c => transient.filterColour.includes(c)));
+  if (transient.filterSize.length)
+    out = out.filter(p => allSizesFor(p).all.some(s => transient.filterSize.includes(s)));
+
+  const min = parseFloat(transient.priceMin);
+  const max = parseFloat(transient.priceMax);
+  if (!isNaN(min)) out = out.filter(p => (parseFloat(p.price) || 0) >= min);
+  if (!isNaN(max)) out = out.filter(p => (parseFloat(p.price) || 0) <= max);
 
   const num = v => parseFloat(v) || 0;
   const newest = (a,b) => new Date(b.created_at||0) - new Date(a.created_at||0);
@@ -2206,6 +2314,8 @@ function visibleProducts(list){
       out.sort((a,b) => String(a.size_type||'').localeCompare(String(b.size_type||''))
         || allSizesFor(b).all.length - allSizesFor(a).all.length || newest(a,b));
       break;
+    case 'az': out.sort((a,b) => String(a.name||'').localeCompare(String(b.name||''))); break;
+    case 'za': out.sort((a,b) => String(b.name||'').localeCompare(String(a.name||''))); break;
     case 'price_low':  out.sort((a,b) => num(a.price) - num(b.price)); break;
     case 'price_high': out.sort((a,b) => num(b.price) - num(a.price)); break;
     case 'newest':     out.sort(newest); break;
@@ -2228,18 +2338,215 @@ function coloursInShop(){
   return Array.from(set);
 }
 function categoriesInShop(){
-  return SHOP_CATEGORIES.filter(cat => products.some(p => p.category === cat));
+  return shopCategories().filter(cat => products.some(p => p.category === cat));
 }
 
+// Category is still a single choice, set from the department rails.
 function setFilter(kind, value){
-  transient['filter' + kind] = transient['filter' + kind] === value ? '' : value;
-  render();
+  if (kind === 'Category'){
+    transient.filterCategory = transient.filterCategory === value ? '' : value;
+    render();
+  }
 }
 function setSort(v){ transient.sortBy = v; render(); }
+
+const SORT_LABELS = {
+  recent:     'Featured',
+  in_stock:   'In stock first',
+  az:         'Alphabetically, A\u2013Z',
+  za:         'Alphabetically, Z\u2013A',
+  price_low:  'Price, low to high',
+  price_high: 'Price, high to low',
+  newest:     'Date, new to old',
+  size:       'By size range',
+};
+
+// The right-hand "Filter and sort" drawer. Rendered at the top level of the
+// page, not inside the shop markup, so position:fixed is not affected by any
+// ancestor.
+function renderFilterDrawer(){
+  if (!transient.filterOpen) return '';
+  const d = transient.filterDraft || EMPTY_FILTERS();
+  const scope = filterScope();
+  const panel = transient.filterPanel;
+
+  const countAvail  = v => scope.filter(p => availabilityOf(p) === v).length;
+  const countColour = v => scope.filter(p => productColours(p).includes(v)).length;
+  const countSize   = v => scope.filter(p => allSizesFor(p).all.includes(v)).length;
+
+  const avails = ['In stock', 'Made to order'].filter(v => countAvail(v) > 0);
+  const cols   = coloursInShop().filter(c => countColour(c) > 0);
+  const sizes  = sizesInShop().filter(s => countSize(s) > 0);
+
+  const tick = (on, label, count, onclick, swatch) => `
+    <div class="bh-fopt ${on ? 'on' : ''}" onclick="${onclick}">
+      <i></i>
+      ${swatch ? `<span class="sw" style="background:${swatch}"></span>` : ''}
+      <span>${escapeHtml(label)}${count === null ? '' : ` (${count})`}</span>
+    </div>`;
+
+  const backHead = (title) => `
+    <button class="bh-fback" onclick="filterPanel('')">
+      <span>\u2190</span><span>${escapeHtml(title)}</span>
+    </button>`;
+
+  const rowsSummary = (arr) => arr.length ? `<span class="on">${arr.length}</span>` : '<span class="arrow">\u2192</span>';
+
+  let body;
+  if (panel === 'avail'){
+    body = backHead('Availability') + avails.map(v =>
+      tick(d.avail.includes(v), v, countAvail(v), `toggleDraft('avail','${escapeHtml(v)}')`)).join('');
+  } else if (panel === 'price'){
+    const prices = scope.map(p => parseFloat(p.price) || 0);
+    const hi = prices.length ? Math.max(...prices) : 0;
+    body = backHead('Price') + `
+      <p style="padding:0 20px;font-size:.78rem;color:var(--grey);margin:0 0 10px">
+        The highest price in the shop is R${hi.toLocaleString('en-ZA')}
+      </p>
+      <div class="bh-fprice">
+        <input type="number" inputmode="numeric" placeholder="From (R)" value="${escapeHtml(d.min)}"
+               oninput="setDraftPrice('min', this.value)">
+        <span style="color:var(--grey)">\u2013</span>
+        <input type="number" inputmode="numeric" placeholder="To (R)" value="${escapeHtml(d.max)}"
+               oninput="setDraftPrice('max', this.value)">
+      </div>`;
+  } else if (panel === 'size'){
+    body = backHead('Size') + (sizes.length
+      ? sizes.map(s => tick(d.sizes.includes(s), s, countSize(s), `toggleDraft('sizes','${escapeHtml(s)}')`)).join('')
+      : `<p style="padding:0 20px;color:var(--grey);font-size:.85rem">No sizes to filter on yet.</p>`);
+  } else if (panel === 'colour'){
+    body = backHead('Colour') + (cols.length
+      ? cols.map(c => tick(d.colours.includes(c), c, countColour(c), `toggleDraft('colours','${escapeHtml(c)}')`, colourHex(c))).join('')
+      : `<p style="padding:0 20px;color:var(--grey);font-size:.85rem">No colours to filter on yet.</p>`);
+  } else {
+    body = `
+      ${avails.length ? `<button class="bh-frow" onclick="filterPanel('avail')"><span>Availability</span>${rowsSummary(d.avail)}</button>` : ''}
+      <button class="bh-frow" onclick="filterPanel('price')"><span>Price</span>${(d.min !== '' || d.max !== '') ? '<span class="on">1</span>' : '<span class="arrow">\u2192</span>'}</button>
+      ${sizes.length ? `<button class="bh-frow" onclick="filterPanel('size')"><span>Size</span>${rowsSummary(d.sizes)}</button>` : ''}
+      ${cols.length ? `<button class="bh-frow" onclick="filterPanel('colour')"><span>Colour</span>${rowsSummary(d.colours)}</button>` : ''}
+      <div class="bh-fsortrow">
+        <label for="bhSortSel">Sort by:</label>
+        <select id="bhSortSel" onchange="setDraftSort(this.value)">
+          ${Object.keys(SORT_LABELS).map(k =>
+            `<option value="${k}" ${d.sort === k ? 'selected' : ''}>${escapeHtml(SORT_LABELS[k])}</option>`).join('')}
+        </select>
+      </div>`;
+  }
+
+  // Counting against the draft, so the header updates as boxes are ticked.
+  const preview = (function(){
+    const saved = {
+      a: transient.filterAvail, c: transient.filterColour, s: transient.filterSize,
+      mn: transient.priceMin, mx: transient.priceMax,
+    };
+    transient.filterAvail = d.avail; transient.filterColour = d.colours;
+    transient.filterSize = d.sizes; transient.priceMin = d.min; transient.priceMax = d.max;
+    const n = visibleProducts(scope).length;
+    transient.filterAvail = saved.a; transient.filterColour = saved.c;
+    transient.filterSize = saved.s; transient.priceMin = saved.mn; transient.priceMax = saved.mx;
+    return n;
+  })();
+
+  return `
+    <div class="bh-fscrim" onclick="closeFilters()"></div>
+    <div class="bh-fdrawer" role="dialog" aria-label="Filter and sort">
+      <div class="bh-fhead">
+        <h3>Filter and sort</h3>
+        <div class="sub">${preview} product${preview === 1 ? '' : 's'}</div>
+        <button class="bh-fx" onclick="closeFilters()" aria-label="Close">\u2715</button>
+      </div>
+      <div class="bh-fbody">${body}</div>
+      <div class="bh-ffoot">
+        <button class="bh-fclear" onclick="clearDraft('${panel}')">${panel ? 'Clear' : 'Remove all'}</button>
+        <button class="bh-fapply" onclick="applyFilters()">Apply</button>
+      </div>
+    </div>`;
+}
+
+function availabilityOf(p){
+  return productSizes(p).length > 0 ? 'In stock' : 'Made to order';
+}
+
+// Products the drawer is filtering within — the whole shop, or one department
+// when a "See all" page is open. Counts and the header total come from here.
+function filterScope(){
+  return transient.shopSeeAll
+    ? products.filter(p => p.category === transient.shopSeeAll)
+    : products.slice();
+}
+
+function activeFilterCount(){
+  return transient.filterAvail.length + transient.filterColour.length + transient.filterSize.length
+    + (transient.priceMin !== '' ? 1 : 0) + (transient.priceMax !== '' ? 1 : 0);
+}
+function anyFilterActive(){ return activeFilterCount() > 0 || !!transient.filterCategory; }
+
+const EMPTY_FILTERS = () => ({ avail: [], colours: [], sizes: [], min: '', max: '', sort: 'recent' });
+
+function openFilters(){
+  transient.filterDraft = {
+    avail: transient.filterAvail.slice(),
+    colours: transient.filterColour.slice(),
+    sizes: transient.filterSize.slice(),
+    min: transient.priceMin,
+    max: transient.priceMax,
+    sort: transient.sortBy,
+  };
+  transient.filterPanel = '';
+  transient.filterOpen = true;
+  document.body.classList.add('bh-filters-open');
+  render();
+}
+function closeFilters(){
+  transient.filterOpen = false;
+  transient.filterPanel = '';
+  transient.filterDraft = null;
+  document.body.classList.remove('bh-filters-open');
+  render();
+}
+function filterPanel(name){ transient.filterPanel = name; render(); }
+
+function toggleDraft(key, value){
+  const d = transient.filterDraft;
+  if (!d) return;
+  const i = d[key].indexOf(value);
+  if (i === -1) d[key].push(value); else d[key].splice(i, 1);
+  render();
+}
+function setDraftPrice(which, v){ if (transient.filterDraft) transient.filterDraft[which] = v; }
+function setDraftSort(v){ if (transient.filterDraft) transient.filterDraft.sort = v; }
+
+// "Clear" inside a panel empties just that panel; on the front screen it
+// removes everything.
+function clearDraft(panel){
+  const d = transient.filterDraft;
+  if (!d) return;
+  if (panel === 'avail')       d.avail = [];
+  else if (panel === 'colour') d.colours = [];
+  else if (panel === 'size')   d.sizes = [];
+  else if (panel === 'price')  { d.min = ''; d.max = ''; }
+  else Object.assign(d, EMPTY_FILTERS(), { sort: d.sort });
+  render();
+}
+
+function applyFilters(){
+  const d = transient.filterDraft || EMPTY_FILTERS();
+  transient.filterAvail  = d.avail.slice();
+  transient.filterColour = d.colours.slice();
+  transient.filterSize   = d.sizes.slice();
+  transient.priceMin     = d.min;
+  transient.priceMax     = d.max;
+  transient.sortBy       = d.sort;
+  closeFilters();
+}
+
 function clearFilters(){
   transient.filterCategory = '';
-  transient.filterColour = '';
-  transient.filterSize = '';
+  transient.filterColour = [];
+  transient.filterSize = [];
+  transient.filterAvail = [];
+  transient.priceMin = '';
+  transient.priceMax = '';
   transient.shopSeeAll = '';
   render();
 }
@@ -2760,24 +3067,34 @@ async function rejectReply(id){ await apiFetch('/replies', { method: 'PATCH', bo
 
 // ---- Admin: shop manager ----
 function renderShopManager(){
+  const editing = !!transient.editingProductId;
+  const edited = editing ? products.find(p => p.id === transient.editingProductId) : null;
+  // While editing, show the product's current picture until a new one is picked.
+  const preview = transient.shopImageData
+    || (editing && edited && edited.has_image && !transient.shopImages ? productImageUrl(edited, 'thumb') : '');
+
   return `
-    <div class="bh-card" style="margin-bottom:20px">
-      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Add a product</h3>
+    <div class="bh-card" style="margin-bottom:20px${editing ? ';border:1.5px solid var(--plum)' : ''}" id="shopFormCard">
+      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">
+        ${editing ? 'Editing \u201c' + escapeHtml(edited ? edited.name : '') + '\u201d' : 'Add a product'}
+      </h3>
       <div class="bh-grid2">
         <div>
           <label class="bh-label">Picture</label>
           <input type="file" accept="image/*" class="bh-input" style="margin-bottom:12px" onchange="handleShopFile(event)">
-          <img id="imagePreview" src="${transient.shopImageData || ''}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:${transient.shopImageData ? 'block' : 'none'}">
-          <p id="imageStatus" style="font-size:.75rem;color:var(--grey);margin:0 0 12px">${escapeHtml(transient.imageStatus)}</p>
+          <img id="imagePreview" src="${preview}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:${preview ? 'block' : 'none'}">
+          <p id="imageStatus" style="font-size:.75rem;color:var(--grey);margin:0 0 12px">${escapeHtml(transient.imageStatus || (editing && edited && edited.has_image ? 'Leave this alone to keep the current picture.' : ''))}</p>
           <label class="bh-label">Name</label>
-          <input id="shopName" class="bh-input" placeholder="e.g. Item name" style="margin-bottom:12px">
+          <input id="shopName" class="bh-input" placeholder="e.g. Item name" style="margin-bottom:12px"
+                 value="${escapeHtml(transient.shopName)}" oninput="transient.shopName = this.value">
           <div id="priceWrap" style="display:${transient.category === 'Gift Voucher' ? 'none' : 'block'}">
             <label class="bh-label">Price (R)</label>
-            <input id="shopPrice" type="number" class="bh-input" placeholder="0.00" style="margin-bottom:12px">
+            <input id="shopPrice" type="number" class="bh-input" placeholder="0.00" style="margin-bottom:12px"
+                   value="${escapeHtml(transient.shopPrice)}" oninput="transient.shopPrice = this.value">
           </div>
 
           <label class="bh-label">Description (optional)</label>
-          <textarea id="shopDesc" class="bh-textarea" style="min-height:60px;margin-bottom:12px" placeholder="Any extra detail shown on the product page…"></textarea>
+          <textarea id="shopDesc" class="bh-textarea" style="min-height:60px;margin-bottom:12px" placeholder="Any extra detail shown on the product page…" oninput="transient.shopDesc = this.value">${escapeHtml(transient.shopDesc)}</textarea>
 
           <label class="bh-label">Size type</label>
           <select id="shopSizeType" class="bh-select" style="margin-bottom:12px" onchange="changeSizeType(this.value)">
@@ -2787,7 +3104,7 @@ function renderShopManager(){
           <label class="bh-label">Category</label>
           <select id="shopCategory" class="bh-select" style="margin-bottom:12px" onchange="changeProductType(this.value)">
             <option value="">Choose a category\u2026</option>
-            ${SHOP_CATEGORIES.map(cat => `<option value="${escapeHtml(cat)}" ${transient.category === cat ? 'selected' : ''}>${escapeHtml(cat)}</option>`).join('')}
+            ${shopCategories().map(cat => `<option value="${escapeHtml(cat)}" ${transient.category === cat ? 'selected' : ''}>${escapeHtml(cat)}</option>`).join('')}
           </select>
 
           ${transient.category === 'Gift Voucher' ? `
@@ -2823,7 +3140,10 @@ function renderShopManager(){
             ).join('')}
           </div>
 
-          <button class="bh-btn" onclick="addProduct()">+ Add product</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button class="bh-btn" onclick="addProduct()">${editing ? 'Save changes' : '+ Add product'}</button>
+            ${editing ? `<button class="bh-btn-ghost" onclick="cancelEditProduct()">Cancel</button>` : ''}
+          </div>
         </div>
         <div>
           <p class="bh-note" style="margin-top:0">Pictures are stored directly with the product for this first version — simple to build and fine at this scale. If the catalogue grows large, moving images to dedicated image hosting keeps things fast; worth revisiting later, not a blocker now.</p>
@@ -2843,7 +3163,10 @@ function renderShopManager(){
             ${productColours(p).length ? `<div class="bh-card-swatches">${productColours(p).map(col => `<i title="${escapeHtml(col)}" style="background:${colourHex(col)}"></i>`).join('')}</div>` : ''}
             ${productSizes(p).length ? `<div class="bh-shop-sizes">In stock: ${productSizes(p).map(escapeHtml).join(', ')}</div>` : ''}
             ${orderOnlySizes(p).length ? `<div class="bh-shop-sizes" style="color:#a6752f">To order: ${orderOnlySizes(p).map(escapeHtml).join(', ')}</div>` : ''}
-            <button class="bh-btn-ghost" style="color:var(--risk);margin-top:8px;font-size:.75rem" onclick="removeProduct('${p.id}')">🗑 Remove</button>
+            <div style="display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap">
+              <button class="bh-btn-ghost" style="font-size:.75rem" onclick="editProduct('${p.id}')">✏️ Edit</button>
+              <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeProduct('${p.id}')">🗑 Remove</button>
+            </div>
           </div>
         </div>
       `).join('')}
@@ -2904,7 +3227,20 @@ function changeSizeType(type){
   }
 }
 
+// Read whatever is currently in the three free-text boxes back into state.
+// Anything that triggers a re-render while the product form is open must call
+// this first, or the typed name and price are thrown away.
+function captureProductForm(){
+  const n = document.getElementById('shopName');
+  const p = document.getElementById('shopPrice');
+  const d = document.getElementById('shopDesc');
+  if (n) transient.shopName = n.value;
+  if (p) transient.shopPrice = p.value;
+  if (d) transient.shopDesc  = d.value;
+}
+
 function changeProductType(cat){
+  captureProductForm();
   transient.category = cat;
   render(); // the form changes shape for vouchers
 }
@@ -2939,12 +3275,58 @@ function toggleSize(s, btn){
   if (btn) btn.classList.toggle('on', i === -1);
 }
 
+// Load an existing product into the same form used for adding. Everything
+// needed is already in the products list, so this needs no extra request.
+function editProduct(id){
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  transient.editingProductId = id;
+  transient.editingHasImage = !!p.has_image;
+  transient.shopName  = p.name || '';
+  transient.shopPrice = isVoucher(p) ? '' : String(p.price == null ? '' : p.price);
+  transient.shopDesc  = p.description || '';
+  transient.sizeType  = SIZE_PRESETS[p.size_type] ? p.size_type : 'freesize';
+  transient.selectedSizes = productSizes(p).slice();
+  transient.orderSizes    = orderOnlySizes(p).slice();
+  transient.colours   = productColours(p).slice();
+  transient.stockStatus = p.stock_status === 'made_to_order' ? 'made_to_order' : 'in_stock';
+  transient.category  = p.category || '';
+  // A new picture is optional — the existing one stays unless one is chosen.
+  transient.shopImages = null;
+  transient.shopImageData = null;
+  transient.imageStatus = '';
+  transient.loadError = '';
+  render();
+  const card = document.getElementById('shopFormCard');
+  if (card && card.scrollIntoView) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetProductForm(){
+  transient.editingProductId = null;
+  transient.editingHasImage = false;
+  transient.shopName = '';
+  transient.shopPrice = '';
+  transient.shopDesc = '';
+  transient.shopImageData = null;
+  transient.shopImages = null;
+  transient.imageStatus = '';
+  transient.selectedSizes = transient.sizeType === 'freesize' ? ['Free size'] : [];
+  transient.orderSizes = [];
+  transient.colours = [];
+}
+
+function cancelEditProduct(){
+  resetProductForm();
+  transient.loadError = '';
+  render();
+}
+
 async function addProduct(){
-  const name = document.getElementById('shopName').value.trim();
-  const priceEl = document.getElementById('shopPrice');
+  captureProductForm();
+  const name = (transient.shopName || '').trim();
   const isGiftVoucher = transient.category === 'Gift Voucher';
-  const price = isGiftVoucher ? String(VOUCHER_MIN) : (priceEl ? priceEl.value : '');
-  const description = document.getElementById('shopDesc').value.trim();
+  const price = isGiftVoucher ? String(VOUCHER_MIN) : (transient.shopPrice || '').trim();
+  const description = (transient.shopDesc || '').trim();
 
   if (!transient.category){
     transient.loadError = 'Choose a category for this product.';
@@ -2952,7 +3334,9 @@ async function addProduct(){
     return;
   }
   if (!name || !price){
-    transient.loadError = 'Give the product a name and a price before adding it.';
+    transient.loadError = transient.editingProductId
+      ? 'A product needs both a name and a price.'
+      : 'Give the product a name and a price before adding it.';
     render();
     return;
   }
@@ -2962,26 +3346,38 @@ async function addProduct(){
     return;
   }
   transient.loadError = '';
-  await apiFetch('/products', {
-    method: 'POST',
-    body: JSON.stringify({
-      name, price, images: transient.shopImages,
-      description,
-      sizeType: transient.sizeType,
-      sizes: transient.selectedSizes,
-      orderSizes: transient.orderSizes,
-      stockStatus: transient.stockStatus,
-      category: transient.category,
-      colours: transient.colours,
-      productType: isGiftVoucher ? 'voucher' : 'item',
-    }),
-  });
-  transient.shopImageData = null;
-  transient.shopImages = null;
-  transient.imageStatus = '';
-  transient.selectedSizes = transient.sizeType === 'freesize' ? ['Free size'] : [];
-  transient.orderSizes = [];
-  transient.colours = [];
+  const editingId = transient.editingProductId;
+  const payload = {
+    name, price,
+    description,
+    sizeType: transient.sizeType,
+    sizes: transient.selectedSizes,
+    orderSizes: transient.orderSizes,
+    stockStatus: transient.stockStatus,
+    category: transient.category,
+    colours: transient.colours,
+    productType: isGiftVoucher ? 'voucher' : 'item',
+  };
+  // On an edit, a picture is only sent if a new one was chosen — otherwise the
+  // existing one is left in place.
+  if (transient.shopImages) payload.images = transient.shopImages;
+  else if (!editingId) payload.images = null;
+
+  try {
+    await apiFetch('/products', {
+      method: editingId ? 'PATCH' : 'POST',
+      body: JSON.stringify(editingId ? Object.assign({ id: editingId }, payload) : payload),
+    });
+  } catch (err) {
+    // Keep everything typed in so the work isn't lost on a failed save.
+    transient.loadError = editingId
+      ? "Couldn't save those changes \u2014 check your connection and try again."
+      : "Couldn't add that product \u2014 check your connection and try again.";
+    render();
+    return;
+  }
+
+  resetProductForm();
   await fetchProducts();
   render();
 }
@@ -3351,6 +3747,19 @@ function renderSettings(){
       ${field('shippingCost', 'Shipping cost (R)', 'What customers pay for delivery. Collection is always free.')}
       ${field('freeShippingOver', 'Free shipping over (R)', 'Orders above this amount ship free. Set it to 0 to always charge.')}
       <div class="bh-set-block">
+        <label class="bh-label">Shop departments</label>
+        <p class="bh-set-help">The departments in the shop, and what she picks from when adding a product. Renaming one moves every product already in it.</p>
+        <div id="shopCatList">
+          ${shopCategories().map((cat, i) => `
+            <div class="bh-cat-row">
+              <input class="bh-input bh-shopcat-input" data-idx="${i}" value="${escapeHtml(cat)}">
+              <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeShopCategory(${i})">Remove</button>
+            </div>`).join('')}
+        </div>
+        <button class="bh-btn-outline" style="font-size:.8rem;padding:8px 14px;margin-top:6px" onclick="addShopCategory()">+ Add a department</button>
+      </div>
+
+      <div class="bh-set-block">
         <label class="bh-label">Story categories</label>
         <p class="bh-set-help">The folders people choose from when sharing a story. Renaming one moves every story already in it.</p>
         <div id="catList">
@@ -3401,7 +3810,7 @@ function renderSettings(){
   `;
 }
 
-const SETTING_KEYS = ['shippingCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
+const SETTING_KEYS = ['shippingCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','shopCategories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
 
 function readCategoryInputs(){
   return Array.from(document.querySelectorAll('.bh-cat-input'))
@@ -3409,7 +3818,43 @@ function readCategoryInputs(){
     .filter(Boolean);
 }
 
+function readShopCategoryInputs(){
+  return Array.from(document.querySelectorAll('.bh-shopcat-input'))
+    .map(el => el.value.trim())
+    .filter(Boolean);
+}
+
+function snapshotCategoryEdits(){
+  const shop = readShopCategoryInputs();
+  const story = readCategoryInputs();
+  if (shop.length) settings.shopCategories = JSON.stringify(shop);
+  if (story.length) settings.categories = JSON.stringify(story);
+}
+
+function addShopCategory(){
+  snapshotCategoryEdits();
+  const list = readShopCategoryInputs();
+  list.push('New department');
+  settings.shopCategories = JSON.stringify(list);
+  render();
+}
+
+function removeShopCategory(i){
+  snapshotCategoryEdits();
+  const list = readShopCategoryInputs();
+  if (list.length <= 1){ alert('Keep at least one department.'); return; }
+  const inUse = products.filter(p => p.category === list[i]).length;
+  const msg = inUse
+    ? `${inUse} ${inUse === 1 ? 'product is' : 'products are'} in "${list[i]}". Removing it will leave ${inUse === 1 ? 'it' : 'them'} without a department until you move ${inUse === 1 ? 'it' : 'them'}. Remove anyway?`
+    : `Remove "${list[i]}"?`;
+  if (!confirm(msg)) return;
+  list.splice(i, 1);
+  settings.shopCategories = JSON.stringify(list);
+  render();
+}
+
 function addCategory(){
+  snapshotCategoryEdits();
   const list = readCategoryInputs();
   list.push('New category');
   settings.categories = JSON.stringify(list);
@@ -3417,6 +3862,7 @@ function addCategory(){
 }
 
 function removeCategory(i){
+  snapshotCategoryEdits();
   const list = readCategoryInputs();
   if (list.length <= 1){
     alert('Keep at least one category.');
@@ -3441,13 +3887,20 @@ async function saveSettings(){
   });
 
   const cats = readCategoryInputs();
-  if (cats.length){
-    updates.categories = JSON.stringify(cats);
-  } else {
+  if (!cats.length){
     status.style.color = 'var(--risk)';
-    status.textContent = 'Keep at least one category.';
+    status.textContent = 'Keep at least one story category.';
     return;
   }
+  updates.categories = JSON.stringify(cats);
+
+  const shopCats = readShopCategoryInputs();
+  if (!shopCats.length){
+    status.style.color = 'var(--risk)';
+    status.textContent = 'Keep at least one shop department.';
+    return;
+  }
+  updates.shopCategories = JSON.stringify(shopCats);
   if (updates.shippingCost !== undefined && isNaN(parseFloat(updates.shippingCost))){
     status.style.color = 'var(--risk)';
     status.textContent = 'Shipping cost must be a number, like 99.';
@@ -3469,7 +3922,7 @@ async function saveSettings(){
 function resetSettings(){
   if (!confirm('Put every setting back to how it started? Anything you have changed here will be lost.')) return;
   SETTING_KEYS.forEach(k => {
-    if (k === 'categories') return;
+    if (k === 'categories' || k === 'shopCategories') return;
     const el = document.getElementById('set_' + k);
     if (el) el.value = DEFAULT_SETTINGS[k];
   });
