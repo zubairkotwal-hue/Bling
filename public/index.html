@@ -212,6 +212,16 @@
   .bh-lead .who strong{ color:var(--plum); }
   .bh-statuspill{ font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; padding:5px 11px; border-radius:20px; background:var(--blushp); color:var(--plum); border:1px solid var(--line); cursor:pointer; }
   .bh-post-item{ display:flex; align-items:center; gap:14px; padding:14px; border:1px solid var(--line); border-radius:12px; margin-bottom:10px; background:#fff; flex-wrap:wrap; }
+  /* The link is shown as real, selectable text rather than only living behind a
+     Copy button. It stays on screen for good, so it can be copied as many times
+     as needed — and copied by hand if the browser blocks the clipboard. */
+  .bh-linkrow{ display:flex; gap:8px; align-items:center; width:100%; margin-top:10px; }
+  .bh-linkfield{ flex:1; min-width:0; font-family:ui-monospace,monospace; font-size:.72rem;
+    padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--blushp);
+    color:var(--plum); text-overflow:ellipsis; }
+  .bh-linkcopy{ flex:none; font-size:.75rem; padding:9px 14px; }
+  .bh-linklbl{ width:100%; font-size:.68rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--grey); margin-top:12px; }
   .bh-post-item .snip{ flex:1; font-family:var(--f-display); font-style:italic; font-size:.9rem; min-width:180px; }
   .bh-postedtag{ font-size:.68rem; font-weight:700; color:var(--ok); text-transform:uppercase; }
   .bh-checkrow{ display:flex; align-items:flex-start; gap:10px; font-size:.86rem; padding:9px 0; border-bottom:1px solid var(--line); }
@@ -662,7 +672,7 @@ async function drawStoryCard(canvas, storyText, tagText){
   await drawWatermark(ctx, w, h);
 }
 
-async function drawCompileCard(canvas, replyTexts, tagText, storyText){
+async function drawCompileCard(canvas, replyTexts, tagText, storyText, storyPseudonym){
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   await loadCanvasFonts();
@@ -747,7 +757,31 @@ async function drawCompileCard(canvas, replyTexts, tagText, storyText){
 
       ctx.fillStyle = T.accent;
       ctx.font = `italic 400 ${block.size}px Fraunces, Georgia, serif`;
-      block.lines.forEach(line => { ctx.fillText(line, marginX + 30, y); y += block.lead; });
+      let lastLine = '', lastY = y;
+      block.lines.forEach(line => {
+        ctx.fillText(line, marginX + 30, y);
+        lastLine = line; lastY = y;
+        y += block.lead;
+      });
+
+      // Credit the original poster, if they chose a pseudonym: smaller gold
+      // text sitting just after the last line of the quote. If it will not fit
+      // on that line it drops onto its own line rather than running off the edge.
+      if (storyPseudonym){
+        const credit = '\u2014 ' + storyPseudonym;
+        const small = Math.round(block.size * 0.62);
+        ctx.font = `italic 400 ${block.size}px Fraunces, Georgia, serif`;
+        const lastW = ctx.measureText(lastLine).width;
+        ctx.font = `italic 400 ${small}px Fraunces, Georgia, serif`;
+        ctx.fillStyle = T.accent + 'cc';
+        const x = marginX + 30 + lastW + small * 0.7;
+        if (x + ctx.measureText(credit).width <= marginX + contentWidth){
+          ctx.fillText(credit, x, lastY);
+        } else {
+          ctx.fillText(credit, marginX + 30, y);
+          y += block.lead * 0.75;
+        }
+      }
       y += plan.gapAfterStory;
     } else {
       // Replies, in the lighter cream.
@@ -1545,15 +1579,52 @@ function storyUrl(id){
   return `${window.location.origin}${window.location.pathname}?story=${encodeURIComponent(id)}`;
 }
 
+// A story's link, shown as selectable text with a Copy button beside it.
+// Used everywhere a card can be made, and it never goes away once shown.
+function storyLinkRow(id, label){
+  const url = storyUrl(id);
+  return `
+    ${label ? `<div class="bh-linklbl">${escapeHtml(label)}</div>` : ''}
+    <div class="bh-linkrow">
+      <input class="bh-linkfield" readonly value="${escapeHtml(url)}"
+             onclick="this.select()" onfocus="this.select()" aria-label="Link to this story">
+      <button class="bh-btn-outline bh-linkcopy" onclick="copyStoryLink('${id}', this)">Copy</button>
+    </div>`;
+}
+
 async function copyStoryLink(id, btn){
   const url = storyUrl(id);
+  const field = btn && btn.parentElement ? btn.parentElement.querySelector('.bh-linkfield') : null;
+  const flash = (msg) => {
+    if (!btn) return;
+    if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+    btn.textContent = msg;
+    setTimeout(() => { btn.textContent = btn.dataset.label || 'Copy'; }, 1800);
+  };
+
+  // 1. The modern clipboard API. Needs HTTPS, which the live site has.
   try {
-    await navigator.clipboard.writeText(url);
-    if (btn){ const t = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = t, 1800); }
-  } catch (e) {
-    // Some phone browsers block copying — show it so it can be copied by hand.
-    window.prompt('Copy this link and paste it into the Instagram link sticker:', url);
-  }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(url);
+      flash('Copied!');
+      return;
+    }
+  } catch (e) { /* fall through */ }
+
+  // 2. Older browsers: select the visible field and copy the selection.
+  try {
+    if (field){
+      field.focus();
+      field.select();
+      field.setSelectionRange(0, url.length);
+      if (document.execCommand('copy')){ flash('Copied!'); return; }
+    }
+  } catch (e) { /* fall through */ }
+
+  // 3. Nothing worked — leave the link selected so it can be copied by hand.
+  // The link stays on screen either way, so this is never a dead end.
+  if (field){ field.focus(); field.select(); }
+  flash('Select & copy');
 }
 
 // If someone arrives on a story link, open that story straight away.
@@ -3012,6 +3083,7 @@ function renderArchiveSection(){
               ${escapeHtml(String(item.text || '').slice(0, 90))}${String(item.text || '').length > 90 ? '\u2026' : ''}
             </span>
             <button class="bh-btn-ghost" style="font-size:.72rem" onclick="${item.kind === 'story' ? `archiveStory('${item.id}', false)` : `archiveReply('${item.id}', false)`}">Put back</button>
+            ${item.kind === 'story' && item.status === 'approved' ? storyLinkRow(item.id, '') : ''}
           </div>
         `).join('')}
       `).join('')}
@@ -3978,18 +4050,20 @@ function renderPostManager(){
           <span class="snip">${s.pseudonym ? `<span class="bh-author">${escapeHtml(s.pseudonym)}</span> ` : ''}"${escapeHtml(s.text.length > 90 ? s.text.slice(0, 90) + '…' : s.text)}"</span>
           <span style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="bh-btn" onclick="downloadStoryCard('${s.id}')">Download as JPEG →</button>
-            <button class="bh-btn-outline" style="font-size:.8rem;padding:9px 14px" onclick="copyStoryLink('${s.id}', this)">Copy link</button>
           </span>
+          ${storyLinkRow(s.id, 'Link for the Instagram link sticker')}
         </div>
       `).join('')}
       <p style="font-size:.78rem;color:var(--ok);margin-top:8px">${escapeHtml(transient.postDownloadStatus)}</p>
       ${alreadyPosted.length > 0 ? `
         <h3 class="bh-serif" style="font-size:.95rem;color:var(--plum);margin:20px 0 10px">Already downloaded (${alreadyPosted.length})</h3>
         ${alreadyPosted.map(s => `
-          <div class="bh-post-item" style="opacity:.6">
-            <span class="snip">"${escapeHtml(s.text.length > 90 ? s.text.slice(0, 90) + '…' : s.text)}"</span>
+          <div class="bh-post-item">
+            <span class="snip" style="opacity:.65">"${escapeHtml(s.text.length > 90 ? s.text.slice(0, 90) + '…' : s.text)}"</span>
             <span class="bh-postedtag">Downloaded ✓</span>
+            <button class="bh-btn-ghost" style="font-size:.72rem" onclick="downloadStoryCard('${s.id}')">Download again</button>
             <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveStory('${s.id}', true)">Archive</button>
+            ${storyLinkRow(s.id, 'Link for the Instagram link sticker')}
           </div>
         `).join('')}
       ` : ''}
@@ -4014,6 +4088,10 @@ function renderPostManager(){
         </div>
         <button class="bh-btn" onclick="createRoundupCard()">Create round-up card →</button>
       ` : ''}
+      ${compileStory ? `
+        <div style="border-top:1px solid var(--line);margin-top:16px;padding-top:4px">
+          ${storyLinkRow(compileStory.id, 'Link for this round-up \u2014 opens the same story')}
+        </div>` : ''}
       <p style="font-size:.78rem;margin-top:8px;color:${transient.compileStatus.startsWith('Pick') ? 'var(--risk)' : 'var(--ok)'}">${escapeHtml(transient.compileStatus)}</p>
     </div>
   `;
@@ -4069,7 +4147,8 @@ async function createRoundupCard(){
   transient.compileStatus = 'Preparing image…';
   render();
   const canvas = document.getElementById('exportCanvas');
-  await drawCompileCard(canvas, chosen, tagText2, compileStoryForCard ? compileStoryForCard.text : '');
+  await drawCompileCard(canvas, chosen, tagText2, compileStoryForCard ? compileStoryForCard.text : '',
+    compileStoryForCard ? (compileStoryForCard.pseudonym || '') : '');
   await downloadCanvas(canvas, 'bling-happiness-roundup.jpg');
   transient.compileStatus = 'Downloaded — ready to post back to Stories.';
   render();
