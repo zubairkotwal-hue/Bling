@@ -34,7 +34,7 @@
   .bh-rail-head h3{ font-weight:500; color:var(--plum); font-size:1.12rem; margin:0; }
   .bh-rail{ display:flex; gap:11px; overflow-x:auto; padding:0 20px 8px; scrollbar-width:none; max-width:900px; margin:0 auto; }
   .bh-rail::-webkit-scrollbar{ display:none; }
-  .bh-railcard{ flex:0 0 170px; height:236px; position:relative; overflow:hidden; cursor:pointer; border-radius:3px; }
+  .bh-railcard{ flex:0 0 176px; height:245px; position:relative; overflow:hidden; cursor:pointer; border-radius:3px; }
   .bh-railcard img{ width:100%; height:100%; object-fit:cover; display:block; }
   .bh-railcard-fill{ width:100%; height:100%; background:linear-gradient(150deg,#8f5f72,#d9aab4); }
   .bh-railcard-fill.story{ background:linear-gradient(150deg,#341b30,#7d4c63); }
@@ -83,7 +83,17 @@
   .bh-cart-dot{ position:absolute; top:0; right:0; background:var(--gold); color:var(--ink); font-size:.6rem; font-weight:800; border-radius:20px; padding:1px 5px; }
 
 /* slide-out menu */
-  .bh-menu{ position:fixed; inset:0; background:var(--plum); z-index:100; padding:22px 22px 30px; overflow-y:auto; }
+  @media (hover:hover){
+    .bh-folder:hover{ box-shadow:0 10px 24px rgba(61,30,58,.1); }
+    .bh-shop-card:hover{ box-shadow:0 8px 20px rgba(61,30,58,.12); }
+    .bh-railcard:hover{ opacity:.94; }
+  }
+
+  .bh-menu{ position:fixed; top:0; left:0; right:0; bottom:0; width:100vw; height:100dvh; height:100vh;
+    background:var(--plum); z-index:100; padding:22px 22px 30px; overflow-y:auto; overflow-x:hidden;
+    -webkit-overflow-scrolling:touch; box-sizing:border-box; }
+  body.bh-menu-open{ overflow:hidden; }
+  html, body{ overflow-x:hidden; max-width:100%; }
   .bh-menu-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
   .bh-menu-x{ background:none; border:none; color:#fffdf9; font-size:1.25rem; cursor:pointer; }
   .bh-menu-brand{ font-family:'Fraunces',serif; color:#fffdf9; font-size:1.02rem; }
@@ -134,7 +144,7 @@
   .bh-wrap{ max-width:900px; margin:0 auto; padding:20px 24px 70px; }
   .bh-folder-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:12px; margin-top:4px; }
   .bh-folder{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; cursor:pointer; transition:transform .15s, box-shadow .15s; }
-  .bh-folder:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(61,30,58,.1); }
+  .bh-folder{ transition:box-shadow .15s; }
   .bh-folder .count{ font-family:'Fraunces',serif; font-size:1.7rem; color:var(--gold); font-weight:600; }
   .bh-folder .name{ font-weight:700; color:var(--plum); font-size:.92rem; margin-top:2px; }
   .bh-tile{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:10px; cursor:pointer; }
@@ -197,13 +207,15 @@
   .bh-sort{ border:1px solid var(--line); border-radius:20px; padding:6px 11px; font-size:.78rem; font-family:'Instrument Sans',sans-serif; color:var(--plum); background:#fff; font-weight:600; }
   .bh-card-swatches{ display:flex; gap:4px; margin-top:5px; }
   .bh-card-swatches i{ width:11px; height:11px; border-radius:50%; border:1px solid rgba(0,0,0,.15); display:block; }
-  .bh-shop-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px; margin-top:18px; }
-  .bh-shop-card{ background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden; cursor:pointer; transition:transform .15s; }
-  .bh-shop-card:hover{ transform:translateY(-2px); }
-  .bh-shop-card img{ width:100%; aspect-ratio:1; object-fit:cover; display:block; background:var(--blushp); }
-  .bh-shop-card .body{ padding:12px 14px; }
-  .bh-shop-card .name{ font-weight:700; font-size:.88rem; }
-  .bh-shop-card .price{ font-size:.85rem; color:var(--gold); font-weight:700; margin-top:2px; }
+  .bh-shop-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px 12px; margin-top:18px; }
+  @media (min-width:760px){ .bh-shop-grid{ grid-template-columns:repeat(4,1fr); gap:24px 16px; } }
+  .bh-shop-card{ background:none; border:none; border-radius:0; cursor:pointer; }
+
+  .bh-shop-card img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:var(--blushp); border-radius:2px; }
+  .bh-shop-card .noimg{ width:100%; aspect-ratio:3/4; background:linear-gradient(150deg,#e8d5da,#f6ebee); border-radius:2px; }
+  .bh-shop-card .body{ padding:10px 2px 0; }
+  .bh-shop-card .name{ font-family:'Fraunces',serif; font-weight:500; font-size:.95rem; color:var(--ink); line-height:1.25; }
+  .bh-shop-card .price{ font-size:.86rem; color:var(--grey); font-weight:500; margin-top:5px; letter-spacing:.01em; }
   .bh-wa-btn{ background:#25d366; color:#fff; font-weight:700; padding:11px 20px; border-radius:9px; font-size:.86rem; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
   .bh-radio-row{ display:flex; gap:16px; margin-bottom:16px; }
 .bh-detail{ background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
@@ -1453,10 +1465,14 @@ function openDeepLink(){
   return true;
 }
 
-function goHome(){ nav.menuOpen = false; nav.view = 'home'; nav.activeFolder = null; nav.activeStoryId = null; render(); }
-function goSubmit(){ nav.menuOpen = false; nav.view = 'submit'; transient.submitSent = false; render(); }
-function toggleMenu(){ nav.menuOpen = !nav.menuOpen; render(); }
-function closeMenu(){ nav.menuOpen = false; }
+function goHome(){ nav.menuOpen = false; document.body.classList.remove('bh-menu-open'); nav.view = 'home'; nav.activeFolder = null; nav.activeStoryId = null; render(); }
+function goSubmit(){ nav.menuOpen = false; document.body.classList.remove('bh-menu-open'); nav.view = 'submit'; transient.submitSent = false; render(); }
+function toggleMenu(){
+  nav.menuOpen = !nav.menuOpen;
+  document.body.classList.toggle('bh-menu-open', nav.menuOpen);
+  render();
+}
+function closeMenu(){ nav.menuOpen = false; document.body.classList.remove('bh-menu-open'); document.body.classList.remove('bh-menu-open'); }
 
 function renderMenu(){
   const shopCats = SHOP_CATEGORIES.filter(cat => cat !== 'Gift Voucher');
@@ -1500,7 +1516,7 @@ function toggleMenuSection(which){
 
 function goShopCategory(cat){
   nav.view = 'shop';
-  nav.menuOpen = false;
+  nav.menuOpen = false; document.body.classList.remove('bh-menu-open');
   transient.viewingProductId = null;
   transient.viewingCart = false;
   transient.checkingOut = false;
@@ -1516,10 +1532,10 @@ function goGiftCard(){
   transient.giftRecipient = '';
   render();
 }
-function goHelp(){ nav.view = 'help'; nav.menuOpen = false; transient.helpSent = false; render(); }
+function goHelp(){ nav.view = 'help'; nav.menuOpen = false; document.body.classList.remove('bh-menu-open'); transient.helpSent = false; render(); }
 
-function goShop(){ nav.menuOpen = false; nav.view = 'shop'; transient.shopSeeAll = ''; transient.viewingProductId = null; transient.viewingCart = false; transient.checkingOut = false; transient.orderSent = false; render(); }
-async function goAdmin(){ nav.menuOpen = false;
+function goShop(){ nav.menuOpen = false; document.body.classList.remove('bh-menu-open'); nav.view = 'shop'; transient.shopSeeAll = ''; transient.viewingProductId = null; transient.viewingCart = false; transient.checkingOut = false; transient.orderSent = false; render(); }
+async function goAdmin(){ nav.menuOpen = false; document.body.classList.remove('bh-menu-open');
   nav.view = 'admin';
   render();
   if (!nav.adminUnlocked){
@@ -2082,10 +2098,10 @@ function renderShop(){
       ${shown.length === 0 ? `<p class="bh-empty">Nothing matches those filters. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearFilters()">Clear them</button></p>` : ''}
       <div class="bh-shop-grid">${shown.map(p => `
         <div class="bh-shop-card" onclick="viewProduct('${p.id}')">
-          ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="${escapeHtml(p.name)}" loading="lazy">` : `<div style="aspect-ratio:1;background:var(--blushp)"></div>`}
+          ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="${escapeHtml(p.name)}" loading="lazy">` : `<div class="noimg"></div>`}
           <div class="body">
             <div class="name">${escapeHtml(p.name)}</div>
-            <div class="price">${isVoucher(p) ? 'From R' + VOUCHER_MIN : 'R' + escapeHtml(p.price)}</div>
+            <div class="price">${isVoucher(p) ? 'From R' + VOUCHER_MIN : 'R ' + Number(p.price).toLocaleString('en-ZA')}</div>
             ${productColours(p).length ? `<div class="bh-card-swatches">${productColours(p).slice(0,5).map(col => `<i style="background:${colourHex(col)}"></i>`).join('')}</div>` : ''}
             ${reviewsFor(p.id).length ? `<div class="bh-shop-sizes">${stars(averageRating(p.id), '.72rem')} <span style="opacity:.7">(${reviewsFor(p.id).length})</span></div>` : ''}
             ${p.stock_status === 'made_to_order' ? `<div class="bh-shop-sizes" style="color:#a6752f;font-weight:700">${escapeHtml(setting('leadTimeLabel'))}</div>` : ''}
@@ -2105,10 +2121,10 @@ function renderShop(){
       ${shown.length === 0 ? `<p class="bh-empty">Nothing matches those filters. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearFilters()">Clear them</button></p>` : ''}
       <div class="bh-shop-grid">${shown.map(p => `
         <div class="bh-shop-card" onclick="viewProduct('${p.id}')">
-          ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="${escapeHtml(p.name)}" loading="lazy">` : `<div style="aspect-ratio:1;background:var(--blushp)"></div>`}
+          ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="${escapeHtml(p.name)}" loading="lazy">` : `<div class="noimg"></div>`}
           <div class="body">
             <div class="name">${escapeHtml(p.name)}</div>
-            <div class="price">${isVoucher(p) ? 'From R' + VOUCHER_MIN : 'R' + escapeHtml(p.price)}</div>
+            <div class="price">${isVoucher(p) ? 'From R' + VOUCHER_MIN : 'R ' + Number(p.price).toLocaleString('en-ZA')}</div>
             ${reviewsFor(p.id).length ? `<div class="bh-shop-sizes">${stars(averageRating(p.id), '.72rem')}</div>` : ''}
           </div>
         </div>`).join('')}</div>`;
