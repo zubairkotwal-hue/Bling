@@ -24,10 +24,14 @@
     --f-ui:'Jost', -apple-system, sans-serif;
     font-family:var(--f-ui); color:var(--ink); background:var(--blushp); min-height:100vh;
     font-weight:300; -webkit-font-smoothing:antialiased; }
-  /* Cormorant has a small x-height, so it needs a touch more size and weight
-     than a normal serif to read at the same visual scale. */
+  /* Family and weight only. This rule must NOT set font-size: it outranks the
+     individual heading classes, so a size here silently flattens every heading
+     on the site to one size. Cormorant's small x-height is compensated for on
+     the individual headings below instead. */
   .bh-root .bh-serif, .bh-root h1, .bh-root h2, .bh-root h3{
-    font-family:var(--f-display); font-weight:600; letter-spacing:.005em; font-size:1.12em; }
+    font-family:var(--f-display); font-weight:600; letter-spacing:.005em; }
+  .bh-root .bh-rail-head h3, .bh-root .bh-serif:not([style*="font-size"]):not([class*="title"]){
+    font-size:1.42rem; }
   .bh-root button, .bh-root input, .bh-root select, .bh-root textarea{ font-family:var(--f-ui); }
   /* Jost is geometric and reads better with a little air in small caps labels. */
   .bh-root .bh-label, .bh-root .bh-kicker{ letter-spacing:.09em; }
@@ -39,7 +43,7 @@
   .bh-hero2-mark{ position:absolute; right:-20px; bottom:-16px; height:230px; opacity:.13; z-index:1; }
   .bh-hero2-inner{ position:relative; z-index:2; padding:52px 26px; max-width:520px; }
   .bh-kicker{ font-size:.68rem; letter-spacing:.22em; text-transform:uppercase; color:var(--goldl); margin-bottom:14px; }
-  .bh-hero2-title{ font-weight:400; font-size:clamp(2.2rem,9vw,3.1rem); margin:0; letter-spacing:.02em; }
+  .bh-hero2-title{ font-weight:500; font-size:clamp(2.2rem,9vw,3.1rem); margin:0; letter-spacing:.02em; }
   .bh-hero2-sub{ font-size:.9rem; color:#efe2ea; margin:14px auto 0; max-width:32ch; line-height:1.55; }
   .bh-hero2-ctas{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:24px; }
   .bh-hero2-cta{ background:#fffdf9; color:var(--ink); border:none; font-family:var(--f-ui); font-weight:600; font-size:.86rem; padding:13px 26px; cursor:pointer; letter-spacing:.02em; }
