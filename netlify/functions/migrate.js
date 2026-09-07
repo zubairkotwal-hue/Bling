@@ -21,6 +21,10 @@ exports.handler = async () => {
       ALTER TABLE products ADD COLUMN IF NOT EXISTS product_type TEXT DEFAULT 'item';
       ALTER TABLE products ADD COLUMN IF NOT EXISTS has_image BOOLEAN DEFAULT FALSE;
       ALTER TABLE products ADD COLUMN IF NOT EXISTS image_version TEXT;
+      -- When a story card was made. Left empty for stories posted before this
+      -- ran: guessing dates from submission times would put invented data on
+      -- the dashboard, so the record simply starts from here.
+      ALTER TABLE stories ADD COLUMN IF NOT EXISTS posted_at TIMESTAMPTZ;
       UPDATE products SET image_version = '1' WHERE image_version IS NULL;
 
       ALTER TABLE leads ADD COLUMN IF NOT EXISTS size TEXT;
