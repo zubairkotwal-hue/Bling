@@ -192,10 +192,62 @@
   .bh-qrow .actions button{ padding:6px 12px; font-size:.72rem; font-weight:700; border-radius:7px; border:none; cursor:pointer; }
   .bh-approve{ background:var(--ok); color:#fff; }
   .bh-reject{ background:#fff; color:var(--risk); border:1px solid var(--risk) !important; }
-  .bh-tabs{ display:flex; gap:6px; background:var(--blushp); padding:4px; border-radius:10px; width:fit-content; margin-bottom:18px; }
-  .bh-tab{ padding:8px 16px; font-size:.8rem; font-weight:700; border-radius:8px; border:none; background:none; cursor:pointer; color:var(--grey); }
+  /* Nine tabs do not fit across a phone. Without wrapping, the last ones
+     (Help, Settings) sit off the right edge with no way to reach them. */
+  .bh-tabs{ display:flex; flex-wrap:wrap; gap:6px; background:var(--blushp); padding:5px;
+    border-radius:10px; width:100%; box-sizing:border-box; margin-bottom:18px; }
+  .bh-tab{ padding:9px 14px; font-size:.78rem; font-weight:700; border-radius:8px; border:none; background:none; cursor:pointer; color:var(--grey); white-space:nowrap; }
   .bh-tab.on{ background:#fff; color:var(--plum); }
-  .bh-product{ background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  /* ---- Dashboard ---------------------------------------------------------
+     Three deliberately different treatments so hierarchy comes from structure:
+     one loud focus panel, a quiet hairline action list, then paired stat
+     columns. Not twelve identical cards. */
+  .bh-dash-greet{ display:flex; align-items:baseline; justify-content:space-between;
+    gap:12px; margin:0 0 14px; flex-wrap:wrap; }
+  .bh-dash-greet h2{ font-family:var(--f-display); font-weight:600; font-size:1.5rem;
+    color:var(--plum); margin:0; }
+  .bh-dash-greet .when{ font-size:.78rem; color:var(--grey); }
+
+  .bh-focus{ background:linear-gradient(155deg,var(--plum),var(--plum2));
+    color:#fffdf9; border-radius:16px; padding:24px 22px; margin-bottom:20px; }
+  .bh-focus .n{ font-family:var(--f-display); font-weight:600; font-size:4.2rem;
+    line-height:.9; color:var(--goldl); display:block; }
+  .bh-focus .what{ font-size:1rem; margin:8px 0 2px; }
+  .bh-focus .sub{ font-size:.82rem; color:#e6d4e0; margin:0 0 18px; }
+  .bh-focus .bh-btn{ background:#fffdf9; color:var(--plum); }
+  .bh-focus.calm{ background:linear-gradient(155deg,#33532f,#5c7a5e); }
+  .bh-focus.calm .n{ color:#e8f2e2; }
+
+  .bh-spark{ display:flex; align-items:flex-end; gap:5px; height:44px; margin-top:20px; }
+  .bh-spark div{ flex:1; background:rgba(255,253,249,.28); border-radius:2px 2px 0 0; min-height:2px; }
+  .bh-spark div.today{ background:var(--goldl); }
+  .bh-spark-lbl{ display:flex; justify-content:space-between; font-size:.68rem;
+    color:#e6d4e0; margin-top:6px; }
+
+  .bh-todo{ background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:4px 16px; margin-bottom:20px; }
+  .bh-todo-row{ display:flex; align-items:center; gap:12px; width:100%; background:none;
+    border:none; border-bottom:1px solid var(--line); padding:15px 0; cursor:pointer;
+    font-family:var(--f-ui); font-size:.92rem; color:var(--ink); text-align:left; }
+  .bh-todo-row:last-child{ border-bottom:none; }
+  .bh-todo-row .cnt{ font-family:var(--f-display); font-weight:600; font-size:1.35rem;
+    color:var(--plum); min-width:34px; }
+  .bh-todo-row .cnt.warn{ color:var(--risk); }
+  .bh-todo-row .go{ margin-left:auto; color:var(--grey); font-size:1.1rem; }
+  .bh-todo-clear{ padding:22px 0; text-align:center; color:var(--grey); font-size:.88rem; }
+
+  .bh-statcols{ display:grid; grid-template-columns:1fr; gap:18px; margin-bottom:20px; }
+  @media (min-width:620px){ .bh-statcols{ grid-template-columns:1fr 1fr; } }
+  .bh-statgrp h3{ font-family:var(--f-display); font-weight:600; font-size:1.15rem;
+    color:var(--plum); margin:0 0 4px; }
+  .bh-statgrp .lede{ font-size:.75rem; color:var(--grey); margin:0 0 10px; }
+  .bh-statrow{ display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+    padding:11px 0; border-bottom:1px solid var(--line); font-size:.86rem; color:var(--grey); }
+  .bh-statrow:last-child{ border-bottom:none; }
+  .bh-statrow b{ font-family:var(--f-display); font-size:1.15rem; font-weight:600; color:var(--ink); }
+  .bh-statrow b.muted{ color:var(--grey); font-weight:400; }
+  .bh-statrow b.good{ color:var(--ok); }
+  .bh-statrow b.warn{ color:var(--risk); }
   .bh-product img{ width:100%; aspect-ratio:1; object-fit:cover; display:block; background:var(--blushp); }
   .bh-product .body{ padding:10px 12px; }
   .bh-product .name{ font-weight:700; font-size:.85rem; }
@@ -207,6 +259,104 @@
   .bh-note{ font-size:.78rem; color:var(--grey); background:var(--blushp); border-radius:8px; padding:10px 12px; margin-top:10px; }
   .bh-grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
   @media (max-width:600px){ .bh-grid2{ grid-template-columns:1fr; } }
+  /* ---- Orders ------------------------------------------------------------
+     Grouped by what needs doing. One prominent action per card; everything
+     else folded away, so the list can be scanned rather than deciphered. */
+  /* ---- Admin navigation ---------------------------------------------------
+     A bottom bar, the pattern iPhone users already know from every app. Four
+     daily destinations plus More; the safe-area padding keeps it clear of
+     Safari's own toolbar. */
+  .bh-navbar{ position:fixed; left:0; right:0; bottom:0; z-index:60; display:flex;
+    background:#fffdf9; border-top:1px solid var(--line);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    box-shadow:0 -3px 16px rgba(20,10,18,.08); }
+  .bh-navbar button{ flex:1; background:none; border:none; display:flex; flex-direction:column;
+    align-items:center; gap:3px; padding:7px 2px; cursor:pointer; color:var(--grey);
+    font-family:var(--f-ui); font-size:.62rem; position:relative; }
+  .bh-navbar button.on{ color:var(--plum); font-weight:500; }
+  .bh-navbar svg{ width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.6;
+    stroke-linecap:round; stroke-linejoin:round; }
+  .bh-navbar .dot{ position:absolute; top:3px; right:50%; margin-right:-19px; background:var(--risk);
+    color:#fff; font-size:.56rem; min-width:16px; height:16px; border-radius:9px; display:flex;
+    align-items:center; justify-content:center; padding:0 4px; font-weight:600; }
+  .bh-admin-pad{ padding-bottom:90px; }
+
+  .bh-navmore{ position:fixed; inset:0; z-index:61; }
+  .bh-navmore .scrim{ position:absolute; inset:0; background:rgba(20,10,18,.45); }
+  .bh-navmore .panel{ position:absolute; left:0; right:0; bottom:0; background:#fffdf9;
+    border-radius:18px 18px 0 0; padding:20px 0 calc(14px + env(safe-area-inset-bottom));
+    max-height:78vh; overflow-y:auto; }
+  .bh-navmore h4{ font-family:var(--f-display); font-weight:600; font-size:1.3rem;
+    color:var(--plum); margin:0 0 8px; padding:0 20px; }
+  .bh-navmore button.item{ display:flex; align-items:center; gap:12px; width:100%; background:none;
+    border:none; border-bottom:1px solid var(--line); padding:16px 20px; font-family:var(--f-ui);
+    font-size:.95rem; color:var(--ink); text-align:left; cursor:pointer; }
+  .bh-navmore button.item.on{ background:var(--blushp); color:var(--plum); font-weight:500; }
+  .bh-navmore .n{ margin-left:auto; background:var(--risk); color:#fff; font-size:.66rem;
+    border-radius:9px; padding:2px 7px; }
+
+  .bh-chase-start{ margin-left:auto; background:var(--plum); color:#fffdf9; border:none;
+    border-radius:8px; padding:8px 13px; font-family:var(--f-ui); font-size:.76rem; cursor:pointer; }
+  .bh-chase{ background:var(--plum); color:#fffdf9; border-radius:14px; padding:18px;
+    margin-bottom:14px; }
+  .bh-chase h4{ font-family:var(--f-display); font-weight:600; font-size:1.35rem;
+    color:var(--goldl); margin:2px 0 4px; }
+  .bh-chase p{ font-size:.8rem; color:#e6d4e0; margin:0 0 14px; }
+  .bh-chase p.step{ font-size:.7rem; color:#c6a8bd; margin:0 0 2px; }
+  .bh-chase .bh-ord-go{ background:#fffdf9; color:var(--plum); margin-bottom:8px; }
+  .bh-chase .bh-ord-2nd{ background:transparent; color:#fffdf9; border-color:#7d4f74; }
+  .bh-chase-bar{ height:3px; background:#5c3355; border-radius:2px; overflow:hidden; margin-bottom:12px; }
+  .bh-chase-bar span{ display:block; height:100%; background:var(--goldl); transition:width .2s; }
+  .bh-chase-foot{ display:flex; gap:16px; margin-top:12px; }
+  .bh-chase-foot button{ background:none; border:none; color:#c6a8bd; font-family:var(--f-ui);
+    font-size:.78rem; cursor:pointer; padding:4px 0; }
+
+  .bh-ord-owed{ background:#fdf0f2; border:1px solid #f0d3d8; border-radius:12px;
+    padding:13px 15px; margin-bottom:20px; font-size:.85rem; color:var(--risk); }
+  .bh-ord-group{ margin-bottom:26px; }
+  .bh-ord-head{ display:flex; align-items:center; gap:9px; margin-bottom:2px; }
+  .bh-ord-head h3{ font-family:var(--f-display); font-weight:600; font-size:1.25rem;
+    color:var(--plum); margin:0; }
+  .bh-ord-head .cnt{ background:var(--plum); color:#fffdf9; font-size:.7rem; font-weight:600;
+    min-width:20px; height:20px; border-radius:10px; display:inline-flex; align-items:center;
+    justify-content:center; padding:0 6px; }
+  .bh-ord-note{ font-size:.75rem; color:var(--grey); margin:0 0 12px; }
+
+  .bh-ord{ background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:16px; margin-bottom:12px; }
+  .bh-ord-top{ display:flex; gap:12px; align-items:flex-start; margin-bottom:14px; }
+  .bh-ord-top .nm{ display:block; font-family:var(--f-display); font-weight:600;
+    font-size:1.15rem; color:var(--plum); }
+  .bh-ord-top .it{ display:block; font-size:.85rem; color:var(--ink); margin-top:3px; }
+  .bh-ord-top .mt{ display:block; font-size:.75rem; color:var(--grey); margin-top:3px; }
+  .bh-ord-top .amt{ margin-left:auto; font-family:var(--f-display); font-weight:600;
+    font-size:1.3rem; color:var(--ink); white-space:nowrap; }
+  .bh-ord-warn{ font-size:.75rem; color:var(--risk); margin:0 0 12px; }
+
+  .bh-ord-acts{ display:flex; flex-direction:column; gap:8px; }
+  .bh-ord-go{ background:var(--plum); color:#fffdf9; border:none; border-radius:10px;
+    padding:14px 16px; font-family:var(--f-ui); font-size:.9rem; cursor:pointer; width:100%; }
+  .bh-ord-2nd{ background:#fff; color:var(--plum); border:1px solid var(--line);
+    border-radius:10px; padding:12px 16px; font-family:var(--f-ui); font-size:.85rem;
+    cursor:pointer; width:100%; }
+
+  .bh-ord-foot{ display:flex; gap:10px; align-items:center; margin-top:12px;
+    padding-top:12px; border-top:1px solid var(--line); }
+  .bh-ord-next{ background:none; border:none; color:var(--plum); font-family:var(--f-ui);
+    font-size:.82rem; cursor:pointer; padding:4px 0; text-decoration:underline;
+    text-underline-offset:4px; }
+  .bh-ord-more{ margin-left:auto; background:none; border:none; color:var(--grey);
+    font-family:var(--f-ui); font-size:.82rem; cursor:pointer; padding:4px 0; }
+  .bh-ord-more.risk, .bh-ord-docs .risk{ color:var(--risk); }
+
+  .bh-ord-docs{ margin-top:12px; border-top:1px solid var(--line); padding-top:6px; }
+  .bh-ord-docs .row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:10px 0; border-bottom:1px solid var(--line); font-size:.8rem; color:var(--grey); }
+  .bh-ord-docs .row:last-child{ border-bottom:none; }
+  .bh-ord-docs .row span{ flex:1; min-width:120px; }
+  .bh-ord-docs button{ background:var(--blushp); border:1px solid var(--line); color:var(--plum);
+    border-radius:8px; padding:7px 12px; font-family:var(--f-ui); font-size:.76rem; cursor:pointer; }
+
   .bh-lead{ display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; margin-bottom:8px; flex-wrap:wrap; background:#fff; }
   .bh-lead .who{ flex:1; font-size:.86rem; min-width:160px; }
   .bh-lead .who strong{ color:var(--plum); }
@@ -384,6 +534,12 @@ const DEFAULT_SETTINGS = {
 
   collectionMessage:
     'Hi there\n\nPopping in to let you know that your item is ready for collection \ud83d\udc83\n\n{items}\n\n{collection}',
+
+  reminderMessage:
+    'Hi {name}, just a gentle reminder about your order \u2014 we haven\u2019t seen the payment come through yet.\n\n{items}{totals}\n\n{bank}\n\nNo rush at all, and let me know if anything has changed.',
+
+  updateMessage:
+    'Hi {name}, just checking in so you\u2019re not left wondering \u2014 your order is still with us and we haven\u2019t forgotten you.\n\n{items}\n\nI\u2019ll message again the moment there\u2019s news.',
 };
 
 let settings = Object.assign({}, DEFAULT_SETTINGS);
@@ -1375,7 +1531,9 @@ function buildLeadMessage(lead, kind){
   };
 
   let tpl;
-  if (kind === 'receipt') tpl = setting('receiptMessage');
+  if (kind === 'reminder') tpl = setting('reminderMessage');
+  else if (kind === 'update') tpl = setting('updateMessage');
+  else if (kind === 'receipt') tpl = setting('receiptMessage');
   else if (kind === 'delivery') tpl = deliveryMethod === 'Shipping' ? setting('shippingMessage') : setting('collectionMessage');
   else tpl = setting('orderMessage');
 
@@ -1443,7 +1601,7 @@ let reviews = [];
 let helpMessages = [];
 let giftCards = [];
 let discounts = [];
-let nav = { menuOpen: false, menuOpenShop: false, menuOpenStories: false, view: 'home', activeFolder: null, activeStoryId: null, adminUnlocked: false, adminTab: 'queue' };
+let nav = { menuOpen: false, menuOpenShop: false, menuOpenStories: false, view: 'home', activeFolder: null, activeStoryId: null, adminUnlocked: false, adminTab: 'home' };
 let transient = {
   submitSent: false,
   viewingProductId: null,
@@ -2955,6 +3113,178 @@ async function submitHelp(){
 }
 
 // ---- Admin root ----
+// ---- Dashboard ----
+// Everything here is worked out from the data already loaded. Nothing is
+// stored or fetched separately, so it cannot drift out of step with the tabs.
+
+function daysSince(iso){
+  if (!iso) return null;
+  const then = new Date(iso).getTime();
+  if (isNaN(then)) return null;
+  return Math.floor((Date.now() - then) / 86400000);
+}
+
+function agoWords(iso){
+  const d = daysSince(iso);
+  if (d === null) return '';
+  if (d <= 0) return 'today';
+  if (d === 1) return 'yesterday';
+  return d + ' days ago';
+}
+
+function dashStats(){
+  const live = s => !s.archived_at;
+  const pending  = stories.filter(s => live(s) && s.status === 'pending');
+  const approved = stories.filter(s => live(s) && s.status === 'approved');
+  const ready    = approved.filter(s => !s.posted);
+  const week = Date.now() - 7 * 86400000;
+  const inWeek = iso => { const t = new Date(iso).getTime(); return !isNaN(t) && t >= week; };
+
+  // Submissions per day for the last 7 days, oldest first.
+  const days = [];
+  for (let i = 6; i >= 0; i--){
+    const start = new Date(); start.setHours(0,0,0,0);
+    start.setDate(start.getDate() - i);
+    const end = start.getTime() + 86400000;
+    days.push(stories.filter(s => {
+      const t = new Date(s.created_at).getTime();
+      return t >= start.getTime() && t < end;
+    }).length);
+  }
+
+  const oldest = pending
+    .map(s => s.created_at)
+    .filter(Boolean)
+    .sort((a,b) => new Date(a) - new Date(b))[0];
+
+  const money = list => list.reduce((sum, l) => sum + (parseFloat(l.total) || 0), 0);
+  const byStatus = st => leads.filter(l => l.status === st);
+
+  const arrivedThisWeek = stories.filter(s => inWeek(s.created_at)).length;
+  const madeThisWeek = stories.filter(s => s.posted_at && inWeek(s.posted_at)).length;
+
+  return {
+    arrivedThisWeek,
+    keepingUp: madeThisWeek >= arrivedThisWeek,
+    clearing: madeThisWeek >= arrivedThisWeek ? 'faster than they arrive' : 'slower than they arrive',
+    pending: pending.length,
+    oldestPending: oldest,
+    readyToPost: ready.length,
+    // Counted from posted_at, the moment the card was made — not from when the
+    // story was submitted. Stories posted before posted_at existed have no
+    // date, so they are simply not counted rather than guessed at.
+    madeThisWeek: stories.filter(s => s.posted_at && inWeek(s.posted_at)).length,
+    madeToday: stories.filter(s => s.posted_at && daysSince(s.posted_at) === 0).length,
+    everMade: stories.filter(s => s.posted).length,
+    haveTimestamps: stories.some(s => s.posted_at),
+    repliesWaiting: replies.filter(r => !r.archived_at && r.status === 'pending').length,
+    days,
+    submittedToday: days[6],
+    dailyAverage: Math.round(days.reduce((a,b) => a+b, 0) / 7),
+
+    awaitingPayment: byStatus('Enquired').length,
+    toPack: byStatus('Paid').length,
+    toSend: byStatus('Ready').length,
+    sentThisWeek: byStatus('Sent').filter(l => inWeek(l.created_at)).length,
+    owed: money(byStatus('Enquired')),
+    takenThisWeek: money(leads.filter(l => l.status !== 'Enquired' && inWeek(l.created_at))),
+
+    productsLive: products.length,
+    noPicture: products.filter(p => !p.has_image).length,
+    outOfStock: products.filter(p => productSizes(p).length === 0).length,
+    reviewsWaiting: reviews.filter(r => r.status === 'pending').length,
+    helpNew: helpMessages.filter(h => h.status === 'new').length,
+  };
+}
+
+function renderDashboard(){
+  const d = dashStats();
+  const hour = new Date().getHours();
+  const greeting = hour < 5 ? 'Still up' : hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening';
+  const when = new Date().toLocaleDateString('en-ZA',
+    { weekday:'long', day:'numeric', month:'long' });
+  const rand = Math.max(1, ...d.days);
+
+  // The queue is the thing she is actually anxious about, so it leads.
+  const focus = d.pending > 0 ? `
+    <div class="bh-focus">
+      <span class="n">${d.pending}</span>
+      <p class="what">${d.pending === 1 ? 'story waiting to be read' : 'stories waiting to be read'}</p>
+      <p class="sub">${d.oldestPending ? 'The oldest arrived ' + agoWords(d.oldestPending) + '.' : ''}</p>
+      <button class="bh-btn" onclick="setAdminTab('queue')">Open the queue</button>
+      <div class="bh-spark">
+        ${d.days.map((n,i) => `<div class="${i===6?'today':''}" style="height:${Math.round((n/rand)*100)}%" title="${n}"></div>`).join('')}
+      </div>
+      <div class="bh-spark-lbl"><span>7 days ago</span><span>${d.submittedToday} today \u00b7 ${d.dailyAverage} a day on average</span></div>
+    </div>` : `
+    <div class="bh-focus calm">
+      <span class="n">0</span>
+      <p class="what">Nothing waiting to be read</p>
+      <p class="sub">You are completely caught up. ${d.submittedToday} came in today.</p>
+      <button class="bh-btn" onclick="setAdminTab('post')">Make a story picture</button>
+      <div class="bh-spark">
+        ${d.days.map((n,i) => `<div class="${i===6?'today':''}" style="height:${Math.round((n/rand)*100)}%"></div>`).join('')}
+      </div>
+      <div class="bh-spark-lbl"><span>7 days ago</span><span>${d.dailyAverage} a day on average</span></div>
+    </div>`;
+
+  const todo = [
+    d.repliesWaiting && { n:d.repliesWaiting, t:`${d.repliesWaiting === 1 ? 'reply' : 'replies'} to read`, tab:'queue' },
+    d.readyToPost   && { n:d.readyToPost, t:'approved and ready to post', tab:'post' },
+    d.awaitingPayment && { n:d.awaitingPayment, t:'orders not paid yet', tab:'leads', warn:true },
+    d.toPack        && { n:d.toPack, t:'orders paid, waiting to be packed', tab:'leads' },
+    d.toSend        && { n:d.toSend, t:'orders ready to go out', tab:'leads' },
+    d.helpNew       && { n:d.helpNew, t:`${d.helpNew === 1 ? 'message' : 'messages'} on the help form`, tab:'help', warn:true },
+    d.reviewsWaiting && { n:d.reviewsWaiting, t:'reviews to approve', tab:'reviews' },
+    d.noPicture     && { n:d.noPicture, t:'products with no picture', tab:'shop' },
+  ].filter(Boolean);
+
+  return `
+    <div class="bh-dash-greet">
+      <h2>${greeting}, Sabihah.</h2>
+      <span class="when">${escapeHtml(when)}</span>
+    </div>
+
+    ${focus}
+
+    <div class="bh-todo">
+      ${todo.length ? todo.map(i => `
+        <button class="bh-todo-row" onclick="setAdminTab('${i.tab}')">
+          <span class="cnt ${i.warn ? 'warn' : ''}">${i.n}</span>
+          <span>${escapeHtml(i.t)}</span>
+          <span class="go">\u203a</span>
+        </button>`).join('')
+      : `<p class="bh-todo-clear">Nothing needs you right now.</p>`}
+    </div>
+
+    <div class="bh-statcols">
+      <div class="bh-statgrp">
+        <h3>Reposting</h3>
+        <p class="lede">How the stories are moving.</p>
+        <div class="bh-statrow"><span>Waiting to be read</span><b class="${d.pending ? '' : 'good'}">${d.pending}</b></div>
+        <div class="bh-statrow"><span>Approved, not posted yet</span><b>${d.readyToPost}</b></div>
+        <div class="bh-statrow"><span>Pictures made today</span><b>${d.madeToday}</b></div>
+        <div class="bh-statrow"><span>Pictures made this week</span><b>${d.madeThisWeek}</b></div>
+        <div class="bh-statrow"><span>Clearing them ${d.clearing}</span><b class="${d.keepingUp ? 'good' : 'warn'}">${d.madeThisWeek} vs ${d.arrivedThisWeek}</b></div>
+        <div class="bh-statrow"><span>Replies waiting</span><b>${d.repliesWaiting}</b></div>
+        <div class="bh-statrow"><span>Came in today</span><b class="muted">${d.submittedToday}</b></div>
+      </div>
+
+      <div class="bh-statgrp">
+        <h3>Shop</h3>
+        <p class="lede">Orders and stock at a glance.</p>
+        <div class="bh-statrow"><span>Waiting on payment</span><b class="${d.awaitingPayment ? 'warn' : ''}">R${Math.round(d.owed).toLocaleString('en-ZA')}</b></div>
+        <div class="bh-statrow"><span>Taken this week</span><b class="good">R${Math.round(d.takenThisWeek).toLocaleString('en-ZA')}</b></div>
+        <div class="bh-statrow"><span>To pack</span><b>${d.toPack}</b></div>
+        <div class="bh-statrow"><span>To send</span><b>${d.toSend}</b></div>
+        <div class="bh-statrow"><span>Sent this week</span><b class="muted">${d.sentThisWeek}</b></div>
+        <div class="bh-statrow"><span>Products in the shop</span><b class="muted">${d.productsLive}</b></div>
+        <div class="bh-statrow"><span>Nothing in stock</span><b class="${d.outOfStock ? 'warn' : ''}">${d.outOfStock}</b></div>
+      </div>
+    </div>
+  `;
+}
+
 function renderAdmin(){
   if (!nav.adminUnlocked){
     return `
@@ -2972,20 +3302,8 @@ function renderAdmin(){
     `;
   }
   return `
-    <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
-      <button class="bh-btn-ghost" style="font-size:.78rem" onclick="adminLogout()">Log out</button>
-    </div>
-    <div class="bh-tabs">
-      <button class="bh-tab ${nav.adminTab === 'queue' ? 'on' : ''}" onclick="setAdminTab('queue')">Review queue</button>
-      <button class="bh-tab ${nav.adminTab === 'post' ? 'on' : ''}" onclick="setAdminTab('post')">Post</button>
-      <button class="bh-tab ${nav.adminTab === 'shop' ? 'on' : ''}" onclick="setAdminTab('shop')">Shop</button>
-      <button class="bh-tab ${nav.adminTab === 'leads' ? 'on' : ''}" onclick="setAdminTab('leads')">Leads</button>
-      <button class="bh-tab ${nav.adminTab === 'reviews' ? 'on' : ''}" onclick="setAdminTab('reviews')">Reviews${reviews.filter(r=>r.status==='pending').length ? ` (${reviews.filter(r=>r.status==='pending').length})` : ''}</button>
-      <button class="bh-tab ${nav.adminTab === 'gifts' ? 'on' : ''}" onclick="setAdminTab('gifts')">Gift cards</button>
-      <button class="bh-tab ${nav.adminTab === 'discounts' ? 'on' : ''}" onclick="setAdminTab('discounts')">Discounts</button>
-      <button class="bh-tab ${nav.adminTab === 'help' ? 'on' : ''}" onclick="setAdminTab('help')">Help${helpMessages.filter(h=>h.status==='new').length ? ` (${helpMessages.filter(h=>h.status==='new').length})` : ''}</button>
-      <button class="bh-tab ${nav.adminTab === 'settings' ? 'on' : ''}" onclick="setAdminTab('settings')">Settings</button>
-    </div>
+    <div class="bh-admin-pad">
+    ${nav.adminTab === 'home' ? renderDashboard() : ''}
     ${nav.adminTab === 'queue' ? renderReviewQueue() : ''}
     ${nav.adminTab === 'post' ? renderPostManager() : ''}
     ${nav.adminTab === 'shop' ? renderShopManager() : ''}
@@ -2995,10 +3313,89 @@ function renderAdmin(){
     ${nav.adminTab === 'discounts' ? renderDiscountsAdmin() : ''}
     ${nav.adminTab === 'help' ? renderHelpAdmin() : ''}
     ${nav.adminTab === 'settings' ? renderSettings() : ''}
+    </div>
+    ${renderAdminNav()}
+    ${nav.adminMoreOpen ? renderAdminMore() : ''}
   `;
 }
 
-function setAdminTab(tab){ nav.adminTab = tab; render(); }
+// Four destinations she uses daily, plus More. Counts of anything waiting are
+// shown on the icons, and rolled up onto More so nothing hides behind it.
+const ADMIN_NAV = [
+  { tab:'home',  label:'Dashboard', icon:'<path d="M4 13h7V4H4zM13 20h7v-9h-7zM4 20h7v-5H4zM13 9h7V4h-7z"/>' },
+  { tab:'queue', label:'Queue',     icon:'<path d="M4 13h4l2 3h4l2-3h4"/><path d="M5 5h14l1 8v6H4v-6z"/>' },
+  { tab:'post',  label:'Post',      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M3 17l5-4 4 3 3-2 6 5"/>' },
+  { tab:'leads', label:'Orders',    icon:'<path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>' },
+];
+const ADMIN_MORE = [
+  { tab:'shop',      label:'Shop' },
+  { tab:'reviews',   label:'Reviews' },
+  { tab:'gifts',     label:'Gift cards' },
+  { tab:'discounts', label:'Discounts' },
+  { tab:'help',      label:'Help messages' },
+  { tab:'settings',  label:'Settings' },
+];
+
+function adminBadge(tab){
+  if (tab === 'queue')   return stories.filter(s => !s.archived_at && s.status === 'pending').length;
+  if (tab === 'post')    return stories.filter(s => !s.archived_at && s.status === 'approved' && !s.posted).length;
+  if (tab === 'leads')   return leads.filter(l => l.status === 'Enquired').length;
+  if (tab === 'reviews') return reviews.filter(r => r.status === 'pending').length;
+  if (tab === 'help')    return helpMessages.filter(h => h.status === 'new').length;
+  return 0;
+}
+
+function renderAdminNav(){
+  const moreCount = ADMIN_MORE.reduce((a, i) => a + adminBadge(i.tab), 0);
+  const moreOn = ADMIN_MORE.some(i => i.tab === nav.adminTab);
+  return `
+    <nav class="bh-navbar">
+      ${ADMIN_NAV.map(i => {
+        const n = adminBadge(i.tab);
+        return `
+        <button class="${nav.adminTab === i.tab ? 'on' : ''}" onclick="setAdminTab('${i.tab}')">
+          <svg viewBox="0 0 24 24">${i.icon}</svg>
+          <span>${i.label}</span>
+          ${n ? `<span class="dot">${n}</span>` : ''}
+        </button>`;
+      }).join('')}
+      <button class="${moreOn ? 'on' : ''}" onclick="openAdminMore()">
+        <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+        <span>More</span>
+        ${moreCount ? `<span class="dot">${moreCount}</span>` : ''}
+      </button>
+    </nav>`;
+}
+
+function renderAdminMore(){
+  return `
+    <div class="bh-navmore">
+      <div class="scrim" onclick="closeAdminMore()"></div>
+      <div class="panel">
+        <h4>Go to</h4>
+        ${ADMIN_MORE.map(i => {
+          const n = adminBadge(i.tab);
+          return `
+          <button class="item ${nav.adminTab === i.tab ? 'on' : ''}" onclick="setAdminTab('${i.tab}')">
+            <span>${i.label}</span>${n ? `<span class="n">${n}</span>` : ''}
+          </button>`;
+        }).join('')}
+        <button class="item" onclick="closeAdminMore(); adminLogout()">
+          <span style="color:var(--risk)">Log out</span>
+        </button>
+      </div>
+    </div>`;
+}
+
+function openAdminMore(){ nav.adminMoreOpen = true; render(); }
+function closeAdminMore(){ nav.adminMoreOpen = false; render(); }
+
+function setAdminTab(tab){
+  nav.adminTab = tab;
+  nav.adminMoreOpen = false;
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  render();
+}
 
 // ---- Admin: review queue ----
 function renderReviewQueue(){
@@ -3467,44 +3864,232 @@ async function addProduct(){
 async function removeProduct(id){ await apiFetch('/products', { method: 'DELETE', body: JSON.stringify({ id }) }); await fetchProducts(); render(); }
 
 // ---- Admin: leads manager ----
-function renderLeadsManager(){
+// Orders are grouped by what needs doing, and each card shows one obvious
+// next action. Documents and deleting are folded away behind "More", because
+// twelve buttons on every card made the list impossible to scan.
+const LEAD_GROUPS = [
+  { status:'Enquired', title:'Waiting on payment',  note:'Sent the banking details, waiting for the money.' },
+  { status:'Paid',     title:'Paid \u2014 to pack',      note:'Money is in. Pack these.' },
+  { status:'Ready',    title:'Ready to go out',     note:'Packed. Tell them it is on the way or ready to collect.' },
+  { status:'Sent',     title:'Done',                note:'Archive these once you are finished with them.' },
+];
+
+function leadSummary(l){
+  const total = l.total || l.price || '';
+  const method = l.delivery_method || l.deliveryMethod || 'Collection';
   return `
-    <div class="bh-card" style="margin-bottom:20px">
-      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Add a lead</h3>
-      <div class="bh-grid2">
-        <input id="leadBuyer" class="bh-input" placeholder="Buyer name" style="margin-bottom:12px">
-        <input id="leadItem" class="bh-input" placeholder="Item they want" style="margin-bottom:12px">
-        <input id="leadPhone" class="bh-input" placeholder="WhatsApp number (optional)" style="margin-bottom:12px">
-        <input id="leadPrice" class="bh-input" placeholder="Price (optional)" style="margin-bottom:12px">
+    <div class="bh-ord-top">
+      <div>
+        <span class="nm">${escapeHtml(l.buyer || 'No name')}</span>
+        <span class="it">${escapeHtml(leadItemList(l)).replace(/\n/g, '<br>')}</span>
+        <span class="mt">${l.phone ? escapeHtml(l.phone) + ' \u00b7 ' : ''}${escapeHtml(method)}${l.created_at ? ' \u00b7 ' + agoWords(l.created_at) : ''}</span>
+        ${l.address ? `<span class="mt">${escapeHtml(l.address)}</span>` : ''}
+        ${l.lead_time ? `<span class="mt" style="color:#a6752f">${escapeHtml(l.lead_time)}</span>` : ''}
+        ${l.discount_code ? `<span class="mt" style="color:var(--ok)">${escapeHtml(l.discount_code)} \u2212R${escapeHtml(l.discount_amount || '0')}</span>` : ''}
       </div>
-      <button class="bh-btn" onclick="addLead()">+ Add lead</button>
-    </div>
-    <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:12px">Tracking (${leads.length})</h3>
-    ${leads.length === 0 ? `<p class="bh-empty">No leads yet — they'll show up here as they come in, including orders placed through the shop.</p>` : ''}
-    ${leads.map(l => `
-      <div class="bh-lead">
-        <span class="who"><strong>${escapeHtml(l.buyer)}</strong>${l.total ? ` — R${escapeHtml(l.total)}` : (l.price ? ` — R${escapeHtml(l.price)}` : '')}
-        <br><span style="font-size:.8rem;color:var(--ink)">${escapeHtml(leadItemList(l)).replace(/\n/g, '<br>')}</span>
-        ${l.phone ? `<br><span style="font-size:.78rem;color:var(--grey)">${escapeHtml(l.phone)} · ${escapeHtml(l.delivery_method || l.deliveryMethod || 'Collection')}</span>` : ''}
-        ${l.address ? `<br><span style="font-size:.75rem;color:var(--grey)">${escapeHtml(l.address)}</span>` : ''}
-        ${l.lead_time ? `<br><span style="font-size:.75rem;color:#a6752f;font-weight:700">${escapeHtml(l.lead_time)}</span>` : ''}
-        ${l.discount_code ? `<br><span style="font-size:.75rem;color:var(--ok);font-weight:700">${escapeHtml(l.discount_code)} \u2212R${escapeHtml(l.discount_amount || '0')}</span>` : ''}</span>
-        <span class="bh-statuspill" onclick="cycleLeadStatus('${l.id}')" title="Tap to move to the next status">${escapeHtml(l.status)}</span>
-        <span class="bh-doc-actions">
+      ${total ? `<span class="amt">R${escapeHtml(total)}</span>` : ''}
+    </div>`;
+}
+
+function leadCard(l){
+  const open = transient.openLeadDocs === l.id;
+  const hasPhone = !!l.phone;
+  const wa = (kind, label, cls) => hasPhone
+    ? `<button class="${cls}" onclick="sendLeadWhatsApp('${l.id}','${kind}')">${label}</button>` : '';
+
+  // One primary action per status, plus the nudges she asked for.
+  let actions = '';
+  if (l.status === 'Enquired'){
+    actions = `${wa('order','Send order &amp; banking','bh-ord-go')}
+               ${wa('reminder','Remind about payment','bh-ord-2nd')}`;
+  } else if (l.status === 'Paid'){
+    actions = `${wa('receipt','Send receipt','bh-ord-go')}
+               ${wa('update','Keep them posted','bh-ord-2nd')}`;
+  } else if (l.status === 'Ready'){
+    actions = `${wa('delivery','Send delivery message','bh-ord-go')}
+               ${wa('update','Keep them posted','bh-ord-2nd')}`;
+  } else {
+    actions = `<button class="bh-ord-go" onclick="archiveLead('${l.id}')">Archive this order</button>
+               ${wa('update','Message them','bh-ord-2nd')}`;
+  }
+
+  const nextLabel = { Enquired:'Mark as paid', Paid:'Mark as packed', Ready:'Mark as sent' }[l.status];
+
+  return `
+    <div class="bh-ord">
+      ${leadSummary(l)}
+      ${!hasPhone ? `<p class="bh-ord-warn">No WhatsApp number saved, so nothing can be sent from here.</p>` : ''}
+      <div class="bh-ord-acts">${actions}</div>
+      <div class="bh-ord-foot">
+        ${nextLabel ? `<button class="bh-ord-next" onclick="cycleLeadStatus('${l.id}')">${nextLabel}</button>` : ''}
+        <button class="bh-ord-more" onclick="toggleLeadDocs('${l.id}')">${open ? 'Less' : 'More'}</button>
+      </div>
+      ${open ? `
+        <div class="bh-ord-docs">
           ${['order','receipt','delivery'].map(k => `
-            <span class="bh-doc-group">
-              <span class="bh-doc-label">${k === 'order' ? 'Order' : (k === 'receipt' ? 'Receipt' : 'Delivery')}</span>
-              ${l.phone ? `<button class="bh-wa-mini" onclick="sendLeadWhatsApp('${l.id}','${k}')">Send</button>` : ''}
-              <button class="bh-doc-mini" title="Download picture" onclick="downloadLeadCard('${l.id}','${k}')">JPG</button>
-              <button class="bh-doc-mini" title="Download PDF" onclick="downloadLeadPDF('${l.id}','${k}')">PDF</button>
-            </span>`).join('')}
-          <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeLead('${l.id}')">🗑</button>
-        </span>
+            <div class="row">
+              <span>${k === 'order' ? 'Order &amp; banking' : (k === 'receipt' ? 'Receipt' : 'Delivery')}</span>
+              ${hasPhone ? `<button onclick="sendLeadWhatsApp('${l.id}','${k}')">Send</button>` : ''}
+              <button onclick="downloadLeadCard('${l.id}','${k}')">Picture</button>
+              <button onclick="downloadLeadPDF('${l.id}','${k}')">PDF</button>
+            </div>`).join('')}
+          <div class="row">
+            <span>Archived orders can be put back</span>
+            <button onclick="archiveLead('${l.id}')">Archive</button>
+            <button class="risk" onclick="removeLead('${l.id}')">Delete for good</button>
+          </div>
+        </div>` : ''}
+    </div>`;
+}
+
+// ---- Chasing several unpaid orders ----
+// WhatsApp gives no way to send to many people at once from a web page, and
+// bulk-sending tools get numbers banned. So this walks through them one at a
+// time instead: one tap opens the chat with the message already written, she
+// sends, comes back, taps next. Each message is still personalised.
+function chaseable(){
+  return leads.filter(l => l.status === 'Enquired' && l.phone);
+}
+
+function startChase(){
+  const list = chaseable();
+  if (!list.length) return;
+  transient.chase = { ids: list.map(l => l.id), i: 0, done: [], skipped: [] };
+  render();
+}
+function chaseOpen(){
+  const c = transient.chase;
+  const lead = leads.find(l => l.id === c.ids[c.i]);
+  if (!lead) return;
+  sendLeadWhatsApp(lead.id, 'reminder');
+  c.opened = lead.id;
+  render();
+}
+function chaseNext(sent){
+  const c = transient.chase;
+  (sent ? c.done : c.skipped).push(c.ids[c.i]);
+  c.i += 1;
+  c.opened = null;
+  render();
+}
+function chaseStop(){ transient.chase = null; render(); }
+
+function renderChase(){
+  const c = transient.chase;
+  if (!c) return '';
+  const total = c.ids.length;
+
+  if (c.i >= total){
+    return `
+      <div class="bh-chase">
+        <h4>${c.done.length} of ${total} reminded</h4>
+        <p>${c.skipped.length ? c.skipped.length + ' skipped. ' : ''}You can run this again any time.</p>
+        <button class="bh-ord-go" onclick="chaseStop()">Close</button>
+      </div>`;
+  }
+
+  const lead = leads.find(l => l.id === c.ids[c.i]);
+  const amount = lead.total || lead.price || '';
+  const opened = c.opened === lead.id;
+
+  return `
+    <div class="bh-chase">
+      <div class="bh-chase-bar"><span style="width:${Math.round((c.i / total) * 100)}%"></span></div>
+      <p class="step">${c.i + 1} of ${total}</p>
+      <h4>${escapeHtml(lead.buyer || 'No name')}</h4>
+      <p>${escapeHtml(lead.phone)}${amount ? ' \u00b7 R' + escapeHtml(amount) + ' outstanding' : ''}
+         ${lead.created_at ? '\u00b7 ordered ' + agoWords(lead.created_at) : ''}</p>
+      ${opened
+        ? `<button class="bh-ord-go" onclick="chaseNext(true)">Sent \u2014 next</button>
+           <button class="bh-ord-2nd" onclick="chaseOpen()">Open again</button>`
+        : `<button class="bh-ord-go" onclick="chaseOpen()">Open WhatsApp for ${escapeHtml((lead.buyer || '').split(' ')[0] || 'them')}</button>`}
+      <div class="bh-chase-foot">
+        <button onclick="chaseNext(false)">Skip this one</button>
+        <button onclick="chaseStop()">Stop</button>
       </div>
-    `).join('')}
-    <p style="font-size:.78rem;color:var(--ok);margin:4px 0 0">${escapeHtml(transient.leadDownloadStatus)}</p>
-    <p class="bh-note">Tap a status pill to move it along: Enquired → Paid → Ready → Sent.<br><br>Each order has three documents. <strong>Send</strong> opens WhatsApp with that message already written — you just tap send. <strong>JPG</strong> downloads a picture, <strong>PDF</strong> a proper printable document — either can be attached in WhatsApp.<br><br><strong>Order</strong> = what they bought, plus banking details. <strong>Receipt</strong> = send once their payment reflects. <strong>Delivery</strong> = ready for collection, or on its way.</p>
+    </div>`;
+}
+
+function renderLeadsManager(){
+  const live = leads.filter(l => l.status !== 'Archived');
+  const archived = leads.filter(l => l.status === 'Archived');
+  const owed = live.filter(l => l.status === 'Enquired')
+    .reduce((sum, l) => sum + (parseFloat(l.total || l.price) || 0), 0);
+
+  return `
+    ${owed > 0 ? `<div class="bh-ord-owed">R${Math.round(owed).toLocaleString('en-ZA')} still to come in across ${live.filter(l => l.status === 'Enquired').length} unpaid ${live.filter(l => l.status === 'Enquired').length === 1 ? 'order' : 'orders'}.</div>` : ''}
+
+    ${LEAD_GROUPS.map(g => {
+      const rows = live.filter(l => l.status === g.status);
+      if (!rows.length) return '';
+      return `
+        <div class="bh-ord-group">
+          <div class="bh-ord-head">
+            <h3>${g.title}</h3>
+            <span class="cnt">${rows.length}</span>
+            ${g.status === 'Enquired' && rows.filter(l => l.phone).length > 1
+              ? `<button class="bh-chase-start" onclick="startChase()">Remind all ${rows.filter(l => l.phone).length}</button>` : ''}
+          </div>
+          <p class="bh-ord-note">${g.note}</p>
+          ${g.status === 'Enquired' ? renderChase() : ''}
+          ${rows.map(leadCard).join('')}
+        </div>`;
+    }).join('')}
+
+    ${live.length === 0 ? `<p class="bh-empty">No orders on the go. Anything bought through the shop lands here on its own.</p>` : ''}
+    <p style="font-size:.78rem;color:var(--ok);margin:4px 0 10px">${escapeHtml(transient.leadDownloadStatus)}</p>
+
+    ${archived.length ? `
+      <div class="bh-ord-group">
+        <button class="bh-ord-head" style="width:100%;background:none;border:none;cursor:pointer;padding:0"
+                onclick="transient.showArchivedLeads = !transient.showArchivedLeads; render()">
+          <h3>Archived</h3><span class="cnt">${archived.length}</span>
+          <span style="margin-left:auto;color:var(--grey)">${transient.showArchivedLeads ? '\u2303' : '\u2304'}</span>
+        </button>
+        ${transient.showArchivedLeads ? archived.map(l => `
+          <div class="bh-ord" style="opacity:.72">
+            ${leadSummary(l)}
+            <div class="bh-ord-foot">
+              <button class="bh-ord-next" onclick="unarchiveLead('${l.id}')">Put back</button>
+              <button class="bh-ord-more risk" onclick="removeLead('${l.id}')">Delete for good</button>
+            </div>
+          </div>`).join('') : ''}
+      </div>` : ''}
+
+    <div class="bh-card" style="margin-top:8px">
+      <button class="bh-btn-outline" style="width:100%"
+              onclick="transient.showAddLead = !transient.showAddLead; render()">
+        ${transient.showAddLead ? 'Cancel' : 'Add an order by hand'}
+      </button>
+      ${transient.showAddLead ? `
+        <div style="margin-top:14px">
+          <div class="bh-grid2">
+            <input id="leadBuyer" class="bh-input" placeholder="Buyer name" style="margin-bottom:12px">
+            <input id="leadItem" class="bh-input" placeholder="Item they want" style="margin-bottom:12px">
+            <input id="leadPhone" class="bh-input" placeholder="WhatsApp number" style="margin-bottom:12px">
+            <input id="leadPrice" class="bh-input" placeholder="Price" style="margin-bottom:12px">
+          </div>
+          <button class="bh-btn" onclick="addLead()">Add order</button>
+        </div>` : ''}
+    </div>
+
+    <p class="bh-note">Each order shows the one thing to do next. <strong>More</strong> opens the pictures and PDFs if you need to attach one, and archiving tidies an order away without deleting it.</p>
   `;
+}
+
+function toggleLeadDocs(id){
+  transient.openLeadDocs = transient.openLeadDocs === id ? null : id;
+  render();
+}
+async function archiveLead(id){
+  await apiFetch('/leads', { method: 'PATCH', body: JSON.stringify({ id, status: 'Archived' }) });
+  await fetchLeads();
+  render();
+}
+async function unarchiveLead(id){
+  await apiFetch('/leads', { method: 'PATCH', body: JSON.stringify({ id, status: 'Sent' }) });
+  await fetchLeads();
+  render();
 }
 
 async function addLead(){
@@ -3526,10 +4111,12 @@ async function cycleLeadStatus(id){
 }
 async function removeLead(id){ await apiFetch('/leads', { method: 'DELETE', body: JSON.stringify({ id }) }); await fetchLeads(); render(); }
 
-function sendLeadWhatsApp(id){
+function sendLeadWhatsApp(id, kind){
   const lead = leads.find(l => l.id === id);
-  if (!lead.phone){ alert('No WhatsApp number saved for this lead — add one to send a message.'); return; }
-  const message = buildLeadMessage(lead);
+  if (!lead.phone){ alert('No WhatsApp number saved for this order — add one to send a message.'); return; }
+  // kind was accepted and then ignored, so every Send button sent the same
+  // message. It is passed through now.
+  const message = buildLeadMessage(lead, kind);
   window.open(buildWhatsAppLink(lead.phone, message), '_blank');
 }
 
@@ -3883,6 +4470,8 @@ function renderSettings(){
       ${field('receiptMessage', 'When payment is received', '', 5)}
       ${field('shippingMessage', 'When it is ready \u2014 shipping', '', 5)}
       ${field('collectionMessage', 'When it is ready \u2014 collection', '', 5)}
+      ${field('reminderMessage', 'Chasing an unpaid order', 'Sent by the Remind button on orders still waiting for payment.', 6)}
+      ${field('updateMessage', 'Keeping someone posted', 'Sent by the Update button when an order is taking a while.', 5)}
     </div>
 
     <p id="settingsStatus" style="font-size:.85rem;min-height:1.2em;margin:0 0 10px;color:var(--ok)"></p>
@@ -3893,7 +4482,7 @@ function renderSettings(){
   `;
 }
 
-const SETTING_KEYS = ['shippingCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','shopCategories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
+const SETTING_KEYS = ['shippingCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','shopCategories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage','reminderMessage','updateMessage'];
 
 function readCategoryInputs(){
   return Array.from(document.querySelectorAll('.bh-cat-input'))
