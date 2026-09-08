@@ -12,41 +12,21 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
-  /* Site UI: Cormorant Garamond (delicate, high-contrast, beautiful italic)
-     with Jost (light geometric sans) for buttons and labels. Fraunces +
-     Instrument Sans are still loaded because the story-card and gift-card
-     canvas generators draw with them — changing those would change every card
-     she posts, so they are left alone deliberately. */
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,700;9..144,1,400&family=Instrument+Sans:wght@400;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
   .bh-root{ --ink:#241521; --plum:#3d1e3a; --plum2:#6b3560; --plum3:#8a4877; --blush:#f0c4cf; --blushp:#fbf1ef; --gold:#c9a15a; --goldl:#e4c989; --line:#ead9dc; --grey:#6b5a67; --ok:#5c7a5e; --risk:#a13d4c;
-    /* Swap the whole site's typography by changing these two lines. */
-    --f-display:'Cormorant Garamond', Georgia, serif;
-    --f-ui:'Jost', -apple-system, sans-serif;
-    font-family:var(--f-ui); color:var(--ink); background:var(--blushp); min-height:100vh;
-    font-weight:300; -webkit-font-smoothing:antialiased; }
-  /* Family and weight only. This rule must NOT set font-size: it outranks the
-     individual heading classes, so a size here silently flattens every heading
-     on the site to one size. Cormorant's small x-height is compensated for on
-     the individual headings below instead. */
-  .bh-root .bh-serif, .bh-root h1, .bh-root h2, .bh-root h3{
-    font-family:var(--f-display); font-weight:600; letter-spacing:.005em; }
-  .bh-root .bh-rail-head h3, .bh-root .bh-serif:not([style*="font-size"]):not([class*="title"]){
-    font-size:1.42rem; }
-  .bh-root button, .bh-root input, .bh-root select, .bh-root textarea{ font-family:var(--f-ui); }
-  /* Jost is geometric and reads better with a little air in small caps labels. */
-  .bh-root .bh-label, .bh-root .bh-kicker{ letter-spacing:.09em; }
+    font-family:'Instrument Sans',sans-serif; color:var(--ink); background:var(--blushp); min-height:100vh; }
   .bh-root *{ box-sizing:border-box; }
-  .bh-serif{ font-family:var(--f-display); }
+  .bh-serif{ font-family:'Fraunces',serif; }
 /* hero, rail and badges */
   .bh-hero2{ position:relative; min-height:420px; display:flex; align-items:center; justify-content:center; text-align:center; overflow:hidden; color:#fff; }
   .bh-hero2-bg{ position:absolute; inset:0; background:linear-gradient(160deg,#2b1524 0%,#5e2a4c 55%,#8a4877 100%); }
   .bh-hero2-mark{ position:absolute; right:-20px; bottom:-16px; height:230px; opacity:.13; z-index:1; }
   .bh-hero2-inner{ position:relative; z-index:2; padding:52px 26px; max-width:520px; }
   .bh-kicker{ font-size:.68rem; letter-spacing:.22em; text-transform:uppercase; color:var(--goldl); margin-bottom:14px; }
-  .bh-hero2-title{ font-weight:500; font-size:clamp(2.2rem,9vw,3.1rem); margin:0; letter-spacing:.02em; }
+  .bh-hero2-title{ font-weight:400; font-size:clamp(2.2rem,9vw,3.1rem); margin:0; letter-spacing:.02em; }
   .bh-hero2-sub{ font-size:.9rem; color:#efe2ea; margin:14px auto 0; max-width:32ch; line-height:1.55; }
   .bh-hero2-ctas{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:24px; }
-  .bh-hero2-cta{ background:#fffdf9; color:var(--ink); border:none; font-family:var(--f-ui); font-weight:600; font-size:.86rem; padding:13px 26px; cursor:pointer; letter-spacing:.02em; }
+  .bh-hero2-cta{ background:#fffdf9; color:var(--ink); border:none; font-family:'Instrument Sans',sans-serif; font-weight:600; font-size:.86rem; padding:13px 26px; cursor:pointer; letter-spacing:.02em; }
   .bh-hero2-cta.ghost{ background:transparent; border:1.4px solid rgba(255,255,255,.7); color:#fff; }
 
   .bh-rail-wrap{ padding:26px 0 6px; }
@@ -72,11 +52,11 @@
   .bh-catstrip-inner{ display:flex; gap:8px; overflow-x:auto; padding:0 20px 6px; scrollbar-width:none; max-width:900px; margin:0 auto; }
   .bh-catstrip-inner::-webkit-scrollbar{ display:none; }
   .bh-catchip{ flex:0 0 auto; background:#fff; border:1px solid var(--line); border-radius:20px; padding:9px 15px;
-    font-family:var(--f-ui); font-size:.82rem; font-weight:600; color:var(--plum); cursor:pointer; white-space:nowrap; }
+    font-family:'Instrument Sans',sans-serif; font-size:.82rem; font-weight:600; color:var(--plum); cursor:pointer; white-space:nowrap; }
   .bh-catchip b{ color:var(--gold); margin-left:4px; }
   .bh-railveil{ position:absolute; inset:0; background:linear-gradient(0deg, rgba(20,8,16,.8) 6%, rgba(20,8,16,.04) 62%); }
   .bh-raillbl{ position:absolute; left:0; right:0; bottom:0; padding:13px; color:#fff; z-index:2; }
-  .bh-raillbl .t{ font-family:var(--f-display); font-size:.94rem; font-weight:500; line-height:1.2; }
+  .bh-raillbl .t{ font-family:'Fraunces',serif; font-size:.94rem; font-weight:500; line-height:1.2; }
   .bh-raillbl .s{ font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; opacity:.85; margin-top:5px; }
   .bh-railpill{ position:absolute; top:9px; left:9px; z-index:3; font-size:.57rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:4px 8px; border-radius:20px; }
   .bh-railpill.shop{ background:var(--goldl); color:var(--ink); }
@@ -91,11 +71,11 @@
   @media (min-width:700px){ .bh-badges{ grid-template-columns:repeat(4,1fr); max-width:900px; margin:26px auto 0; } }
 
 /* announcement bar + header */
-  .bh-announce{ background:var(--ink); color:var(--goldl); text-align:center; font-family:var(--f-display); font-weight:500; font-size:.78rem; padding:9px 12px; letter-spacing:.02em; }
+  .bh-announce{ background:var(--ink); color:var(--goldl); text-align:center; font-family:'Fraunces',serif; font-weight:500; font-size:.78rem; padding:9px 12px; letter-spacing:.02em; }
   .bh-hdr{ background:var(--plum); display:flex; align-items:center; justify-content:space-between; padding:13px 16px; position:sticky; top:0; z-index:40; }
   .bh-burger{ background:none; border:none; display:flex; flex-direction:column; gap:4px; cursor:pointer; padding:6px; }
   .bh-burger i{ display:block; width:21px; height:1.7px; background:#fffdf9; }
-  .bh-brand{ background:none; border:none; display:flex; align-items:center; gap:8px; cursor:pointer; color:#fffdf9; font-family:var(--f-display); font-weight:500; font-size:1.02rem; letter-spacing:.02em; }
+  .bh-brand{ background:none; border:none; display:flex; align-items:center; gap:8px; cursor:pointer; color:#fffdf9; font-family:'Fraunces',serif; font-weight:500; font-size:1.02rem; letter-spacing:.02em; }
   .bh-brand-mark{ height:24px; width:auto; opacity:.95; }
   .bh-brand .dot{ color:var(--gold); }
   .bh-cartbtn{ background:none; border:none; cursor:pointer; position:relative; padding:6px; }
@@ -116,7 +96,7 @@
   html, body{ overflow-x:hidden; max-width:100%; }
   .bh-menu-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
   .bh-menu-x{ background:none; border:none; color:#fffdf9; font-size:1.25rem; cursor:pointer; }
-  .bh-menu-brand{ font-family:var(--f-display); color:#fffdf9; font-size:1.02rem; }
+  .bh-menu-brand{ font-family:'Fraunces',serif; color:#fffdf9; font-size:1.02rem; }
   .bh-menu-brand .dot{ color:var(--gold); }
   .bh-menu-list{ list-style:none; margin:0; padding:0; }
   .bh-menu-list li{ display:flex; align-items:center; justify-content:space-between; padding:15px 2px; color:#fffdf9; font-size:1.05rem; border-bottom:1px solid rgba(255,255,255,.09); cursor:pointer; }
@@ -131,8 +111,8 @@
     background:linear-gradient(135deg,var(--plum),var(--plum3)); box-shadow:0 10px 26px rgba(61,30,58,.28); }
   .bh-gc::after{ content:''; position:absolute; inset:9px; border:1px solid rgba(228,201,137,.4); border-radius:7px; }
   .bh-gc-label{ position:absolute; top:22px; left:24px; color:var(--goldl); font-size:.6rem; font-weight:800; letter-spacing:.24em; text-transform:uppercase; z-index:2; }
-  .bh-gc-brand{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--f-display); font-weight:500; color:#fffdf9; font-size:1.9rem; z-index:2; }
-  .bh-gc-amt{ position:absolute; left:24px; bottom:34px; font-family:var(--f-display); font-weight:600; color:var(--goldl); font-size:1.5rem; z-index:2; }
+  .bh-gc-brand{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:500; color:#fffdf9; font-size:1.9rem; z-index:2; }
+  .bh-gc-amt{ position:absolute; left:24px; bottom:34px; font-family:'Fraunces',serif; font-weight:600; color:var(--goldl); font-size:1.5rem; z-index:2; }
   .bh-gc-for{ position:absolute; left:24px; bottom:18px; color:rgba(255,253,249,.8); font-size:.72rem; z-index:2; }
   .bh-gc-mark{ position:absolute; right:16px; bottom:14px; height:74px; opacity:.16; z-index:1; }
 
@@ -146,7 +126,7 @@
   .bh-rate-pick button.on{ color:var(--gold); }
 
   .bh-nav{ display:flex; align-items:center; justify-content:space-between; padding:18px 24px; flex-wrap:wrap; gap:10px; }
-  .bh-logo{ font-family:var(--f-display); font-weight:600; font-size:1.15rem; color:var(--plum); cursor:pointer; background:none; border:none; display:flex; align-items:center; gap:9px; padding:0; }
+  .bh-logo{ font-family:'Fraunces',serif; font-weight:600; font-size:1.15rem; color:var(--plum); cursor:pointer; background:none; border:none; display:flex; align-items:center; gap:9px; padding:0; }
   .bh-logo-mark{ height:30px; width:auto; display:block; }
   .bh-logo .dot{ color:var(--gold); }
   .bh-navlinks{ display:flex; gap:10px; flex-wrap:wrap; }
@@ -165,21 +145,21 @@
   .bh-folder-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:12px; margin-top:4px; }
   .bh-folder{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; cursor:pointer; transition:transform .15s, box-shadow .15s; }
   .bh-folder{ transition:box-shadow .15s; }
-  .bh-folder .count{ font-family:var(--f-display); font-size:1.7rem; color:var(--gold); font-weight:600; }
+  .bh-folder .count{ font-family:'Fraunces',serif; font-size:1.7rem; color:var(--gold); font-weight:600; }
   .bh-folder .name{ font-weight:700; color:var(--plum); font-size:.92rem; margin-top:2px; }
   .bh-tile{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:10px; cursor:pointer; }
   .bh-tile:hover{ border-color:var(--gold); }
-  .bh-tile p{ font-family:var(--f-display); font-style:italic; font-size:.95rem; margin:0 0 6px; }
+  .bh-tile p{ font-family:'Fraunces',serif; font-style:italic; font-size:.95rem; margin:0 0 6px; }
   .bh-tile .sub{ font-size:.75rem; color:var(--grey); }
   .bh-storyhero{ background:linear-gradient(155deg,var(--plum),var(--plum2)); color:#fff; border-radius:18px; padding:28px; }
-  .bh-storyhero .mark{ font-family:var(--f-display); font-size:2.2rem; color:var(--gold); line-height:1; }
-  .bh-storyhero p{ font-family:var(--f-display); font-style:italic; font-size:1.1rem; line-height:1.5; margin:6px 0 14px; }
+  .bh-storyhero .mark{ font-family:'Fraunces',serif; font-size:2.2rem; color:var(--gold); line-height:1; }
+  .bh-storyhero p{ font-family:'Fraunces',serif; font-style:italic; font-size:1.1rem; line-height:1.5; margin:6px 0 14px; }
   .bh-storyhero .tag{ font-size:.72rem; letter-spacing:.06em; color:var(--goldl); font-weight:700; }
   .bh-btn{ background:linear-gradient(135deg,var(--goldl),var(--gold)); color:var(--ink); font-weight:700; padding:11px 20px; border-radius:9px; font-size:.88rem; border:none; cursor:pointer; }
   .bh-btn:disabled{ opacity:.5; cursor:not-allowed; }
   .bh-btn-outline{ background:#fff; border:1.5px solid var(--plum); color:var(--plum); font-weight:700; padding:10px 18px; border-radius:9px; font-size:.85rem; cursor:pointer; }
   .bh-btn-ghost{ background:none; border:none; color:var(--plum); font-weight:600; font-size:.85rem; cursor:pointer; display:flex; align-items:center; gap:6px; padding:0; }
-  .bh-input, .bh-textarea, .bh-select{ width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:9px; font-family:var(--f-ui); font-size:.88rem; background:#fff; }
+  .bh-input, .bh-textarea, .bh-select{ width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:9px; font-family:'Instrument Sans',sans-serif; font-size:.88rem; background:#fff; }
   .bh-textarea{ min-height:110px; resize:vertical; }
   .bh-label{ display:block; font-weight:700; font-size:.82rem; color:var(--plum); margin-bottom:6px; }
   .bh-card{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; }
@@ -192,62 +172,10 @@
   .bh-qrow .actions button{ padding:6px 12px; font-size:.72rem; font-weight:700; border-radius:7px; border:none; cursor:pointer; }
   .bh-approve{ background:var(--ok); color:#fff; }
   .bh-reject{ background:#fff; color:var(--risk); border:1px solid var(--risk) !important; }
-  /* Nine tabs do not fit across a phone. Without wrapping, the last ones
-     (Help, Settings) sit off the right edge with no way to reach them. */
-  .bh-tabs{ display:flex; flex-wrap:wrap; gap:6px; background:var(--blushp); padding:5px;
-    border-radius:10px; width:100%; box-sizing:border-box; margin-bottom:18px; }
-  .bh-tab{ padding:9px 14px; font-size:.78rem; font-weight:700; border-radius:8px; border:none; background:none; cursor:pointer; color:var(--grey); white-space:nowrap; }
+  .bh-tabs{ display:flex; gap:6px; background:var(--blushp); padding:4px; border-radius:10px; width:fit-content; margin-bottom:18px; }
+  .bh-tab{ padding:8px 16px; font-size:.8rem; font-weight:700; border-radius:8px; border:none; background:none; cursor:pointer; color:var(--grey); }
   .bh-tab.on{ background:#fff; color:var(--plum); }
-  /* ---- Dashboard ---------------------------------------------------------
-     Three deliberately different treatments so hierarchy comes from structure:
-     one loud focus panel, a quiet hairline action list, then paired stat
-     columns. Not twelve identical cards. */
-  .bh-dash-greet{ display:flex; align-items:baseline; justify-content:space-between;
-    gap:12px; margin:0 0 14px; flex-wrap:wrap; }
-  .bh-dash-greet h2{ font-family:var(--f-display); font-weight:600; font-size:1.5rem;
-    color:var(--plum); margin:0; }
-  .bh-dash-greet .when{ font-size:.78rem; color:var(--grey); }
-
-  .bh-focus{ background:linear-gradient(155deg,var(--plum),var(--plum2));
-    color:#fffdf9; border-radius:16px; padding:24px 22px; margin-bottom:20px; }
-  .bh-focus .n{ font-family:var(--f-display); font-weight:600; font-size:4.2rem;
-    line-height:.9; color:var(--goldl); display:block; }
-  .bh-focus .what{ font-size:1rem; margin:8px 0 2px; }
-  .bh-focus .sub{ font-size:.82rem; color:#e6d4e0; margin:0 0 18px; }
-  .bh-focus .bh-btn{ background:#fffdf9; color:var(--plum); }
-  .bh-focus.calm{ background:linear-gradient(155deg,#33532f,#5c7a5e); }
-  .bh-focus.calm .n{ color:#e8f2e2; }
-
-  .bh-spark{ display:flex; align-items:flex-end; gap:5px; height:44px; margin-top:20px; }
-  .bh-spark div{ flex:1; background:rgba(255,253,249,.28); border-radius:2px 2px 0 0; min-height:2px; }
-  .bh-spark div.today{ background:var(--goldl); }
-  .bh-spark-lbl{ display:flex; justify-content:space-between; font-size:.68rem;
-    color:#e6d4e0; margin-top:6px; }
-
-  .bh-todo{ background:#fff; border:1px solid var(--line); border-radius:14px;
-    padding:4px 16px; margin-bottom:20px; }
-  .bh-todo-row{ display:flex; align-items:center; gap:12px; width:100%; background:none;
-    border:none; border-bottom:1px solid var(--line); padding:15px 0; cursor:pointer;
-    font-family:var(--f-ui); font-size:.92rem; color:var(--ink); text-align:left; }
-  .bh-todo-row:last-child{ border-bottom:none; }
-  .bh-todo-row .cnt{ font-family:var(--f-display); font-weight:600; font-size:1.35rem;
-    color:var(--plum); min-width:34px; }
-  .bh-todo-row .cnt.warn{ color:var(--risk); }
-  .bh-todo-row .go{ margin-left:auto; color:var(--grey); font-size:1.1rem; }
-  .bh-todo-clear{ padding:22px 0; text-align:center; color:var(--grey); font-size:.88rem; }
-
-  .bh-statcols{ display:grid; grid-template-columns:1fr; gap:18px; margin-bottom:20px; }
-  @media (min-width:620px){ .bh-statcols{ grid-template-columns:1fr 1fr; } }
-  .bh-statgrp h3{ font-family:var(--f-display); font-weight:600; font-size:1.15rem;
-    color:var(--plum); margin:0 0 4px; }
-  .bh-statgrp .lede{ font-size:.75rem; color:var(--grey); margin:0 0 10px; }
-  .bh-statrow{ display:flex; align-items:baseline; justify-content:space-between; gap:10px;
-    padding:11px 0; border-bottom:1px solid var(--line); font-size:.86rem; color:var(--grey); }
-  .bh-statrow:last-child{ border-bottom:none; }
-  .bh-statrow b{ font-family:var(--f-display); font-size:1.15rem; font-weight:600; color:var(--ink); }
-  .bh-statrow b.muted{ color:var(--grey); font-weight:400; }
-  .bh-statrow b.good{ color:var(--ok); }
-  .bh-statrow b.warn{ color:var(--risk); }
+  .bh-product{ background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
   .bh-product img{ width:100%; aspect-ratio:1; object-fit:cover; display:block; background:var(--blushp); }
   .bh-product .body{ padding:10px 12px; }
   .bh-product .name{ font-weight:700; font-size:.85rem; }
@@ -259,183 +187,24 @@
   .bh-note{ font-size:.78rem; color:var(--grey); background:var(--blushp); border-radius:8px; padding:10px 12px; margin-top:10px; }
   .bh-grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
   @media (max-width:600px){ .bh-grid2{ grid-template-columns:1fr; } }
-  /* ---- Orders ------------------------------------------------------------
-     Grouped by what needs doing. One prominent action per card; everything
-     else folded away, so the list can be scanned rather than deciphered. */
-  /* ---- Admin navigation ---------------------------------------------------
-     A bottom bar, the pattern iPhone users already know from every app. Four
-     daily destinations plus More; the safe-area padding keeps it clear of
-     Safari's own toolbar. */
-  .bh-navbar{ position:fixed; left:0; right:0; bottom:0; z-index:60; display:flex;
-    background:#fffdf9; border-top:1px solid var(--line);
-    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
-    box-shadow:0 -3px 16px rgba(20,10,18,.08); }
-  .bh-navbar button{ flex:1; background:none; border:none; display:flex; flex-direction:column;
-    align-items:center; gap:3px; padding:7px 2px; cursor:pointer; color:var(--grey);
-    font-family:var(--f-ui); font-size:.62rem; position:relative; }
-  .bh-navbar button.on{ color:var(--plum); font-weight:500; }
-  .bh-navbar svg{ width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.6;
-    stroke-linecap:round; stroke-linejoin:round; }
-  .bh-navbar .dot{ position:absolute; top:3px; right:50%; margin-right:-19px; background:var(--risk);
-    color:#fff; font-size:.56rem; min-width:16px; height:16px; border-radius:9px; display:flex;
-    align-items:center; justify-content:center; padding:0 4px; font-weight:600; }
-  .bh-admin-pad{ padding-bottom:90px; }
-
-  .bh-navmore{ position:fixed; inset:0; z-index:61; }
-  .bh-navmore .scrim{ position:absolute; inset:0; background:rgba(20,10,18,.45); }
-  .bh-navmore .panel{ position:absolute; left:0; right:0; bottom:0; background:#fffdf9;
-    border-radius:18px 18px 0 0; padding:20px 0 calc(14px + env(safe-area-inset-bottom));
-    max-height:78vh; overflow-y:auto; }
-  .bh-navmore h4{ font-family:var(--f-display); font-weight:600; font-size:1.3rem;
-    color:var(--plum); margin:0 0 8px; padding:0 20px; }
-  .bh-navmore button.item{ display:flex; align-items:center; gap:12px; width:100%; background:none;
-    border:none; border-bottom:1px solid var(--line); padding:16px 20px; font-family:var(--f-ui);
-    font-size:.95rem; color:var(--ink); text-align:left; cursor:pointer; }
-  .bh-navmore button.item.on{ background:var(--blushp); color:var(--plum); font-weight:500; }
-  .bh-navmore .n{ margin-left:auto; background:var(--risk); color:#fff; font-size:.66rem;
-    border-radius:9px; padding:2px 7px; }
-
-  .bh-chase-start{ margin-left:auto; background:var(--plum); color:#fffdf9; border:none;
-    border-radius:8px; padding:8px 13px; font-family:var(--f-ui); font-size:.76rem; cursor:pointer; }
-  .bh-chase{ background:var(--plum); color:#fffdf9; border-radius:14px; padding:18px;
-    margin-bottom:14px; }
-  .bh-chase h4{ font-family:var(--f-display); font-weight:600; font-size:1.35rem;
-    color:var(--goldl); margin:2px 0 4px; }
-  .bh-chase p{ font-size:.8rem; color:#e6d4e0; margin:0 0 14px; }
-  .bh-chase p.step{ font-size:.7rem; color:#c6a8bd; margin:0 0 2px; }
-  .bh-chase .bh-ord-go{ background:#fffdf9; color:var(--plum); margin-bottom:8px; }
-  .bh-chase .bh-ord-2nd{ background:transparent; color:#fffdf9; border-color:#7d4f74; }
-  .bh-chase-bar{ height:3px; background:#5c3355; border-radius:2px; overflow:hidden; margin-bottom:12px; }
-  .bh-chase-bar span{ display:block; height:100%; background:var(--goldl); transition:width .2s; }
-  .bh-chase-foot{ display:flex; gap:16px; margin-top:12px; }
-  .bh-chase-foot button{ background:none; border:none; color:#c6a8bd; font-family:var(--f-ui);
-    font-size:.78rem; cursor:pointer; padding:4px 0; }
-
-  .bh-ord-owed{ background:#fdf0f2; border:1px solid #f0d3d8; border-radius:12px;
-    padding:13px 15px; margin-bottom:20px; font-size:.85rem; color:var(--risk); }
-  .bh-ord-group{ margin-bottom:26px; }
-  .bh-ord-head{ display:flex; align-items:center; gap:9px; margin-bottom:2px; }
-  .bh-ord-head h3{ font-family:var(--f-display); font-weight:600; font-size:1.25rem;
-    color:var(--plum); margin:0; }
-  .bh-ord-head .cnt{ background:var(--plum); color:#fffdf9; font-size:.7rem; font-weight:600;
-    min-width:20px; height:20px; border-radius:10px; display:inline-flex; align-items:center;
-    justify-content:center; padding:0 6px; }
-  .bh-ord-note{ font-size:.75rem; color:var(--grey); margin:0 0 12px; }
-
-  .bh-ord{ background:#fff; border:1px solid var(--line); border-radius:14px;
-    padding:16px; margin-bottom:12px; }
-  .bh-ord-top{ display:flex; gap:12px; align-items:flex-start; margin-bottom:14px; }
-  .bh-ord-top .nm{ display:block; font-family:var(--f-display); font-weight:600;
-    font-size:1.15rem; color:var(--plum); }
-  .bh-ord-top .it{ display:block; font-size:.85rem; color:var(--ink); margin-top:3px; }
-  .bh-ord-top .mt{ display:block; font-size:.75rem; color:var(--grey); margin-top:3px; }
-  .bh-ord-top .amt{ margin-left:auto; font-family:var(--f-display); font-weight:600;
-    font-size:1.3rem; color:var(--ink); white-space:nowrap; }
-  .bh-ord-warn{ font-size:.75rem; color:var(--risk); margin:0 0 12px; }
-
-  .bh-ord-acts{ display:flex; flex-direction:column; gap:8px; }
-  .bh-ord-go{ background:var(--plum); color:#fffdf9; border:none; border-radius:10px;
-    padding:14px 16px; font-family:var(--f-ui); font-size:.9rem; cursor:pointer; width:100%; }
-  .bh-ord-2nd{ background:#fff; color:var(--plum); border:1px solid var(--line);
-    border-radius:10px; padding:12px 16px; font-family:var(--f-ui); font-size:.85rem;
-    cursor:pointer; width:100%; }
-
-  .bh-ord-foot{ display:flex; gap:10px; align-items:center; margin-top:12px;
-    padding-top:12px; border-top:1px solid var(--line); }
-  .bh-ord-next{ background:none; border:none; color:var(--plum); font-family:var(--f-ui);
-    font-size:.82rem; cursor:pointer; padding:4px 0; text-decoration:underline;
-    text-underline-offset:4px; }
-  .bh-ord-more{ margin-left:auto; background:none; border:none; color:var(--grey);
-    font-family:var(--f-ui); font-size:.82rem; cursor:pointer; padding:4px 0; }
-  .bh-ord-more.risk, .bh-ord-docs .risk{ color:var(--risk); }
-
-  .bh-ord-docs{ margin-top:12px; border-top:1px solid var(--line); padding-top:6px; }
-  .bh-ord-docs .row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-    padding:10px 0; border-bottom:1px solid var(--line); font-size:.8rem; color:var(--grey); }
-  .bh-ord-docs .row:last-child{ border-bottom:none; }
-  .bh-ord-docs .row span{ flex:1; min-width:120px; }
-  .bh-ord-docs button{ background:var(--blushp); border:1px solid var(--line); color:var(--plum);
-    border-radius:8px; padding:7px 12px; font-family:var(--f-ui); font-size:.76rem; cursor:pointer; }
-
   .bh-lead{ display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; margin-bottom:8px; flex-wrap:wrap; background:#fff; }
   .bh-lead .who{ flex:1; font-size:.86rem; min-width:160px; }
   .bh-lead .who strong{ color:var(--plum); }
   .bh-statuspill{ font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; padding:5px 11px; border-radius:20px; background:var(--blushp); color:var(--plum); border:1px solid var(--line); cursor:pointer; }
   .bh-post-item{ display:flex; align-items:center; gap:14px; padding:14px; border:1px solid var(--line); border-radius:12px; margin-bottom:10px; background:#fff; flex-wrap:wrap; }
-  /* The link is shown as real, selectable text rather than only living behind a
-     Copy button. It stays on screen for good, so it can be copied as many times
-     as needed — and copied by hand if the browser blocks the clipboard. */
-  .bh-linkrow{ display:flex; gap:8px; align-items:center; width:100%; margin-top:10px; }
-  .bh-linkfield{ flex:1; min-width:0; font-family:ui-monospace,monospace; font-size:.72rem;
-    padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--blushp);
-    color:var(--plum); text-overflow:ellipsis; }
-  .bh-linkcopy{ flex:none; font-size:.75rem; padding:9px 14px; }
-  .bh-linklbl{ width:100%; font-size:.68rem; font-weight:700; text-transform:uppercase;
-    letter-spacing:.08em; color:var(--grey); margin-top:12px; }
-  .bh-post-item .snip{ flex:1; font-family:var(--f-display); font-style:italic; font-size:.9rem; min-width:180px; }
+  .bh-post-item .snip{ flex:1; font-family:'Fraunces',serif; font-style:italic; font-size:.9rem; min-width:180px; }
   .bh-postedtag{ font-size:.68rem; font-weight:700; color:var(--ok); text-transform:uppercase; }
   .bh-checkrow{ display:flex; align-items:flex-start; gap:10px; font-size:.86rem; padding:9px 0; border-bottom:1px solid var(--line); }
-/* ---- Filter and sort: trigger row + right-hand drawer (KAAL pattern) ---- */
-  .bh-filterbar{ display:flex; align-items:center; justify-content:space-between; gap:12px;
-    padding:14px 2px; margin-bottom:10px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
-  .bh-filterbtn{ display:inline-flex; align-items:center; gap:11px; background:none; border:none; padding:0;
-    cursor:pointer; color:var(--ink); font-family:var(--f-ui); font-size:.86rem; letter-spacing:.01em; }
-  .bh-filterbtn svg{ width:19px; height:19px; stroke:currentColor; fill:none; stroke-width:1.4; }
-  .bh-filterbtn .n{ background:var(--plum); color:#fff; font-size:.62rem; font-weight:700; min-width:17px;
-    height:17px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; padding:0 5px; }
-  .bh-filtercount{ font-size:.82rem; color:var(--grey); }
-
-  .bh-fscrim{ position:fixed; inset:0; background:rgba(20,10,18,.42); z-index:70; }
-  .bh-fdrawer{ position:fixed; top:0; right:0; bottom:0; z-index:71;
-    width:min(430px, calc(100vw - 46px)); background:#fff; display:flex; flex-direction:column;
-    box-shadow:-12px 0 34px rgba(20,10,18,.16); animation:bh-fslide .22s ease-out; }
-  @keyframes bh-fslide{ from{ transform:translateX(100%);} to{ transform:translateX(0);} }
-  body.bh-filters-open{ overflow:hidden; }
-
-  .bh-fhead{ position:relative; padding:20px 20px 16px; border-bottom:1px solid var(--line); text-align:center; flex:none; }
-  .bh-fhead h3{ font-family:var(--f-display); font-weight:700; font-size:1.28rem; color:var(--ink); margin:0; }
-  .bh-fhead .sub{ font-size:.82rem; color:var(--grey); margin-top:3px; }
-  .bh-fx{ position:absolute; top:18px; right:16px; background:none; border:none; cursor:pointer;
-    color:var(--ink); font-size:1.5rem; line-height:1; padding:4px 6px; }
-
-  .bh-fbody{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:8px 0 20px; }
-  .bh-frow{ display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;
-    background:none; border:none; border-bottom:1px solid var(--line); padding:20px; cursor:pointer;
-    font-family:var(--f-ui); font-size:.95rem; color:var(--ink); text-align:left; }
-  .bh-frow .arrow{ color:var(--grey); font-size:1.05rem; }
-  .bh-frow .on{ color:var(--plum); font-weight:700; font-size:.78rem; }
-  .bh-fback{ display:flex; align-items:center; gap:14px; background:none; border:none; cursor:pointer;
-    padding:20px; font-family:var(--f-ui); font-size:.95rem; color:var(--ink); }
-
-  .bh-fopt{ display:flex; align-items:center; gap:16px; padding:13px 20px; cursor:pointer;
-    font-size:.92rem; color:var(--grey); }
-  .bh-fopt i{ width:22px; height:22px; border:1px solid #8f8f8f; flex:none; display:inline-flex;
-    align-items:center; justify-content:center; background:#fff; }
-  .bh-fopt.on i{ background:var(--plum); border-color:var(--plum); }
-  .bh-fopt.on i::after{ content:'✓'; color:#fff; font-size:.8rem; line-height:1; }
-  .bh-fopt .sw{ width:15px; height:15px; border-radius:50%; border:1px solid var(--line); flex:none; }
-
-  .bh-fprice{ display:flex; align-items:center; gap:12px; padding:6px 20px; }
-  .bh-fprice input{ flex:1; min-width:0; padding:11px 12px; border:1px solid var(--line);
-    font-family:var(--f-ui); font-size:.88rem; background:#fff; color:var(--ink); }
-  .bh-fsortrow{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:20px; }
-  .bh-fsortrow label{ font-size:.95rem; color:var(--ink); }
-  .bh-fsortrow select{ border:none; background:none; font-family:var(--f-ui); font-size:.9rem;
-    color:var(--ink); text-align:right; cursor:pointer; max-width:62%; }
-
-  .bh-ffoot{ flex:none; display:flex; align-items:center; justify-content:space-between; gap:14px;
-    padding:16px 20px calc(16px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:#fff; }
-  .bh-fclear{ background:none; border:none; cursor:pointer; font-family:var(--f-ui); font-size:.9rem;
-    color:var(--ink); text-decoration:underline; text-underline-offset:4px; padding:6px 2px; }
-  .bh-fapply{ background:var(--plum); color:#fffdf9; border:none; cursor:pointer; font-family:var(--f-ui);
-    font-size:.95rem; padding:16px 44px; }
-  .bh-chip{ background:var(--blushp); border:1px solid var(--line); color:var(--plum); font-size:.78rem; font-weight:700; padding:6px 13px; border-radius:20px; cursor:pointer; font-family:var(--f-ui); }
+.bh-filters{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:16px; }
+  .bh-filter-row{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; padding:5px 0; }
+  .bh-filter-label{ font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--grey); margin-right:3px; }
+  .bh-chip{ background:var(--blushp); border:1px solid var(--line); color:var(--plum); font-size:.78rem; font-weight:700; padding:6px 13px; border-radius:20px; cursor:pointer; font-family:'Instrument Sans',sans-serif; }
   .bh-chip.sm{ font-size:.72rem; padding:5px 10px; }
   .bh-chip.on{ background:var(--plum); color:#fff; border-color:var(--plum); }
-  .bh-swatch{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); color:var(--plum); font-size:.74rem; font-weight:700; padding:4px 11px 4px 5px; border-radius:20px; cursor:pointer; font-family:var(--f-ui); }
+  .bh-swatch{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); color:var(--plum); font-size:.74rem; font-weight:700; padding:4px 11px 4px 5px; border-radius:20px; cursor:pointer; font-family:'Instrument Sans',sans-serif; }
   .bh-swatch span{ width:15px; height:15px; border-radius:50%; border:1px solid rgba(0,0,0,.15); display:block; }
   .bh-swatch.on{ background:var(--plum); color:#fff; border-color:var(--plum); }
-  .bh-sort{ border:1px solid var(--line); border-radius:20px; padding:6px 11px; font-size:.78rem; font-family:var(--f-ui); color:var(--plum); background:#fff; font-weight:600; }
+  .bh-sort{ border:1px solid var(--line); border-radius:20px; padding:6px 11px; font-size:.78rem; font-family:'Instrument Sans',sans-serif; color:var(--plum); background:#fff; font-weight:600; }
   .bh-card-swatches{ display:flex; gap:4px; margin-top:5px; }
   .bh-card-swatches i{ width:11px; height:11px; border-radius:50%; border:1px solid rgba(0,0,0,.15); display:block; }
   .bh-shop-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px 12px; margin-top:18px; }
@@ -445,16 +214,31 @@
   .bh-shop-card img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:var(--blushp); border-radius:2px; }
   .bh-shop-card .noimg{ width:100%; aspect-ratio:3/4; background:linear-gradient(150deg,#e8d5da,#f6ebee); border-radius:2px; }
   .bh-shop-card .body{ padding:10px 2px 0; }
-  .bh-shop-card .name{ font-family:var(--f-display); font-weight:500; font-size:.95rem; color:var(--ink); line-height:1.25; }
+  .bh-shop-card .name{ font-family:'Fraunces',serif; font-weight:500; font-size:.95rem; color:var(--ink); line-height:1.25; }
   .bh-shop-card .price{ font-size:.86rem; color:var(--grey); font-weight:500; margin-top:5px; letter-spacing:.01em; }
   .bh-wa-btn{ background:#25d366; color:#fff; font-weight:700; padding:11px 20px; border-radius:9px; font-size:.86rem; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
   .bh-radio-row{ display:flex; gap:16px; margin-bottom:16px; }
 .bh-detail{ background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
   .bh-detail-img{ width:100%; aspect-ratio:1; object-fit:cover; display:block; }
+  .bh-gallery{ display:flex; gap:8px; overflow-x:auto; padding:10px 14px 2px; scrollbar-width:none; }
+  .bh-gallery::-webkit-scrollbar{ display:none; }
+  .bh-gthumb{ flex:0 0 62px; height:82px; padding:0; border:1.5px solid transparent; background:none; cursor:pointer; border-radius:2px; overflow:hidden; }
+  .bh-gthumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .bh-gthumb.on{ border-color:var(--plum); }
+
+  .bh-thumbrow{ display:flex; gap:9px; flex-wrap:wrap; margin-bottom:12px; }
+  .bh-thumb{ position:relative; width:82px; }
+  .bh-thumb img{ width:82px; height:108px; object-fit:cover; border-radius:4px; display:block; border:1.5px solid var(--line); }
+  .bh-thumb.main img{ border-color:var(--gold); }
+  .bh-thumb-tag{ position:absolute; top:4px; left:4px; background:var(--gold); color:var(--ink); font-size:.55rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:2px 5px; border-radius:20px; }
+  .bh-thumb-ctrls{ display:flex; gap:3px; margin-top:4px; }
+  .bh-thumb-ctrls button{ flex:1; border:1px solid var(--line); background:#fff; color:var(--plum); border-radius:5px; font-size:.78rem; cursor:pointer; padding:2px 0; line-height:1.2; }
+  .bh-thumb-ctrls button.del{ color:var(--risk); }
+
   .bh-detail-body{ padding:22px; }
   .bh-size-grid{ display:flex; flex-wrap:wrap; gap:8px; }
   .bh-size-tag{ display:inline-block; background:var(--blushp); border:1px solid var(--line); color:var(--plum); font-size:.8rem; font-weight:700; padding:6px 13px; border-radius:20px; }
-  .bh-size-opt{ background:#fff; border:1.5px solid var(--line); color:var(--plum); font-size:.82rem; font-weight:700; padding:9px 15px; border-radius:20px; cursor:pointer; font-family:var(--f-ui); }
+  .bh-size-opt{ background:#fff; border:1.5px solid var(--line); color:var(--plum); font-size:.82rem; font-weight:700; padding:9px 15px; border-radius:20px; cursor:pointer; font-family:'Instrument Sans',sans-serif; }
   .bh-size-opt:hover{ border-color:var(--gold); background:var(--blushp); }
 .bh-size-opt.to-order{ opacity:.45; border-style:dashed; }
   .bh-size-opt.to-order.on{ opacity:1; background:var(--gold); color:var(--ink); border-color:var(--gold); border-style:solid; }
@@ -534,12 +318,6 @@ const DEFAULT_SETTINGS = {
 
   collectionMessage:
     'Hi there\n\nPopping in to let you know that your item is ready for collection \ud83d\udc83\n\n{items}\n\n{collection}',
-
-  reminderMessage:
-    'Hi {name}, just a gentle reminder about your order \u2014 we haven\u2019t seen the payment come through yet.\n\n{items}{totals}\n\n{bank}\n\nNo rush at all, and let me know if anything has changed.',
-
-  updateMessage:
-    'Hi {name}, just checking in so you\u2019re not left wondering \u2014 your order is still with us and we haven\u2019t forgotten you.\n\n{items}\n\nI\u2019ll message again the moment there\u2019s news.',
 };
 
 let settings = Object.assign({}, DEFAULT_SETTINGS);
@@ -678,13 +456,13 @@ function resizeImage(file, maxSize, quality){
 }
 
 // Pictures come from their own address so the browser caches them.
-function productImageUrl(p, size){
+function productImageUrl(p, size, n){
   if (!p || !p.has_image) return '';
-  // Pictures are cached by the browser for a year. When a product's photo is
-  // replaced the id stays the same, so the version is what tells the browser
-  // it is looking at a different file.
-  const v = p.image_version ? `&v=${encodeURIComponent(p.image_version)}` : '';
-  return `${API}/image?id=${encodeURIComponent(p.id)}&size=${size || 'thumb'}${v}`;
+  return `${API}/image?id=${encodeURIComponent(p.id)}&size=${size || 'thumb'}&n=${n || 0}`;
+}
+function imageCount(p){
+  const n = parseInt(p && p.image_count, 10);
+  return isNaN(n) || n < 1 ? (p && p.has_image ? 1 : 0) : n;
 }
 
 function isVoucher(p){ return p && p.product_type === 'voucher'; }
@@ -828,7 +606,7 @@ async function drawStoryCard(canvas, storyText, tagText){
   await drawWatermark(ctx, w, h);
 }
 
-async function drawCompileCard(canvas, replyTexts, tagText, storyText, storyPseudonym){
+async function drawCompileCard(canvas, replyTexts, tagText, storyText){
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   await loadCanvasFonts();
@@ -913,31 +691,7 @@ async function drawCompileCard(canvas, replyTexts, tagText, storyText, storyPseu
 
       ctx.fillStyle = T.accent;
       ctx.font = `italic 400 ${block.size}px Fraunces, Georgia, serif`;
-      let lastLine = '', lastY = y;
-      block.lines.forEach(line => {
-        ctx.fillText(line, marginX + 30, y);
-        lastLine = line; lastY = y;
-        y += block.lead;
-      });
-
-      // Credit the original poster, if they chose a pseudonym: smaller gold
-      // text sitting just after the last line of the quote. If it will not fit
-      // on that line it drops onto its own line rather than running off the edge.
-      if (storyPseudonym){
-        const credit = '\u2014 ' + storyPseudonym;
-        const small = Math.round(block.size * 0.62);
-        ctx.font = `italic 400 ${block.size}px Fraunces, Georgia, serif`;
-        const lastW = ctx.measureText(lastLine).width;
-        ctx.font = `italic 400 ${small}px Fraunces, Georgia, serif`;
-        ctx.fillStyle = T.accent + 'cc';
-        const x = marginX + 30 + lastW + small * 0.7;
-        if (x + ctx.measureText(credit).width <= marginX + contentWidth){
-          ctx.fillText(credit, x, lastY);
-        } else {
-          ctx.fillText(credit, marginX + 30, y);
-          y += block.lead * 0.75;
-        }
-      }
+      block.lines.forEach(line => { ctx.fillText(line, marginX + 30, y); y += block.lead; });
       y += plan.gapAfterStory;
     } else {
       // Replies, in the lighter cream.
@@ -1531,9 +1285,7 @@ function buildLeadMessage(lead, kind){
   };
 
   let tpl;
-  if (kind === 'reminder') tpl = setting('reminderMessage');
-  else if (kind === 'update') tpl = setting('updateMessage');
-  else if (kind === 'receipt') tpl = setting('receiptMessage');
+  if (kind === 'receipt') tpl = setting('receiptMessage');
   else if (kind === 'delivery') tpl = deliveryMethod === 'Shipping' ? setting('shippingMessage') : setting('collectionMessage');
   else tpl = setting('orderMessage');
 
@@ -1601,7 +1353,7 @@ let reviews = [];
 let helpMessages = [];
 let giftCards = [];
 let discounts = [];
-let nav = { menuOpen: false, menuOpenShop: false, menuOpenStories: false, view: 'home', activeFolder: null, activeStoryId: null, adminUnlocked: false, adminTab: 'home' };
+let nav = { menuOpen: false, menuOpenShop: false, menuOpenStories: false, view: 'home', activeFolder: null, activeStoryId: null, adminUnlocked: false, adminTab: 'queue' };
 let transient = {
   submitSent: false,
   viewingProductId: null,
@@ -1610,18 +1362,9 @@ let transient = {
   deliveryMethod: 'Collection',
   filterCategory: '',
   shopSeeAll: '',
-  // Colour, size and availability are multi-select (tick boxes), like KAAL.
-  filterColour: [],
-  filterSize: [],
-  filterAvail: [],
-  priceMin: '',
-  priceMax: '',
+  filterColour: '',
+  filterSize: '',
   sortBy: 'recent',
-  // Drawer state. filterDraft holds the choices while the drawer is open; they
-  // only take effect when Apply is pressed.
-  filterOpen: false,
-  filterPanel: '',
-  filterDraft: null,
   voucherAmount: 100,
   cardTag: '',
   giftStatus: '',
@@ -1629,6 +1372,7 @@ let transient = {
   discountAmount: 0,
   discountNote: '',
   cardTheme: '',
+  galleryIndex: 0,
   giftAmount: 300,
   giftRecipient: '',
   giftSent: false,
@@ -1643,16 +1387,10 @@ let transient = {
   stockStatus: 'in_stock',
   category: '',
   colours: [],
-  // Set to a product id while that product is being edited; null means the
-  // form is adding a new product.
-  editingProductId: null,
-  editingHasImage: false,
-  // The name/price/description boxes are kept here as they are typed, so a
-  // re-render (choosing a category, a validation message) cannot wipe them.
-  shopName: '',
-  shopPrice: '',
-  shopDesc: '',
-  shopImages: null,
+  shopImages: [],
+  formName: '',
+  formPrice: '',
+  formDesc: '',
   imageStatus: '',
   orderSent: false,
   shopImageData: null,
@@ -1737,52 +1475,15 @@ function storyUrl(id){
   return `${window.location.origin}${window.location.pathname}?story=${encodeURIComponent(id)}`;
 }
 
-// A story's link, shown as selectable text with a Copy button beside it.
-// Used everywhere a card can be made, and it never goes away once shown.
-function storyLinkRow(id, label){
-  const url = storyUrl(id);
-  return `
-    ${label ? `<div class="bh-linklbl">${escapeHtml(label)}</div>` : ''}
-    <div class="bh-linkrow">
-      <input class="bh-linkfield" readonly value="${escapeHtml(url)}"
-             onclick="this.select()" onfocus="this.select()" aria-label="Link to this story">
-      <button class="bh-btn-outline bh-linkcopy" onclick="copyStoryLink('${id}', this)">Copy</button>
-    </div>`;
-}
-
 async function copyStoryLink(id, btn){
   const url = storyUrl(id);
-  const field = btn && btn.parentElement ? btn.parentElement.querySelector('.bh-linkfield') : null;
-  const flash = (msg) => {
-    if (!btn) return;
-    if (!btn.dataset.label) btn.dataset.label = btn.textContent;
-    btn.textContent = msg;
-    setTimeout(() => { btn.textContent = btn.dataset.label || 'Copy'; }, 1800);
-  };
-
-  // 1. The modern clipboard API. Needs HTTPS, which the live site has.
   try {
-    if (navigator.clipboard && navigator.clipboard.writeText){
-      await navigator.clipboard.writeText(url);
-      flash('Copied!');
-      return;
-    }
-  } catch (e) { /* fall through */ }
-
-  // 2. Older browsers: select the visible field and copy the selection.
-  try {
-    if (field){
-      field.focus();
-      field.select();
-      field.setSelectionRange(0, url.length);
-      if (document.execCommand('copy')){ flash('Copied!'); return; }
-    }
-  } catch (e) { /* fall through */ }
-
-  // 3. Nothing worked — leave the link selected so it can be copied by hand.
-  // The link stays on screen either way, so this is never a dead end.
-  if (field){ field.focus(); field.select(); }
-  flash('Select & copy');
+    await navigator.clipboard.writeText(url);
+    if (btn){ const t = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = t, 1800); }
+  } catch (e) {
+    // Some phone browsers block copying — show it so it can be copied by hand.
+    window.prompt('Copy this link and paste it into the Instagram link sticker:', url);
+  }
 }
 
 // If someone arrives on a story link, open that story straight away.
@@ -1898,15 +1599,6 @@ function openStory(id){ nav.activeStoryId = id; nav.view = 'story'; render(); }
 
 // ---- Root render ----
 function render(){
-  // The drawer only belongs over the shop grid. Navigating away with it open
-  // would otherwise leave the page scroll locked.
-  if (transient.filterOpen && (nav.view !== 'shop' || transient.viewingProductId || transient.viewingCart || transient.checkingOut)){
-    transient.filterOpen = false;
-    transient.filterPanel = '';
-    transient.filterDraft = null;
-  }
-  document.body.classList.toggle('bh-filters-open', !!transient.filterOpen);
-
   const root = document.getElementById('root');
   root.innerHTML = `
     <div class="bh-root">
@@ -1925,7 +1617,6 @@ function render(){
       </header>
 
       ${nav.menuOpen ? renderMenu() : ''}
-      ${renderFilterDrawer()}
       ${transient.loadError ? `
         <div style="max-width:900px;margin:14px auto 0;padding:0 24px;">
           <div style="background:var(--riskbg,#fbeaec);border:1px solid #e3b8bf;color:var(--risk);border-radius:10px;padding:12px 16px;font-size:.85rem;font-weight:600;">
@@ -2153,7 +1844,7 @@ async function submitReply(){
     el.value = '';
     statusEl.textContent = "Sent — it'll appear here once it's been read and approved.";
   } catch (e) {
-    statusEl.textContent = failureText(e, "Couldn't send that");
+    statusEl.textContent = "Couldn't send that — please try again.";
   }
 }
 
@@ -2217,7 +1908,7 @@ async function submitStory(){
     transient.submitSent = true;
     transient.loadError = '';
   } catch (e) {
-    transient.loadError = failureText(e, "Couldn't submit that");
+    transient.loadError = "Couldn't submit that — please try again in a moment.";
   }
   render();
 }
@@ -2308,9 +1999,16 @@ function renderShop(){
     return `
       <button class="bh-btn-ghost" onclick="goShop()" style="margin-bottom:14px">← Back to shop</button>
       <div class="bh-detail">
-        ${product.has_image
-          ? `<img class="bh-detail-img" src="${productImageUrl(product,'full')}" alt="${escapeHtml(product.name)}" decoding="async">`
-          : `<div class="bh-detail-img" style="background:var(--blushp)"></div>`}
+        ${product.has_image ? `
+          <img class="bh-detail-img" id="detailMainImg" src="${productImageUrl(product,'full', transient.galleryIndex || 0)}" alt="${escapeHtml(product.name)}" decoding="async">
+          ${imageCount(product) > 1 ? `
+            <div class="bh-gallery">
+              ${Array.from({length: imageCount(product)}).map((_, i) => `
+                <button class="bh-gthumb ${(transient.galleryIndex || 0) === i ? 'on' : ''}" onclick="showPhoto('${product.id}', ${i})">
+                  <img src="${productImageUrl(product,'thumb', i)}" alt="" loading="lazy">
+                </button>`).join('')}
+            </div>` : ''}
+        ` : `<div class="bh-detail-img" style="background:var(--blushp)"></div>`}
         <div class="bh-detail-body">
           <h2 class="bh-serif" style="font-size:1.4rem;color:var(--plum);margin:0 0 4px">${escapeHtml(product.name)}</h2>
           <p style="color:var(--gold);font-weight:700;font-size:1.15rem;margin:0 0 14px">${isVoucher(product) ? 'Gift voucher' : 'R' + escapeHtml(product.price)}</p>
@@ -2388,7 +2086,7 @@ function renderShop(){
   // 4. THE SHOP
   const cols = coloursInShop();
   const sizes = sizesInShop();
-  const filtering = anyFilterActive();
+  const filtering = transient.filterCategory || transient.filterColour || transient.filterSize;
   const seeAll = transient.shopSeeAll;
 
   const productCard = (p) => `
@@ -2398,23 +2096,34 @@ function renderShop(){
       <div class="bh-railveil"></div>
       <div class="bh-raillbl">
         <div class="t">${escapeHtml(p.name)}</div>
-        <div class="s">${isVoucher(p) ? 'Gift card' : 'R' + escapeHtml(p.price)}${reviewsFor(p.id).length ? ' \u00b7 ' + averageRating(p.id).toFixed(1) + '\u2605' : ''}</div>
+        <div class="s">${isVoucher(p) ? 'Gift card' : 'R' + escapeHtml(p.price)}${reviewsFor(p.id).length ? ' \u00b7 ' + averageRating(p.id).toFixed(1) + '\u2605' : ''}${imageCount(p) > 1 ? ' \u00b7 ' + imageCount(p) + ' photos' : ''}</div>
       </div>
     </div>`;
 
-  const shownCount = visibleProducts(filterScope()).length;
-  const nActive = activeFilterCount();
   const controls = `
-    <div class="bh-filterbar">
-      <button class="bh-filterbtn" onclick="openFilters()">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 7h13M19 7h2M3 17h5M11 17h10"/>
-          <circle cx="17.5" cy="7" r="2.2"/><circle cx="9.5" cy="17" r="2.2"/>
-        </svg>
-        <span>Filter and sort</span>
-        ${nActive ? `<span class="n">${nActive}</span>` : ''}
-      </button>
-      <span class="bh-filtercount">${shownCount} product${shownCount === 1 ? '' : 's'}</span>
+    <div class="bh-filters">
+      ${cols.length ? `
+        <div class="bh-filter-row">
+          <span class="bh-filter-label">Colour</span>
+          ${cols.map(col => `<button class="bh-swatch ${transient.filterColour === col ? 'on' : ''}" onclick="setFilter('Colour','${escapeHtml(col)}')"><span style="background:${colourHex(col)}"></span>${escapeHtml(col)}</button>`).join('')}
+        </div>` : ''}
+      ${sizes.length ? `
+        <div class="bh-filter-row">
+          <span class="bh-filter-label">Size</span>
+          ${sizes.map(s => `<button class="bh-chip sm ${transient.filterSize === s ? 'on' : ''}" onclick="setFilter('Size','${escapeHtml(s)}')">${escapeHtml(s)}</button>`).join('')}
+        </div>` : ''}
+      <div class="bh-filter-row">
+        <span class="bh-filter-label">Sort</span>
+        <select class="bh-sort" onchange="setSort(this.value)">
+          <option value="recent"     ${transient.sortBy==='recent'?'selected':''}>Recently sold</option>
+          <option value="in_stock"   ${transient.sortBy==='in_stock'?'selected':''}>In stock first</option>
+          <option value="size"       ${transient.sortBy==='size'?'selected':''}>By size</option>
+          <option value="price_low"  ${transient.sortBy==='price_low'?'selected':''}>Price: low to high</option>
+          <option value="price_high" ${transient.sortBy==='price_high'?'selected':''}>Price: high to low</option>
+          <option value="newest"     ${transient.sortBy==='newest'?'selected':''}>Newest first</option>
+        </select>
+        ${filtering ? `<button class="bh-btn-ghost" style="font-size:.78rem" onclick="clearFilters()">Clear</button>` : ''}
+      </div>
     </div>`;
 
   // ---- "See all" view: one category, full grid ----
@@ -2424,6 +2133,7 @@ function renderShop(){
       <button class="bh-btn-ghost" onclick="backToShop()" style="margin-bottom:12px">\u2190 All departments</button>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
         <h2 class="bh-serif" style="font-size:1.35rem;color:var(--plum);margin:0">${escapeHtml(seeAll)}</h2>
+        <button class="bh-btn-outline" onclick="viewCart()">Basket${cartCount() ? ` (${cartCount()})` : ''}</button>
       </div>
       ${controls}
       ${shown.length === 0 ? `<p class="bh-empty">Nothing matches those filters. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearFilters()">Clear them</button></p>` : ''}
@@ -2434,6 +2144,7 @@ function renderShop(){
             <div class="name">${escapeHtml(p.name)}</div>
             <div class="price">${isVoucher(p) ? 'From R' + VOUCHER_MIN : 'R ' + Number(p.price).toLocaleString('en-ZA')}</div>
             ${productColours(p).length ? `<div class="bh-card-swatches">${productColours(p).slice(0,5).map(col => `<i style="background:${colourHex(col)}"></i>`).join('')}</div>` : ''}
+            ${imageCount(p) > 1 ? `<div class="bh-shop-sizes" style="opacity:.65">${imageCount(p)} photos</div>` : ''}
             ${reviewsFor(p.id).length ? `<div class="bh-shop-sizes">${stars(averageRating(p.id), '.72rem')} <span style="opacity:.7">(${reviewsFor(p.id).length})</span></div>` : ''}
             ${p.stock_status === 'made_to_order' ? `<div class="bh-shop-sizes" style="color:#a6752f;font-weight:700">${escapeHtml(setting('leadTimeLabel'))}</div>` : ''}
           </div>
@@ -2441,11 +2152,12 @@ function renderShop(){
   }
 
   // ---- filtering by colour/size cuts across categories: show one grid ----
-  if (anyFilterActive()){
+  if (transient.filterColour || transient.filterSize || transient.filterCategory){
     const shown = visibleProducts();
     return `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
         <h2 class="bh-serif" style="font-size:1.35rem;color:var(--plum);margin:0">${escapeHtml(transient.filterCategory || 'Shop')}</h2>
+        <button class="bh-btn-outline" onclick="viewCart()">Basket${cartCount() ? ` (${cartCount()})` : ''}</button>
       </div>
       ${controls}
       ${shown.length === 0 ? `<p class="bh-empty">Nothing matches those filters. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearFilters()">Clear them</button></p>` : ''}
@@ -2470,8 +2182,9 @@ function renderShop(){
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
       <div>
         <h2 class="bh-serif" style="font-size:1.35rem;color:var(--plum);margin:0 0 2px">Shop</h2>
-        <p style="font-size:.85rem;color:var(--grey);margin:0">Pieces to feel good in, whether anyone sees them or not.</p>
+        <p style="font-size:.85rem;color:var(--grey);margin:0">Kept separate from the stories, on purpose.</p>
       </div>
+      <button class="bh-btn-outline" onclick="viewCart()">Basket${cartCount() ? ` (${cartCount()})` : ''}</button>
     </div>
 
     ${products.length === 0 ? `<p class="bh-empty">Nothing in the shop yet \u2014 check back soon.</p>` : controls}
@@ -2521,17 +2234,8 @@ function visibleProducts(list){
   let out = (list || products).slice();
 
   if (transient.filterCategory) out = out.filter(p => p.category === transient.filterCategory);
-  if (transient.filterAvail.length)
-    out = out.filter(p => transient.filterAvail.includes(availabilityOf(p)));
-  if (transient.filterColour.length)
-    out = out.filter(p => productColours(p).some(c => transient.filterColour.includes(c)));
-  if (transient.filterSize.length)
-    out = out.filter(p => allSizesFor(p).all.some(s => transient.filterSize.includes(s)));
-
-  const min = parseFloat(transient.priceMin);
-  const max = parseFloat(transient.priceMax);
-  if (!isNaN(min)) out = out.filter(p => (parseFloat(p.price) || 0) >= min);
-  if (!isNaN(max)) out = out.filter(p => (parseFloat(p.price) || 0) <= max);
+  if (transient.filterColour)   out = out.filter(p => productColours(p).includes(transient.filterColour));
+  if (transient.filterSize)     out = out.filter(p => allSizesFor(p).all.includes(transient.filterSize));
 
   const num = v => parseFloat(v) || 0;
   const newest = (a,b) => new Date(b.created_at||0) - new Date(a.created_at||0);
@@ -2544,8 +2248,6 @@ function visibleProducts(list){
       out.sort((a,b) => String(a.size_type||'').localeCompare(String(b.size_type||''))
         || allSizesFor(b).all.length - allSizesFor(a).all.length || newest(a,b));
       break;
-    case 'az': out.sort((a,b) => String(a.name||'').localeCompare(String(b.name||''))); break;
-    case 'za': out.sort((a,b) => String(b.name||'').localeCompare(String(a.name||''))); break;
     case 'price_low':  out.sort((a,b) => num(a.price) - num(b.price)); break;
     case 'price_high': out.sort((a,b) => num(b.price) - num(a.price)); break;
     case 'newest':     out.sort(newest); break;
@@ -2571,212 +2273,15 @@ function categoriesInShop(){
   return shopCategories().filter(cat => products.some(p => p.category === cat));
 }
 
-// Category is still a single choice, set from the department rails.
 function setFilter(kind, value){
-  if (kind === 'Category'){
-    transient.filterCategory = transient.filterCategory === value ? '' : value;
-    render();
-  }
+  transient['filter' + kind] = transient['filter' + kind] === value ? '' : value;
+  render();
 }
 function setSort(v){ transient.sortBy = v; render(); }
-
-const SORT_LABELS = {
-  recent:     'Featured',
-  in_stock:   'In stock first',
-  az:         'Alphabetically, A\u2013Z',
-  za:         'Alphabetically, Z\u2013A',
-  price_low:  'Price, low to high',
-  price_high: 'Price, high to low',
-  newest:     'Date, new to old',
-  size:       'By size range',
-};
-
-// The right-hand "Filter and sort" drawer. Rendered at the top level of the
-// page, not inside the shop markup, so position:fixed is not affected by any
-// ancestor.
-function renderFilterDrawer(){
-  if (!transient.filterOpen) return '';
-  const d = transient.filterDraft || EMPTY_FILTERS();
-  const scope = filterScope();
-  const panel = transient.filterPanel;
-
-  const countAvail  = v => scope.filter(p => availabilityOf(p) === v).length;
-  const countColour = v => scope.filter(p => productColours(p).includes(v)).length;
-  const countSize   = v => scope.filter(p => allSizesFor(p).all.includes(v)).length;
-
-  const avails = ['In stock', 'Made to order'].filter(v => countAvail(v) > 0);
-  const cols   = coloursInShop().filter(c => countColour(c) > 0);
-  const sizes  = sizesInShop().filter(s => countSize(s) > 0);
-
-  const tick = (on, label, count, onclick, swatch) => `
-    <div class="bh-fopt ${on ? 'on' : ''}" onclick="${onclick}">
-      <i></i>
-      ${swatch ? `<span class="sw" style="background:${swatch}"></span>` : ''}
-      <span>${escapeHtml(label)}${count === null ? '' : ` (${count})`}</span>
-    </div>`;
-
-  const backHead = (title) => `
-    <button class="bh-fback" onclick="filterPanel('')">
-      <span>\u2190</span><span>${escapeHtml(title)}</span>
-    </button>`;
-
-  const rowsSummary = (arr) => arr.length ? `<span class="on">${arr.length}</span>` : '<span class="arrow">\u2192</span>';
-
-  let body;
-  if (panel === 'avail'){
-    body = backHead('Availability') + avails.map(v =>
-      tick(d.avail.includes(v), v, countAvail(v), `toggleDraft('avail','${escapeHtml(v)}')`)).join('');
-  } else if (panel === 'price'){
-    const prices = scope.map(p => parseFloat(p.price) || 0);
-    const hi = prices.length ? Math.max(...prices) : 0;
-    body = backHead('Price') + `
-      <p style="padding:0 20px;font-size:.78rem;color:var(--grey);margin:0 0 10px">
-        The highest price in the shop is R${hi.toLocaleString('en-ZA')}
-      </p>
-      <div class="bh-fprice">
-        <input type="number" inputmode="numeric" placeholder="From (R)" value="${escapeHtml(d.min)}"
-               oninput="setDraftPrice('min', this.value)">
-        <span style="color:var(--grey)">\u2013</span>
-        <input type="number" inputmode="numeric" placeholder="To (R)" value="${escapeHtml(d.max)}"
-               oninput="setDraftPrice('max', this.value)">
-      </div>`;
-  } else if (panel === 'size'){
-    body = backHead('Size') + (sizes.length
-      ? sizes.map(s => tick(d.sizes.includes(s), s, countSize(s), `toggleDraft('sizes','${escapeHtml(s)}')`)).join('')
-      : `<p style="padding:0 20px;color:var(--grey);font-size:.85rem">No sizes to filter on yet.</p>`);
-  } else if (panel === 'colour'){
-    body = backHead('Colour') + (cols.length
-      ? cols.map(c => tick(d.colours.includes(c), c, countColour(c), `toggleDraft('colours','${escapeHtml(c)}')`, colourHex(c))).join('')
-      : `<p style="padding:0 20px;color:var(--grey);font-size:.85rem">No colours to filter on yet.</p>`);
-  } else {
-    body = `
-      ${avails.length ? `<button class="bh-frow" onclick="filterPanel('avail')"><span>Availability</span>${rowsSummary(d.avail)}</button>` : ''}
-      <button class="bh-frow" onclick="filterPanel('price')"><span>Price</span>${(d.min !== '' || d.max !== '') ? '<span class="on">1</span>' : '<span class="arrow">\u2192</span>'}</button>
-      ${sizes.length ? `<button class="bh-frow" onclick="filterPanel('size')"><span>Size</span>${rowsSummary(d.sizes)}</button>` : ''}
-      ${cols.length ? `<button class="bh-frow" onclick="filterPanel('colour')"><span>Colour</span>${rowsSummary(d.colours)}</button>` : ''}
-      <div class="bh-fsortrow">
-        <label for="bhSortSel">Sort by:</label>
-        <select id="bhSortSel" onchange="setDraftSort(this.value)">
-          ${Object.keys(SORT_LABELS).map(k =>
-            `<option value="${k}" ${d.sort === k ? 'selected' : ''}>${escapeHtml(SORT_LABELS[k])}</option>`).join('')}
-        </select>
-      </div>`;
-  }
-
-  // Counting against the draft, so the header updates as boxes are ticked.
-  const preview = (function(){
-    const saved = {
-      a: transient.filterAvail, c: transient.filterColour, s: transient.filterSize,
-      mn: transient.priceMin, mx: transient.priceMax,
-    };
-    transient.filterAvail = d.avail; transient.filterColour = d.colours;
-    transient.filterSize = d.sizes; transient.priceMin = d.min; transient.priceMax = d.max;
-    const n = visibleProducts(scope).length;
-    transient.filterAvail = saved.a; transient.filterColour = saved.c;
-    transient.filterSize = saved.s; transient.priceMin = saved.mn; transient.priceMax = saved.mx;
-    return n;
-  })();
-
-  return `
-    <div class="bh-fscrim" onclick="closeFilters()"></div>
-    <div class="bh-fdrawer" role="dialog" aria-label="Filter and sort">
-      <div class="bh-fhead">
-        <h3>Filter and sort</h3>
-        <div class="sub">${preview} product${preview === 1 ? '' : 's'}</div>
-        <button class="bh-fx" onclick="closeFilters()" aria-label="Close">\u2715</button>
-      </div>
-      <div class="bh-fbody">${body}</div>
-      <div class="bh-ffoot">
-        <button class="bh-fclear" onclick="clearDraft('${panel}')">${panel ? 'Clear' : 'Remove all'}</button>
-        <button class="bh-fapply" onclick="applyFilters()">Apply</button>
-      </div>
-    </div>`;
-}
-
-function availabilityOf(p){
-  return productSizes(p).length > 0 ? 'In stock' : 'Made to order';
-}
-
-// Products the drawer is filtering within — the whole shop, or one department
-// when a "See all" page is open. Counts and the header total come from here.
-function filterScope(){
-  return transient.shopSeeAll
-    ? products.filter(p => p.category === transient.shopSeeAll)
-    : products.slice();
-}
-
-function activeFilterCount(){
-  return transient.filterAvail.length + transient.filterColour.length + transient.filterSize.length
-    + (transient.priceMin !== '' ? 1 : 0) + (transient.priceMax !== '' ? 1 : 0);
-}
-function anyFilterActive(){ return activeFilterCount() > 0 || !!transient.filterCategory; }
-
-const EMPTY_FILTERS = () => ({ avail: [], colours: [], sizes: [], min: '', max: '', sort: 'recent' });
-
-function openFilters(){
-  transient.filterDraft = {
-    avail: transient.filterAvail.slice(),
-    colours: transient.filterColour.slice(),
-    sizes: transient.filterSize.slice(),
-    min: transient.priceMin,
-    max: transient.priceMax,
-    sort: transient.sortBy,
-  };
-  transient.filterPanel = '';
-  transient.filterOpen = true;
-  document.body.classList.add('bh-filters-open');
-  render();
-}
-function closeFilters(){
-  transient.filterOpen = false;
-  transient.filterPanel = '';
-  transient.filterDraft = null;
-  document.body.classList.remove('bh-filters-open');
-  render();
-}
-function filterPanel(name){ transient.filterPanel = name; render(); }
-
-function toggleDraft(key, value){
-  const d = transient.filterDraft;
-  if (!d) return;
-  const i = d[key].indexOf(value);
-  if (i === -1) d[key].push(value); else d[key].splice(i, 1);
-  render();
-}
-function setDraftPrice(which, v){ if (transient.filterDraft) transient.filterDraft[which] = v; }
-function setDraftSort(v){ if (transient.filterDraft) transient.filterDraft.sort = v; }
-
-// "Clear" inside a panel empties just that panel; on the front screen it
-// removes everything.
-function clearDraft(panel){
-  const d = transient.filterDraft;
-  if (!d) return;
-  if (panel === 'avail')       d.avail = [];
-  else if (panel === 'colour') d.colours = [];
-  else if (panel === 'size')   d.sizes = [];
-  else if (panel === 'price')  { d.min = ''; d.max = ''; }
-  else Object.assign(d, EMPTY_FILTERS(), { sort: d.sort });
-  render();
-}
-
-function applyFilters(){
-  const d = transient.filterDraft || EMPTY_FILTERS();
-  transient.filterAvail  = d.avail.slice();
-  transient.filterColour = d.colours.slice();
-  transient.filterSize   = d.sizes.slice();
-  transient.priceMin     = d.min;
-  transient.priceMax     = d.max;
-  transient.sortBy       = d.sort;
-  closeFilters();
-}
-
 function clearFilters(){
   transient.filterCategory = '';
-  transient.filterColour = [];
-  transient.filterSize = [];
-  transient.filterAvail = [];
-  transient.priceMin = '';
-  transient.priceMax = '';
+  transient.filterColour = '';
+  transient.filterSize = '';
   transient.shopSeeAll = '';
   render();
 }
@@ -2794,6 +2299,7 @@ function backToShop(){
 function viewProduct(id){
   transient.reviewSent = false;
   transient.reviewRating = 5;
+  transient.galleryIndex = 0;
   transient.viewingProductId = id;
   transient.viewingCart = false;
   transient.checkingOut = false;
@@ -3008,6 +2514,14 @@ function renderGiftCard(){
     </div>`;
 }
 
+function showPhoto(productId, i){
+  transient.galleryIndex = i;
+  const p = products.find(x => x.id === productId);
+  const main = document.getElementById('detailMainImg');
+  if (main && p) main.src = productImageUrl(p, 'full', i);
+  document.querySelectorAll('.bh-gthumb').forEach((el, idx) => el.classList.toggle('on', idx === i));
+}
+
 function setReviewRating(n){ transient.reviewRating = n; render(); }
 
 async function submitReview(productId){
@@ -3021,7 +2535,7 @@ async function submitReview(productId){
       productId, rating: transient.reviewRating || 5, text, pseudonym }) });
     transient.reviewSent = true;
   } catch (e) {
-    err.textContent = failureText(e, "Couldn't send that");
+    err.textContent = "Couldn't send that \u2014 please try again.";
     return;
   }
   render();
@@ -3085,16 +2599,6 @@ function renderHelp(){
     </div>`;
 }
 
-// Turn a thrown apiFetch error into something worth showing. The generic
-// "please try again" hid the real cause for a whole afternoon: the server
-// says exactly what is wrong (a missing table, for instance) and there is no
-// reason to throw that away.
-function failureText(e, fallback){
-  const msg = (e && e.message) ? String(e.message) : '';
-  if (!msg || /^Failed to fetch$/i.test(msg)) return fallback + ' (no connection to the server)';
-  return fallback + ' \u2014 ' + msg;
-}
-
 async function submitHelp(){
   const name = document.getElementById('helpName').value.trim();
   const phone = document.getElementById('helpPhone').value.trim();
@@ -3106,185 +2610,13 @@ async function submitHelp(){
     await apiFetch('/help', { method: 'POST', body: JSON.stringify({ name, phone, message }) });
     transient.helpSent = true;
   } catch (e) {
-    err.textContent = failureText(e, "Couldn't send that");
+    err.textContent = "Couldn't send that \u2014 please try again.";
     return;
   }
   render();
 }
 
 // ---- Admin root ----
-// ---- Dashboard ----
-// Everything here is worked out from the data already loaded. Nothing is
-// stored or fetched separately, so it cannot drift out of step with the tabs.
-
-function daysSince(iso){
-  if (!iso) return null;
-  const then = new Date(iso).getTime();
-  if (isNaN(then)) return null;
-  return Math.floor((Date.now() - then) / 86400000);
-}
-
-function agoWords(iso){
-  const d = daysSince(iso);
-  if (d === null) return '';
-  if (d <= 0) return 'today';
-  if (d === 1) return 'yesterday';
-  return d + ' days ago';
-}
-
-function dashStats(){
-  const live = s => !s.archived_at;
-  const pending  = stories.filter(s => live(s) && s.status === 'pending');
-  const approved = stories.filter(s => live(s) && s.status === 'approved');
-  const ready    = approved.filter(s => !s.posted);
-  const week = Date.now() - 7 * 86400000;
-  const inWeek = iso => { const t = new Date(iso).getTime(); return !isNaN(t) && t >= week; };
-
-  // Submissions per day for the last 7 days, oldest first.
-  const days = [];
-  for (let i = 6; i >= 0; i--){
-    const start = new Date(); start.setHours(0,0,0,0);
-    start.setDate(start.getDate() - i);
-    const end = start.getTime() + 86400000;
-    days.push(stories.filter(s => {
-      const t = new Date(s.created_at).getTime();
-      return t >= start.getTime() && t < end;
-    }).length);
-  }
-
-  const oldest = pending
-    .map(s => s.created_at)
-    .filter(Boolean)
-    .sort((a,b) => new Date(a) - new Date(b))[0];
-
-  const money = list => list.reduce((sum, l) => sum + (parseFloat(l.total) || 0), 0);
-  const byStatus = st => leads.filter(l => l.status === st);
-
-  const arrivedThisWeek = stories.filter(s => inWeek(s.created_at)).length;
-  const madeThisWeek = stories.filter(s => s.posted_at && inWeek(s.posted_at)).length;
-
-  return {
-    arrivedThisWeek,
-    keepingUp: madeThisWeek >= arrivedThisWeek,
-    clearing: madeThisWeek >= arrivedThisWeek ? 'faster than they arrive' : 'slower than they arrive',
-    pending: pending.length,
-    oldestPending: oldest,
-    readyToPost: ready.length,
-    // Counted from posted_at, the moment the card was made — not from when the
-    // story was submitted. Stories posted before posted_at existed have no
-    // date, so they are simply not counted rather than guessed at.
-    madeThisWeek: stories.filter(s => s.posted_at && inWeek(s.posted_at)).length,
-    madeToday: stories.filter(s => s.posted_at && daysSince(s.posted_at) === 0).length,
-    everMade: stories.filter(s => s.posted).length,
-    haveTimestamps: stories.some(s => s.posted_at),
-    repliesWaiting: replies.filter(r => !r.archived_at && r.status === 'pending').length,
-    days,
-    submittedToday: days[6],
-    dailyAverage: Math.round(days.reduce((a,b) => a+b, 0) / 7),
-
-    awaitingPayment: byStatus('Enquired').length,
-    toPack: byStatus('Paid').length,
-    toSend: byStatus('Ready').length,
-    sentThisWeek: byStatus('Sent').filter(l => inWeek(l.created_at)).length,
-    owed: money(byStatus('Enquired')),
-    takenThisWeek: money(leads.filter(l => l.status !== 'Enquired' && inWeek(l.created_at))),
-
-    productsLive: products.length,
-    noPicture: products.filter(p => !p.has_image).length,
-    outOfStock: products.filter(p => productSizes(p).length === 0).length,
-    reviewsWaiting: reviews.filter(r => r.status === 'pending').length,
-    helpNew: helpMessages.filter(h => h.status === 'new').length,
-  };
-}
-
-function renderDashboard(){
-  const d = dashStats();
-  const hour = new Date().getHours();
-  const greeting = hour < 5 ? 'Still up' : hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening';
-  const when = new Date().toLocaleDateString('en-ZA',
-    { weekday:'long', day:'numeric', month:'long' });
-  const rand = Math.max(1, ...d.days);
-
-  // The queue is the thing she is actually anxious about, so it leads.
-  const focus = d.pending > 0 ? `
-    <div class="bh-focus">
-      <span class="n">${d.pending}</span>
-      <p class="what">${d.pending === 1 ? 'story waiting to be read' : 'stories waiting to be read'}</p>
-      <p class="sub">${d.oldestPending ? 'The oldest arrived ' + agoWords(d.oldestPending) + '.' : ''}</p>
-      <button class="bh-btn" onclick="setAdminTab('queue')">Open the queue</button>
-      <div class="bh-spark">
-        ${d.days.map((n,i) => `<div class="${i===6?'today':''}" style="height:${Math.round((n/rand)*100)}%" title="${n}"></div>`).join('')}
-      </div>
-      <div class="bh-spark-lbl"><span>7 days ago</span><span>${d.submittedToday} today \u00b7 ${d.dailyAverage} a day on average</span></div>
-    </div>` : `
-    <div class="bh-focus calm">
-      <span class="n">0</span>
-      <p class="what">Nothing waiting to be read</p>
-      <p class="sub">You are completely caught up. ${d.submittedToday} came in today.</p>
-      <button class="bh-btn" onclick="setAdminTab('post')">Make a story picture</button>
-      <div class="bh-spark">
-        ${d.days.map((n,i) => `<div class="${i===6?'today':''}" style="height:${Math.round((n/rand)*100)}%"></div>`).join('')}
-      </div>
-      <div class="bh-spark-lbl"><span>7 days ago</span><span>${d.dailyAverage} a day on average</span></div>
-    </div>`;
-
-  const todo = [
-    d.repliesWaiting && { n:d.repliesWaiting, t:`${d.repliesWaiting === 1 ? 'reply' : 'replies'} to read`, tab:'queue' },
-    d.readyToPost   && { n:d.readyToPost, t:'approved and ready to post', tab:'post' },
-    d.awaitingPayment && { n:d.awaitingPayment, t:'orders not paid yet', tab:'leads', warn:true },
-    d.toPack        && { n:d.toPack, t:'orders paid, waiting to be packed', tab:'leads' },
-    d.toSend        && { n:d.toSend, t:'orders ready to go out', tab:'leads' },
-    d.helpNew       && { n:d.helpNew, t:`${d.helpNew === 1 ? 'message' : 'messages'} on the help form`, tab:'help', warn:true },
-    d.reviewsWaiting && { n:d.reviewsWaiting, t:'reviews to approve', tab:'reviews' },
-    d.noPicture     && { n:d.noPicture, t:'products with no picture', tab:'shop' },
-  ].filter(Boolean);
-
-  return `
-    <div class="bh-dash-greet">
-      <h2>${greeting}, Sabihah.</h2>
-      <span class="when">${escapeHtml(when)}</span>
-    </div>
-
-    ${focus}
-
-    <div class="bh-todo">
-      ${todo.length ? todo.map(i => `
-        <button class="bh-todo-row" onclick="setAdminTab('${i.tab}')">
-          <span class="cnt ${i.warn ? 'warn' : ''}">${i.n}</span>
-          <span>${escapeHtml(i.t)}</span>
-          <span class="go">\u203a</span>
-        </button>`).join('')
-      : `<p class="bh-todo-clear">Nothing needs you right now.</p>`}
-    </div>
-
-    <div class="bh-statcols">
-      <div class="bh-statgrp">
-        <h3>Reposting</h3>
-        <p class="lede">How the stories are moving.</p>
-        <div class="bh-statrow"><span>Waiting to be read</span><b class="${d.pending ? '' : 'good'}">${d.pending}</b></div>
-        <div class="bh-statrow"><span>Approved, not posted yet</span><b>${d.readyToPost}</b></div>
-        <div class="bh-statrow"><span>Pictures made today</span><b>${d.madeToday}</b></div>
-        <div class="bh-statrow"><span>Pictures made this week</span><b>${d.madeThisWeek}</b></div>
-        <div class="bh-statrow"><span>Clearing them ${d.clearing}</span><b class="${d.keepingUp ? 'good' : 'warn'}">${d.madeThisWeek} vs ${d.arrivedThisWeek}</b></div>
-        <div class="bh-statrow"><span>Replies waiting</span><b>${d.repliesWaiting}</b></div>
-        <div class="bh-statrow"><span>Came in today</span><b class="muted">${d.submittedToday}</b></div>
-      </div>
-
-      <div class="bh-statgrp">
-        <h3>Shop</h3>
-        <p class="lede">Orders and stock at a glance.</p>
-        <div class="bh-statrow"><span>Waiting on payment</span><b class="${d.awaitingPayment ? 'warn' : ''}">R${Math.round(d.owed).toLocaleString('en-ZA')}</b></div>
-        <div class="bh-statrow"><span>Taken this week</span><b class="good">R${Math.round(d.takenThisWeek).toLocaleString('en-ZA')}</b></div>
-        <div class="bh-statrow"><span>To pack</span><b>${d.toPack}</b></div>
-        <div class="bh-statrow"><span>To send</span><b>${d.toSend}</b></div>
-        <div class="bh-statrow"><span>Sent this week</span><b class="muted">${d.sentThisWeek}</b></div>
-        <div class="bh-statrow"><span>Products in the shop</span><b class="muted">${d.productsLive}</b></div>
-        <div class="bh-statrow"><span>Nothing in stock</span><b class="${d.outOfStock ? 'warn' : ''}">${d.outOfStock}</b></div>
-      </div>
-    </div>
-  `;
-}
-
 function renderAdmin(){
   if (!nav.adminUnlocked){
     return `
@@ -3302,8 +2634,20 @@ function renderAdmin(){
     `;
   }
   return `
-    <div class="bh-admin-pad">
-    ${nav.adminTab === 'home' ? renderDashboard() : ''}
+    <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
+      <button class="bh-btn-ghost" style="font-size:.78rem" onclick="adminLogout()">Log out</button>
+    </div>
+    <div class="bh-tabs">
+      <button class="bh-tab ${nav.adminTab === 'queue' ? 'on' : ''}" onclick="setAdminTab('queue')">Review queue</button>
+      <button class="bh-tab ${nav.adminTab === 'post' ? 'on' : ''}" onclick="setAdminTab('post')">Post</button>
+      <button class="bh-tab ${nav.adminTab === 'shop' ? 'on' : ''}" onclick="setAdminTab('shop')">Shop</button>
+      <button class="bh-tab ${nav.adminTab === 'leads' ? 'on' : ''}" onclick="setAdminTab('leads')">Leads</button>
+      <button class="bh-tab ${nav.adminTab === 'reviews' ? 'on' : ''}" onclick="setAdminTab('reviews')">Reviews${reviews.filter(r=>r.status==='pending').length ? ` (${reviews.filter(r=>r.status==='pending').length})` : ''}</button>
+      <button class="bh-tab ${nav.adminTab === 'gifts' ? 'on' : ''}" onclick="setAdminTab('gifts')">Gift cards</button>
+      <button class="bh-tab ${nav.adminTab === 'discounts' ? 'on' : ''}" onclick="setAdminTab('discounts')">Discounts</button>
+      <button class="bh-tab ${nav.adminTab === 'help' ? 'on' : ''}" onclick="setAdminTab('help')">Help${helpMessages.filter(h=>h.status==='new').length ? ` (${helpMessages.filter(h=>h.status==='new').length})` : ''}</button>
+      <button class="bh-tab ${nav.adminTab === 'settings' ? 'on' : ''}" onclick="setAdminTab('settings')">Settings</button>
+    </div>
     ${nav.adminTab === 'queue' ? renderReviewQueue() : ''}
     ${nav.adminTab === 'post' ? renderPostManager() : ''}
     ${nav.adminTab === 'shop' ? renderShopManager() : ''}
@@ -3313,89 +2657,10 @@ function renderAdmin(){
     ${nav.adminTab === 'discounts' ? renderDiscountsAdmin() : ''}
     ${nav.adminTab === 'help' ? renderHelpAdmin() : ''}
     ${nav.adminTab === 'settings' ? renderSettings() : ''}
-    </div>
-    ${renderAdminNav()}
-    ${nav.adminMoreOpen ? renderAdminMore() : ''}
   `;
 }
 
-// Four destinations she uses daily, plus More. Counts of anything waiting are
-// shown on the icons, and rolled up onto More so nothing hides behind it.
-const ADMIN_NAV = [
-  { tab:'home',  label:'Dashboard', icon:'<path d="M4 13h7V4H4zM13 20h7v-9h-7zM4 20h7v-5H4zM13 9h7V4h-7z"/>' },
-  { tab:'queue', label:'Queue',     icon:'<path d="M4 13h4l2 3h4l2-3h4"/><path d="M5 5h14l1 8v6H4v-6z"/>' },
-  { tab:'post',  label:'Post',      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M3 17l5-4 4 3 3-2 6 5"/>' },
-  { tab:'leads', label:'Orders',    icon:'<path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>' },
-];
-const ADMIN_MORE = [
-  { tab:'shop',      label:'Shop' },
-  { tab:'reviews',   label:'Reviews' },
-  { tab:'gifts',     label:'Gift cards' },
-  { tab:'discounts', label:'Discounts' },
-  { tab:'help',      label:'Help messages' },
-  { tab:'settings',  label:'Settings' },
-];
-
-function adminBadge(tab){
-  if (tab === 'queue')   return stories.filter(s => !s.archived_at && s.status === 'pending').length;
-  if (tab === 'post')    return stories.filter(s => !s.archived_at && s.status === 'approved' && !s.posted).length;
-  if (tab === 'leads')   return leads.filter(l => l.status === 'Enquired').length;
-  if (tab === 'reviews') return reviews.filter(r => r.status === 'pending').length;
-  if (tab === 'help')    return helpMessages.filter(h => h.status === 'new').length;
-  return 0;
-}
-
-function renderAdminNav(){
-  const moreCount = ADMIN_MORE.reduce((a, i) => a + adminBadge(i.tab), 0);
-  const moreOn = ADMIN_MORE.some(i => i.tab === nav.adminTab);
-  return `
-    <nav class="bh-navbar">
-      ${ADMIN_NAV.map(i => {
-        const n = adminBadge(i.tab);
-        return `
-        <button class="${nav.adminTab === i.tab ? 'on' : ''}" onclick="setAdminTab('${i.tab}')">
-          <svg viewBox="0 0 24 24">${i.icon}</svg>
-          <span>${i.label}</span>
-          ${n ? `<span class="dot">${n}</span>` : ''}
-        </button>`;
-      }).join('')}
-      <button class="${moreOn ? 'on' : ''}" onclick="openAdminMore()">
-        <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
-        <span>More</span>
-        ${moreCount ? `<span class="dot">${moreCount}</span>` : ''}
-      </button>
-    </nav>`;
-}
-
-function renderAdminMore(){
-  return `
-    <div class="bh-navmore">
-      <div class="scrim" onclick="closeAdminMore()"></div>
-      <div class="panel">
-        <h4>Go to</h4>
-        ${ADMIN_MORE.map(i => {
-          const n = adminBadge(i.tab);
-          return `
-          <button class="item ${nav.adminTab === i.tab ? 'on' : ''}" onclick="setAdminTab('${i.tab}')">
-            <span>${i.label}</span>${n ? `<span class="n">${n}</span>` : ''}
-          </button>`;
-        }).join('')}
-        <button class="item" onclick="closeAdminMore(); adminLogout()">
-          <span style="color:var(--risk)">Log out</span>
-        </button>
-      </div>
-    </div>`;
-}
-
-function openAdminMore(){ nav.adminMoreOpen = true; render(); }
-function closeAdminMore(){ nav.adminMoreOpen = false; render(); }
-
-function setAdminTab(tab){
-  nav.adminTab = tab;
-  nav.adminMoreOpen = false;
-  window.scrollTo({ top: 0, behavior: 'auto' });
-  render();
-}
+function setAdminTab(tab){ nav.adminTab = tab; render(); }
 
 // ---- Admin: review queue ----
 function renderReviewQueue(){
@@ -3480,7 +2745,6 @@ function renderArchiveSection(){
               ${escapeHtml(String(item.text || '').slice(0, 90))}${String(item.text || '').length > 90 ? '\u2026' : ''}
             </span>
             <button class="bh-btn-ghost" style="font-size:.72rem" onclick="${item.kind === 'story' ? `archiveStory('${item.id}', false)` : `archiveReply('${item.id}', false)`}">Put back</button>
-            ${item.kind === 'story' && item.status === 'approved' ? storyLinkRow(item.id, '') : ''}
           </div>
         `).join('')}
       `).join('')}
@@ -3547,34 +2811,39 @@ async function rejectReply(id){ await apiFetch('/replies', { method: 'PATCH', bo
 
 // ---- Admin: shop manager ----
 function renderShopManager(){
-  const editing = !!transient.editingProductId;
-  const edited = editing ? products.find(p => p.id === transient.editingProductId) : null;
-  // While editing, show the product's current picture until a new one is picked.
-  const preview = transient.shopImageData
-    || (editing && edited && edited.has_image && !transient.shopImages ? productImageUrl(edited, 'thumb') : '');
-
   return `
-    <div class="bh-card" style="margin-bottom:20px${editing ? ';border:1.5px solid var(--plum)' : ''}" id="shopFormCard">
-      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">
-        ${editing ? 'Editing \u201c' + escapeHtml(edited ? edited.name : '') + '\u201d' : 'Add a product'}
-      </h3>
+    <div class="bh-card" style="margin-bottom:20px">
+      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Add a product</h3>
       <div class="bh-grid2">
         <div>
-          <label class="bh-label">Picture</label>
-          <input type="file" accept="image/*" class="bh-input" style="margin-bottom:12px" onchange="handleShopFile(event)">
-          <img id="imagePreview" src="${preview}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:${preview ? 'block' : 'none'}">
-          <p id="imageStatus" style="font-size:.75rem;color:var(--grey);margin:0 0 12px">${escapeHtml(transient.imageStatus || (editing && edited && edited.has_image ? 'Leave this alone to keep the current picture.' : ''))}</p>
+          <label class="bh-label">Pictures</label>
+          <p style="font-size:.75rem;color:var(--grey);margin:-2px 0 8px">Pick as many as you like \u2014 front, back, detail. The first one is what shows on the shop page.</p>
+          <input type="file" accept="image/*" multiple class="bh-input" style="margin-bottom:10px" onchange="handleShopFile(event)">
+
+          ${(transient.shopImages || []).length ? `
+            <div class="bh-thumbrow">
+              ${transient.shopImages.map((img, i) => `
+                <div class="bh-thumb ${i === 0 ? 'main' : ''}">
+                  <img src="${img.thumb}" alt="">
+                  ${i === 0 ? `<span class="bh-thumb-tag">Main</span>` : ''}
+                  <div class="bh-thumb-ctrls">
+                    <button onclick="moveShopImage(${i}, -1)" title="Move earlier">\u2039</button>
+                    <button onclick="moveShopImage(${i}, 1)" title="Move later">\u203a</button>
+                    <button class="del" onclick="removeShopImage(${i})" title="Remove">\u2715</button>
+                  </div>
+                </div>`).join('')}
+            </div>` : ''}
+
+          <p id="imageStatus" style="font-size:.75rem;color:var(--grey);margin:0 0 12px">${escapeHtml(transient.imageStatus)}</p>
           <label class="bh-label">Name</label>
-          <input id="shopName" class="bh-input" placeholder="e.g. Item name" style="margin-bottom:12px"
-                 value="${escapeHtml(transient.shopName)}" oninput="transient.shopName = this.value">
+          <input id="shopName" class="bh-input" placeholder="e.g. Item name" style="margin-bottom:12px" value="${escapeHtml(transient.formName || '')}" oninput="transient.formName = this.value">
           <div id="priceWrap" style="display:${transient.category === 'Gift Voucher' ? 'none' : 'block'}">
             <label class="bh-label">Price (R)</label>
-            <input id="shopPrice" type="number" class="bh-input" placeholder="0.00" style="margin-bottom:12px"
-                   value="${escapeHtml(transient.shopPrice)}" oninput="transient.shopPrice = this.value">
+            <input id="shopPrice" type="number" class="bh-input" placeholder="0.00" style="margin-bottom:12px" value="${escapeHtml(transient.formPrice || '')}" oninput="transient.formPrice = this.value">
           </div>
 
           <label class="bh-label">Description (optional)</label>
-          <textarea id="shopDesc" class="bh-textarea" style="min-height:60px;margin-bottom:12px" placeholder="Any extra detail shown on the product page…" oninput="transient.shopDesc = this.value">${escapeHtml(transient.shopDesc)}</textarea>
+          <textarea id="shopDesc" class="bh-textarea" style="min-height:60px;margin-bottom:12px" placeholder="Any extra detail shown on the product page…" oninput="transient.formDesc = this.value">${escapeHtml(transient.formDesc || '')}</textarea>
 
           <label class="bh-label">Size type</label>
           <select id="shopSizeType" class="bh-select" style="margin-bottom:12px" onchange="changeSizeType(this.value)">
@@ -3620,10 +2889,7 @@ function renderShopManager(){
             ).join('')}
           </div>
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-            <button class="bh-btn" onclick="addProduct()">${editing ? 'Save changes' : '+ Add product'}</button>
-            ${editing ? `<button class="bh-btn-ghost" onclick="cancelEditProduct()">Cancel</button>` : ''}
-          </div>
+          <button class="bh-btn" onclick="addProduct()">+ Add product</button>
         </div>
         <div>
           <p class="bh-note" style="margin-top:0">Pictures are stored directly with the product for this first version — simple to build and fine at this scale. If the catalogue grows large, moving images to dedicated image hosting keeps things fast; worth revisiting later, not a blocker now.</p>
@@ -3643,10 +2909,7 @@ function renderShopManager(){
             ${productColours(p).length ? `<div class="bh-card-swatches">${productColours(p).map(col => `<i title="${escapeHtml(col)}" style="background:${colourHex(col)}"></i>`).join('')}</div>` : ''}
             ${productSizes(p).length ? `<div class="bh-shop-sizes">In stock: ${productSizes(p).map(escapeHtml).join(', ')}</div>` : ''}
             ${orderOnlySizes(p).length ? `<div class="bh-shop-sizes" style="color:#a6752f">To order: ${orderOnlySizes(p).map(escapeHtml).join(', ')}</div>` : ''}
-            <div style="display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap">
-              <button class="bh-btn-ghost" style="font-size:.75rem" onclick="editProduct('${p.id}')">✏️ Edit</button>
-              <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeProduct('${p.id}')">🗑 Remove</button>
-            </div>
+            <button class="bh-btn-ghost" style="color:var(--risk);margin-top:8px;font-size:.75rem" onclick="removeProduct('${p.id}')">🗑 Remove</button>
           </div>
         </div>
       `).join('')}
@@ -3655,74 +2918,55 @@ function renderShopManager(){
 }
 
 async function handleShopFile(e){
-  const file = e.target.files[0];
-  if (!file) return;
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
 
-  // Update the preview and status IN PLACE. A full re-render here would
-  // wipe the name and price already typed into the form.
   const statusEl = document.getElementById('imageStatus');
-  const previewEl = document.getElementById('imagePreview');
-  if (statusEl) statusEl.textContent = 'Preparing picture\u2026';
+  if (statusEl) statusEl.textContent = `Preparing ${files.length} picture${files.length === 1 ? '' : 's'}\u2026`;
 
-  try {
-    // A small one for the grid, a larger one for the product page.
-    const [thumb, full] = await Promise.all([
-      resizeImage(file, 500, 0.72),
-      resizeImage(file, 1400, 0.82),
-    ]);
-    transient.shopImages = { thumb, full };
-    transient.shopImageData = thumb;
-    const kb = Math.round((thumb.length + full.length) / 1024);
-    transient.imageStatus = `Picture ready (${kb} KB) \u2014 shrunk so the shop stays fast.`;
-    if (previewEl){
-      previewEl.src = thumb;
-      previewEl.style.display = 'block';
-    }
-  } catch (err) {
-    transient.shopImages = null;
-    transient.shopImageData = null;
-    transient.imageStatus = "Couldn't use that picture \u2014 try another one.";
-    if (previewEl) previewEl.style.display = 'none';
+  const done = [];
+  for (const file of files){
+    try {
+      const [thumb, full] = await Promise.all([
+        resizeImage(file, 500, 0.72),
+        resizeImage(file, 1400, 0.82),
+      ]);
+      done.push({ thumb, full });
+    } catch (err) { /* skip anything that isn't a usable picture */ }
   }
-  if (statusEl) statusEl.textContent = transient.imageStatus;
+
+  if (!done.length){
+    transient.shopImages = [];
+    transient.imageStatus = "Couldn't use those pictures \u2014 try different ones.";
+  } else {
+    // Add to whatever was already chosen, so she can pick a few at a time.
+    transient.shopImages = (transient.shopImages || []).concat(done);
+    const kb = Math.round(transient.shopImages.reduce((n,i) => n + i.thumb.length + i.full.length, 0) / 1024);
+    transient.imageStatus = `${transient.shopImages.length} picture${transient.shopImages.length === 1 ? '' : 's'} ready (${kb} KB). The first one is used on the shop page.`;
+  }
+  e.target.value = '';   // let the same file be picked again if needed
+  render();
 }
 
-function changeSizeType(type){
-  transient.sizeType = type;
-  // free size selects itself automatically — there is only one option
-  transient.selectedSizes = type === 'freesize' ? ['Free size'] : [];
-  // Rebuild only the size grid so typed fields aren't lost.
-  transient.orderSizes = [];
-  const grid = document.getElementById('shopSizeGrid');
-  if (grid){
-    grid.innerHTML = SIZE_PRESETS[type].options.map(s =>
-      `<button class="bh-size-opt ${transient.selectedSizes.includes(s) ? 'on' : ''}" onclick="toggleSize('${escapeHtml(s)}', this)">${escapeHtml(s)}</button>`
-    ).join('');
-  }
-  const oGrid = document.getElementById('shopOrderSizeGrid');
-  if (oGrid){
-    oGrid.innerHTML = SIZE_PRESETS[type].options.map(s =>
-      `<button class="bh-size-opt to-order" onclick="toggleOrderSize('${escapeHtml(s)}', this)">${escapeHtml(s)}</button>`
-    ).join('');
-  }
+function removeShopImage(i){
+  transient.shopImages.splice(i, 1);
+  transient.imageStatus = transient.shopImages.length
+    ? `${transient.shopImages.length} picture${transient.shopImages.length === 1 ? '' : 's'} ready.`
+    : '';
+  render();
 }
 
-// Read whatever is currently in the three free-text boxes back into state.
-// Anything that triggers a re-render while the product form is open must call
-// this first, or the typed name and price are thrown away.
-function captureProductForm(){
-  const n = document.getElementById('shopName');
-  const p = document.getElementById('shopPrice');
-  const d = document.getElementById('shopDesc');
-  if (n) transient.shopName = n.value;
-  if (p) transient.shopPrice = p.value;
-  if (d) transient.shopDesc  = d.value;
+function moveShopImage(i, dir){
+  const list = transient.shopImages;
+  const j = i + dir;
+  if (j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  render();
 }
 
 function changeProductType(cat){
-  captureProductForm();
   transient.category = cat;
-  render(); // the form changes shape for vouchers
+  render(); // the form changes shape for gift vouchers
 }
 
 function toggleColour(name, btn){
@@ -3746,67 +2990,42 @@ function toggleOrderSize(s, btn){
   if (btn) btn.classList.toggle('on', i === -1);
 }
 
+// Updates only the tapped button — a full re-render would wipe whatever
+// has already been typed into the name/price/description fields.
 function toggleSize(s, btn){
   const i = transient.selectedSizes.indexOf(s);
   if (i === -1) transient.selectedSizes.push(s);
   else transient.selectedSizes.splice(i, 1);
-  // Update only this button — a full re-render would wipe whatever has
-  // already been typed into the name/price/description fields.
   if (btn) btn.classList.toggle('on', i === -1);
 }
 
-// Load an existing product into the same form used for adding. Everything
-// needed is already in the products list, so this needs no extra request.
-function editProduct(id){
-  const p = products.find(x => x.id === id);
-  if (!p) return;
-  transient.editingProductId = id;
-  transient.editingHasImage = !!p.has_image;
-  transient.shopName  = p.name || '';
-  transient.shopPrice = isVoucher(p) ? '' : String(p.price == null ? '' : p.price);
-  transient.shopDesc  = p.description || '';
-  transient.sizeType  = SIZE_PRESETS[p.size_type] ? p.size_type : 'freesize';
-  transient.selectedSizes = productSizes(p).slice();
-  transient.orderSizes    = orderOnlySizes(p).slice();
-  transient.colours   = productColours(p).slice();
-  transient.stockStatus = p.stock_status === 'made_to_order' ? 'made_to_order' : 'in_stock';
-  transient.category  = p.category || '';
-  // A new picture is optional — the existing one stays unless one is chosen.
-  transient.shopImages = null;
-  transient.shopImageData = null;
-  transient.imageStatus = '';
-  transient.loadError = '';
-  render();
-  const card = document.getElementById('shopFormCard');
-  if (card && card.scrollIntoView) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function resetProductForm(){
-  transient.editingProductId = null;
-  transient.editingHasImage = false;
-  transient.shopName = '';
-  transient.shopPrice = '';
-  transient.shopDesc = '';
-  transient.shopImageData = null;
-  transient.shopImages = null;
-  transient.imageStatus = '';
-  transient.selectedSizes = transient.sizeType === 'freesize' ? ['Free size'] : [];
+function changeSizeType(type){
+  transient.sizeType = type;
+  transient.selectedSizes = type === 'freesize' ? ['Free size'] : [];
   transient.orderSizes = [];
-  transient.colours = [];
-}
-
-function cancelEditProduct(){
-  resetProductForm();
-  transient.loadError = '';
-  render();
+  // Rebuild just the size grids so typed fields aren't lost.
+  const grid = document.getElementById('shopSizeGrid');
+  if (grid){
+    grid.innerHTML = SIZE_PRESETS[type].options.map(s =>
+      `<button class="bh-size-opt ${transient.selectedSizes.includes(s) ? 'on' : ''}" onclick="toggleSize('${escapeHtml(s)}', this)">${escapeHtml(s)}</button>`
+    ).join('');
+  }
+  const oGrid = document.getElementById('shopOrderSizeGrid');
+  if (oGrid){
+    oGrid.innerHTML = SIZE_PRESETS[type].options.map(s =>
+      `<button class="bh-size-opt to-order" onclick="toggleOrderSize('${escapeHtml(s)}', this)">${escapeHtml(s)}</button>`
+    ).join('');
+  }
 }
 
 async function addProduct(){
-  captureProductForm();
-  const name = (transient.shopName || '').trim();
+  const nameEl = document.getElementById('shopName');
+  const priceEl = document.getElementById('shopPrice');
+  const descEl = document.getElementById('shopDesc');
+  const name = ((nameEl ? nameEl.value : '') || transient.formName || '').trim();
   const isGiftVoucher = transient.category === 'Gift Voucher';
-  const price = isGiftVoucher ? String(VOUCHER_MIN) : (transient.shopPrice || '').trim();
-  const description = (transient.shopDesc || '').trim();
+  const price = isGiftVoucher ? String(VOUCHER_MIN) : ((priceEl ? priceEl.value : '') || transient.formPrice || '');
+  const description = ((descEl ? descEl.value : '') || transient.formDesc || '').trim();
 
   if (!transient.category){
     transient.loadError = 'Choose a category for this product.';
@@ -3814,9 +3033,7 @@ async function addProduct(){
     return;
   }
   if (!name || !price){
-    transient.loadError = transient.editingProductId
-      ? 'A product needs both a name and a price.'
-      : 'Give the product a name and a price before adding it.';
+    transient.loadError = 'Give the product a name and a price before adding it.';
     render();
     return;
   }
@@ -3826,270 +3043,73 @@ async function addProduct(){
     return;
   }
   transient.loadError = '';
-  const editingId = transient.editingProductId;
-  const payload = {
-    name, price,
-    description,
-    sizeType: transient.sizeType,
-    sizes: transient.selectedSizes,
-    orderSizes: transient.orderSizes,
-    stockStatus: transient.stockStatus,
-    category: transient.category,
-    colours: transient.colours,
-    productType: isGiftVoucher ? 'voucher' : 'item',
-  };
-  // On an edit, a picture is only sent if a new one was chosen — otherwise the
-  // existing one is left in place.
-  if (transient.shopImages) payload.images = transient.shopImages;
-  else if (!editingId) payload.images = null;
-
-  try {
-    await apiFetch('/products', {
-      method: editingId ? 'PATCH' : 'POST',
-      body: JSON.stringify(editingId ? Object.assign({ id: editingId }, payload) : payload),
-    });
-  } catch (err) {
-    // Keep everything typed in so the work isn't lost on a failed save.
-    transient.loadError = editingId
-      ? "Couldn't save those changes \u2014 check your connection and try again."
-      : "Couldn't add that product \u2014 check your connection and try again.";
-    render();
-    return;
-  }
-
-  resetProductForm();
+  await apiFetch('/products', {
+    method: 'POST',
+    body: JSON.stringify({
+      name, price, images: transient.shopImages,
+      description,
+      sizeType: transient.sizeType,
+      sizes: transient.selectedSizes,
+      orderSizes: transient.orderSizes,
+      stockStatus: transient.stockStatus,
+      category: transient.category,
+      colours: transient.colours,
+      productType: isGiftVoucher ? 'voucher' : 'item',
+    }),
+  });
+  transient.shopImageData = null;
+  transient.shopImages = [];
+  transient.imageStatus = '';
+  transient.formName = '';
+  transient.formPrice = '';
+  transient.formDesc = '';
+  transient.selectedSizes = transient.sizeType === 'freesize' ? ['Free size'] : [];
+  transient.orderSizes = [];
+  transient.colours = [];
   await fetchProducts();
   render();
 }
 async function removeProduct(id){ await apiFetch('/products', { method: 'DELETE', body: JSON.stringify({ id }) }); await fetchProducts(); render(); }
 
 // ---- Admin: leads manager ----
-// Orders are grouped by what needs doing, and each card shows one obvious
-// next action. Documents and deleting are folded away behind "More", because
-// twelve buttons on every card made the list impossible to scan.
-const LEAD_GROUPS = [
-  { status:'Enquired', title:'Waiting on payment',  note:'Sent the banking details, waiting for the money.' },
-  { status:'Paid',     title:'Paid \u2014 to pack',      note:'Money is in. Pack these.' },
-  { status:'Ready',    title:'Ready to go out',     note:'Packed. Tell them it is on the way or ready to collect.' },
-  { status:'Sent',     title:'Done',                note:'Archive these once you are finished with them.' },
-];
-
-function leadSummary(l){
-  const total = l.total || l.price || '';
-  const method = l.delivery_method || l.deliveryMethod || 'Collection';
-  return `
-    <div class="bh-ord-top">
-      <div>
-        <span class="nm">${escapeHtml(l.buyer || 'No name')}</span>
-        <span class="it">${escapeHtml(leadItemList(l)).replace(/\n/g, '<br>')}</span>
-        <span class="mt">${l.phone ? escapeHtml(l.phone) + ' \u00b7 ' : ''}${escapeHtml(method)}${l.created_at ? ' \u00b7 ' + agoWords(l.created_at) : ''}</span>
-        ${l.address ? `<span class="mt">${escapeHtml(l.address)}</span>` : ''}
-        ${l.lead_time ? `<span class="mt" style="color:#a6752f">${escapeHtml(l.lead_time)}</span>` : ''}
-        ${l.discount_code ? `<span class="mt" style="color:var(--ok)">${escapeHtml(l.discount_code)} \u2212R${escapeHtml(l.discount_amount || '0')}</span>` : ''}
-      </div>
-      ${total ? `<span class="amt">R${escapeHtml(total)}</span>` : ''}
-    </div>`;
-}
-
-function leadCard(l){
-  const open = transient.openLeadDocs === l.id;
-  const hasPhone = !!l.phone;
-  const wa = (kind, label, cls) => hasPhone
-    ? `<button class="${cls}" onclick="sendLeadWhatsApp('${l.id}','${kind}')">${label}</button>` : '';
-
-  // One primary action per status, plus the nudges she asked for.
-  let actions = '';
-  if (l.status === 'Enquired'){
-    actions = `${wa('order','Send order &amp; banking','bh-ord-go')}
-               ${wa('reminder','Remind about payment','bh-ord-2nd')}`;
-  } else if (l.status === 'Paid'){
-    actions = `${wa('receipt','Send receipt','bh-ord-go')}
-               ${wa('update','Keep them posted','bh-ord-2nd')}`;
-  } else if (l.status === 'Ready'){
-    actions = `${wa('delivery','Send delivery message','bh-ord-go')}
-               ${wa('update','Keep them posted','bh-ord-2nd')}`;
-  } else {
-    actions = `<button class="bh-ord-go" onclick="archiveLead('${l.id}')">Archive this order</button>
-               ${wa('update','Message them','bh-ord-2nd')}`;
-  }
-
-  const nextLabel = { Enquired:'Mark as paid', Paid:'Mark as packed', Ready:'Mark as sent' }[l.status];
-
-  return `
-    <div class="bh-ord">
-      ${leadSummary(l)}
-      ${!hasPhone ? `<p class="bh-ord-warn">No WhatsApp number saved, so nothing can be sent from here.</p>` : ''}
-      <div class="bh-ord-acts">${actions}</div>
-      <div class="bh-ord-foot">
-        ${nextLabel ? `<button class="bh-ord-next" onclick="cycleLeadStatus('${l.id}')">${nextLabel}</button>` : ''}
-        <button class="bh-ord-more" onclick="toggleLeadDocs('${l.id}')">${open ? 'Less' : 'More'}</button>
-      </div>
-      ${open ? `
-        <div class="bh-ord-docs">
-          ${['order','receipt','delivery'].map(k => `
-            <div class="row">
-              <span>${k === 'order' ? 'Order &amp; banking' : (k === 'receipt' ? 'Receipt' : 'Delivery')}</span>
-              ${hasPhone ? `<button onclick="sendLeadWhatsApp('${l.id}','${k}')">Send</button>` : ''}
-              <button onclick="downloadLeadCard('${l.id}','${k}')">Picture</button>
-              <button onclick="downloadLeadPDF('${l.id}','${k}')">PDF</button>
-            </div>`).join('')}
-          <div class="row">
-            <span>Archived orders can be put back</span>
-            <button onclick="archiveLead('${l.id}')">Archive</button>
-            <button class="risk" onclick="removeLead('${l.id}')">Delete for good</button>
-          </div>
-        </div>` : ''}
-    </div>`;
-}
-
-// ---- Chasing several unpaid orders ----
-// WhatsApp gives no way to send to many people at once from a web page, and
-// bulk-sending tools get numbers banned. So this walks through them one at a
-// time instead: one tap opens the chat with the message already written, she
-// sends, comes back, taps next. Each message is still personalised.
-function chaseable(){
-  return leads.filter(l => l.status === 'Enquired' && l.phone);
-}
-
-function startChase(){
-  const list = chaseable();
-  if (!list.length) return;
-  transient.chase = { ids: list.map(l => l.id), i: 0, done: [], skipped: [] };
-  render();
-}
-function chaseOpen(){
-  const c = transient.chase;
-  const lead = leads.find(l => l.id === c.ids[c.i]);
-  if (!lead) return;
-  sendLeadWhatsApp(lead.id, 'reminder');
-  c.opened = lead.id;
-  render();
-}
-function chaseNext(sent){
-  const c = transient.chase;
-  (sent ? c.done : c.skipped).push(c.ids[c.i]);
-  c.i += 1;
-  c.opened = null;
-  render();
-}
-function chaseStop(){ transient.chase = null; render(); }
-
-function renderChase(){
-  const c = transient.chase;
-  if (!c) return '';
-  const total = c.ids.length;
-
-  if (c.i >= total){
-    return `
-      <div class="bh-chase">
-        <h4>${c.done.length} of ${total} reminded</h4>
-        <p>${c.skipped.length ? c.skipped.length + ' skipped. ' : ''}You can run this again any time.</p>
-        <button class="bh-ord-go" onclick="chaseStop()">Close</button>
-      </div>`;
-  }
-
-  const lead = leads.find(l => l.id === c.ids[c.i]);
-  const amount = lead.total || lead.price || '';
-  const opened = c.opened === lead.id;
-
-  return `
-    <div class="bh-chase">
-      <div class="bh-chase-bar"><span style="width:${Math.round((c.i / total) * 100)}%"></span></div>
-      <p class="step">${c.i + 1} of ${total}</p>
-      <h4>${escapeHtml(lead.buyer || 'No name')}</h4>
-      <p>${escapeHtml(lead.phone)}${amount ? ' \u00b7 R' + escapeHtml(amount) + ' outstanding' : ''}
-         ${lead.created_at ? '\u00b7 ordered ' + agoWords(lead.created_at) : ''}</p>
-      ${opened
-        ? `<button class="bh-ord-go" onclick="chaseNext(true)">Sent \u2014 next</button>
-           <button class="bh-ord-2nd" onclick="chaseOpen()">Open again</button>`
-        : `<button class="bh-ord-go" onclick="chaseOpen()">Open WhatsApp for ${escapeHtml((lead.buyer || '').split(' ')[0] || 'them')}</button>`}
-      <div class="bh-chase-foot">
-        <button onclick="chaseNext(false)">Skip this one</button>
-        <button onclick="chaseStop()">Stop</button>
-      </div>
-    </div>`;
-}
-
 function renderLeadsManager(){
-  const live = leads.filter(l => l.status !== 'Archived');
-  const archived = leads.filter(l => l.status === 'Archived');
-  const owed = live.filter(l => l.status === 'Enquired')
-    .reduce((sum, l) => sum + (parseFloat(l.total || l.price) || 0), 0);
-
   return `
-    ${owed > 0 ? `<div class="bh-ord-owed">R${Math.round(owed).toLocaleString('en-ZA')} still to come in across ${live.filter(l => l.status === 'Enquired').length} unpaid ${live.filter(l => l.status === 'Enquired').length === 1 ? 'order' : 'orders'}.</div>` : ''}
-
-    ${LEAD_GROUPS.map(g => {
-      const rows = live.filter(l => l.status === g.status);
-      if (!rows.length) return '';
-      return `
-        <div class="bh-ord-group">
-          <div class="bh-ord-head">
-            <h3>${g.title}</h3>
-            <span class="cnt">${rows.length}</span>
-            ${g.status === 'Enquired' && rows.filter(l => l.phone).length > 1
-              ? `<button class="bh-chase-start" onclick="startChase()">Remind all ${rows.filter(l => l.phone).length}</button>` : ''}
-          </div>
-          <p class="bh-ord-note">${g.note}</p>
-          ${g.status === 'Enquired' ? renderChase() : ''}
-          ${rows.map(leadCard).join('')}
-        </div>`;
-    }).join('')}
-
-    ${live.length === 0 ? `<p class="bh-empty">No orders on the go. Anything bought through the shop lands here on its own.</p>` : ''}
-    <p style="font-size:.78rem;color:var(--ok);margin:4px 0 10px">${escapeHtml(transient.leadDownloadStatus)}</p>
-
-    ${archived.length ? `
-      <div class="bh-ord-group">
-        <button class="bh-ord-head" style="width:100%;background:none;border:none;cursor:pointer;padding:0"
-                onclick="transient.showArchivedLeads = !transient.showArchivedLeads; render()">
-          <h3>Archived</h3><span class="cnt">${archived.length}</span>
-          <span style="margin-left:auto;color:var(--grey)">${transient.showArchivedLeads ? '\u2303' : '\u2304'}</span>
-        </button>
-        ${transient.showArchivedLeads ? archived.map(l => `
-          <div class="bh-ord" style="opacity:.72">
-            ${leadSummary(l)}
-            <div class="bh-ord-foot">
-              <button class="bh-ord-next" onclick="unarchiveLead('${l.id}')">Put back</button>
-              <button class="bh-ord-more risk" onclick="removeLead('${l.id}')">Delete for good</button>
-            </div>
-          </div>`).join('') : ''}
-      </div>` : ''}
-
-    <div class="bh-card" style="margin-top:8px">
-      <button class="bh-btn-outline" style="width:100%"
-              onclick="transient.showAddLead = !transient.showAddLead; render()">
-        ${transient.showAddLead ? 'Cancel' : 'Add an order by hand'}
-      </button>
-      ${transient.showAddLead ? `
-        <div style="margin-top:14px">
-          <div class="bh-grid2">
-            <input id="leadBuyer" class="bh-input" placeholder="Buyer name" style="margin-bottom:12px">
-            <input id="leadItem" class="bh-input" placeholder="Item they want" style="margin-bottom:12px">
-            <input id="leadPhone" class="bh-input" placeholder="WhatsApp number" style="margin-bottom:12px">
-            <input id="leadPrice" class="bh-input" placeholder="Price" style="margin-bottom:12px">
-          </div>
-          <button class="bh-btn" onclick="addLead()">Add order</button>
-        </div>` : ''}
+    <div class="bh-card" style="margin-bottom:20px">
+      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Add a lead</h3>
+      <div class="bh-grid2">
+        <input id="leadBuyer" class="bh-input" placeholder="Buyer name" style="margin-bottom:12px">
+        <input id="leadItem" class="bh-input" placeholder="Item they want" style="margin-bottom:12px">
+        <input id="leadPhone" class="bh-input" placeholder="WhatsApp number (optional)" style="margin-bottom:12px">
+        <input id="leadPrice" class="bh-input" placeholder="Price (optional)" style="margin-bottom:12px">
+      </div>
+      <button class="bh-btn" onclick="addLead()">+ Add lead</button>
     </div>
-
-    <p class="bh-note">Each order shows the one thing to do next. <strong>More</strong> opens the pictures and PDFs if you need to attach one, and archiving tidies an order away without deleting it.</p>
+    <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:12px">Tracking (${leads.length})</h3>
+    ${leads.length === 0 ? `<p class="bh-empty">No leads yet — they'll show up here as they come in, including orders placed through the shop.</p>` : ''}
+    ${leads.map(l => `
+      <div class="bh-lead">
+        <span class="who"><strong>${escapeHtml(l.buyer)}</strong>${l.total ? ` — R${escapeHtml(l.total)}` : (l.price ? ` — R${escapeHtml(l.price)}` : '')}
+        <br><span style="font-size:.8rem;color:var(--ink)">${escapeHtml(leadItemList(l)).replace(/\n/g, '<br>')}</span>
+        ${l.phone ? `<br><span style="font-size:.78rem;color:var(--grey)">${escapeHtml(l.phone)} · ${escapeHtml(l.delivery_method || l.deliveryMethod || 'Collection')}</span>` : ''}
+        ${l.address ? `<br><span style="font-size:.75rem;color:var(--grey)">${escapeHtml(l.address)}</span>` : ''}
+        ${l.lead_time ? `<br><span style="font-size:.75rem;color:#a6752f;font-weight:700">${escapeHtml(l.lead_time)}</span>` : ''}
+        ${l.discount_code ? `<br><span style="font-size:.75rem;color:var(--ok);font-weight:700">${escapeHtml(l.discount_code)} \u2212R${escapeHtml(l.discount_amount || '0')}</span>` : ''}</span>
+        <span class="bh-statuspill" onclick="cycleLeadStatus('${l.id}')" title="Tap to move to the next status">${escapeHtml(l.status)}</span>
+        <span class="bh-doc-actions">
+          ${['order','receipt','delivery'].map(k => `
+            <span class="bh-doc-group">
+              <span class="bh-doc-label">${k === 'order' ? 'Order' : (k === 'receipt' ? 'Receipt' : 'Delivery')}</span>
+              ${l.phone ? `<button class="bh-wa-mini" onclick="sendLeadWhatsApp('${l.id}','${k}')">Send</button>` : ''}
+              <button class="bh-doc-mini" title="Download picture" onclick="downloadLeadCard('${l.id}','${k}')">JPG</button>
+              <button class="bh-doc-mini" title="Download PDF" onclick="downloadLeadPDF('${l.id}','${k}')">PDF</button>
+            </span>`).join('')}
+          <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeLead('${l.id}')">🗑</button>
+        </span>
+      </div>
+    `).join('')}
+    <p style="font-size:.78rem;color:var(--ok);margin:4px 0 0">${escapeHtml(transient.leadDownloadStatus)}</p>
+    <p class="bh-note">Tap a status pill to move it along: Enquired → Paid → Ready → Sent.<br><br>Each order has three documents. <strong>Send</strong> opens WhatsApp with that message already written — you just tap send. <strong>JPG</strong> downloads a picture, <strong>PDF</strong> a proper printable document — either can be attached in WhatsApp.<br><br><strong>Order</strong> = what they bought, plus banking details. <strong>Receipt</strong> = send once their payment reflects. <strong>Delivery</strong> = ready for collection, or on its way.</p>
   `;
-}
-
-function toggleLeadDocs(id){
-  transient.openLeadDocs = transient.openLeadDocs === id ? null : id;
-  render();
-}
-async function archiveLead(id){
-  await apiFetch('/leads', { method: 'PATCH', body: JSON.stringify({ id, status: 'Archived' }) });
-  await fetchLeads();
-  render();
-}
-async function unarchiveLead(id){
-  await apiFetch('/leads', { method: 'PATCH', body: JSON.stringify({ id, status: 'Sent' }) });
-  await fetchLeads();
-  render();
 }
 
 async function addLead(){
@@ -4111,12 +3131,10 @@ async function cycleLeadStatus(id){
 }
 async function removeLead(id){ await apiFetch('/leads', { method: 'DELETE', body: JSON.stringify({ id }) }); await fetchLeads(); render(); }
 
-function sendLeadWhatsApp(id, kind){
+function sendLeadWhatsApp(id){
   const lead = leads.find(l => l.id === id);
-  if (!lead.phone){ alert('No WhatsApp number saved for this order — add one to send a message.'); return; }
-  // kind was accepted and then ignored, so every Send button sent the same
-  // message. It is passed through now.
-  const message = buildLeadMessage(lead, kind);
+  if (!lead.phone){ alert('No WhatsApp number saved for this lead — add one to send a message.'); return; }
+  const message = buildLeadMessage(lead);
   window.open(buildWhatsAppLink(lead.phone, message), '_blank');
 }
 
@@ -4470,8 +3488,6 @@ function renderSettings(){
       ${field('receiptMessage', 'When payment is received', '', 5)}
       ${field('shippingMessage', 'When it is ready \u2014 shipping', '', 5)}
       ${field('collectionMessage', 'When it is ready \u2014 collection', '', 5)}
-      ${field('reminderMessage', 'Chasing an unpaid order', 'Sent by the Remind button on orders still waiting for payment.', 6)}
-      ${field('updateMessage', 'Keeping someone posted', 'Sent by the Update button when an order is taking a while.', 5)}
     </div>
 
     <p id="settingsStatus" style="font-size:.85rem;min-height:1.2em;margin:0 0 10px;color:var(--ok)"></p>
@@ -4482,7 +3498,7 @@ function renderSettings(){
   `;
 }
 
-const SETTING_KEYS = ['shippingCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','shopCategories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage','reminderMessage','updateMessage'];
+const SETTING_KEYS = ['shippingCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','shopCategories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage'];
 
 function readCategoryInputs(){
   return Array.from(document.querySelectorAll('.bh-cat-input'))
@@ -4639,20 +3655,18 @@ function renderPostManager(){
           <span class="snip">${s.pseudonym ? `<span class="bh-author">${escapeHtml(s.pseudonym)}</span> ` : ''}"${escapeHtml(s.text.length > 90 ? s.text.slice(0, 90) + '…' : s.text)}"</span>
           <span style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="bh-btn" onclick="downloadStoryCard('${s.id}')">Download as JPEG →</button>
+            <button class="bh-btn-outline" style="font-size:.8rem;padding:9px 14px" onclick="copyStoryLink('${s.id}', this)">Copy link</button>
           </span>
-          ${storyLinkRow(s.id, 'Link for the Instagram link sticker')}
         </div>
       `).join('')}
       <p style="font-size:.78rem;color:var(--ok);margin-top:8px">${escapeHtml(transient.postDownloadStatus)}</p>
       ${alreadyPosted.length > 0 ? `
         <h3 class="bh-serif" style="font-size:.95rem;color:var(--plum);margin:20px 0 10px">Already downloaded (${alreadyPosted.length})</h3>
         ${alreadyPosted.map(s => `
-          <div class="bh-post-item">
-            <span class="snip" style="opacity:.65">"${escapeHtml(s.text.length > 90 ? s.text.slice(0, 90) + '…' : s.text)}"</span>
+          <div class="bh-post-item" style="opacity:.6">
+            <span class="snip">"${escapeHtml(s.text.length > 90 ? s.text.slice(0, 90) + '…' : s.text)}"</span>
             <span class="bh-postedtag">Downloaded ✓</span>
-            <button class="bh-btn-ghost" style="font-size:.72rem" onclick="downloadStoryCard('${s.id}')">Download again</button>
             <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveStory('${s.id}', true)">Archive</button>
-            ${storyLinkRow(s.id, 'Link for the Instagram link sticker')}
           </div>
         `).join('')}
       ` : ''}
@@ -4677,10 +3691,6 @@ function renderPostManager(){
         </div>
         <button class="bh-btn" onclick="createRoundupCard()">Create round-up card →</button>
       ` : ''}
-      ${compileStory ? `
-        <div style="border-top:1px solid var(--line);margin-top:16px;padding-top:4px">
-          ${storyLinkRow(compileStory.id, 'Link for this round-up \u2014 opens the same story')}
-        </div>` : ''}
       <p style="font-size:.78rem;margin-top:8px;color:${transient.compileStatus.startsWith('Pick') ? 'var(--risk)' : 'var(--ok)'}">${escapeHtml(transient.compileStatus)}</p>
     </div>
   `;
@@ -4736,8 +3746,7 @@ async function createRoundupCard(){
   transient.compileStatus = 'Preparing image…';
   render();
   const canvas = document.getElementById('exportCanvas');
-  await drawCompileCard(canvas, chosen, tagText2, compileStoryForCard ? compileStoryForCard.text : '',
-    compileStoryForCard ? (compileStoryForCard.pseudonym || '') : '');
+  await drawCompileCard(canvas, chosen, tagText2, compileStoryForCard ? compileStoryForCard.text : '');
   await downloadCanvas(canvas, 'bling-happiness-roundup.jpg');
   transient.compileStatus = 'Downloaded — ready to post back to Stories.';
   render();
