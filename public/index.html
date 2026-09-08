@@ -3665,9 +3665,9 @@ function bulkParseSheet(text){
       name: parts[1] || '',
       colours: (parts[2] || '').split(/[\/,]/).map(s => s.trim()).filter(Boolean),
       category: parts[3] || '',
-      price: (parts[4] || '').replace(/^[Rr]s*/, ''),
+      price: (parts[4] || '').replace(/^[Rr]\s*/, ''),
       stock: parts[5] || '',
-      sizes: (parts[6] || '').split(/[s,]+/).map(x => x.trim()).filter(Boolean),
+      sizes: (parts[6] || '').split(/[\s,]+/).map(x => x.trim()).filter(Boolean),
       description: parts[7] || '',
     };
   }).filter(Boolean);
