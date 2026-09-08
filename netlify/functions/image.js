@@ -5,26 +5,35 @@ const { getPool } = require('./_utils');
 // product list is what stops the shop getting slow as the catalogue grows.
 exports.handler = async (event) => {
   const pool = getPool();
-  const q = event.queryStringParameters || {};
-  const id = q.id;
-  const kind = (q.size === 'full') ? 'full' : 'thumb';
-  const position = parseInt(q.n, 10) || 0;
+  const id = (event.queryStringParameters || {}).id;
+  const kind = ((event.queryStringParameters || {}).size === 'full') ? 'full' : 'thumb';
+  const rawIndex = parseInt((event.queryStringParameters || {}).i, 10);
+  const index = (isNaN(rawIndex) || rawIndex < 0 || rawIndex > 3) ? 0 : rawIndex;
 
   if (!id) return { statusCode: 400, body: 'missing id' };
 
   try {
-    let result = await pool.query(
-      'SELECT data FROM product_images WHERE product_id = $1 AND kind = $2 AND position = $3 LIMIT 1',
-      [id, kind, position]
-    );
-
-    // Fall back to the same photo in the other size.
-    if (!result.rows.length){
+    // Products can have up to 4 pictures; ?i= picks which one. The position
+    // column arrives with a migration, so fall back to the un-positioned query
+    // if it is not there yet — otherwise the whole query fails and no picture
+    // loads at all.
+    let result;
+    try {
       result = await pool.query(
-        'SELECT data FROM product_images WHERE product_id = $1 AND position = $2 LIMIT 1',
-        [id, position]
+        'SELECT data FROM product_images WHERE product_id = $1 AND kind = $2 AND COALESCE(position, 0) = $3 LIMIT 1',
+        [id, kind, index]
+      );
+    } catch (e) {
+      if (index > 0) return { statusCode: 404, body: 'not found' };
+      result = await pool.query(
+        'SELECT data FROM product_images WHERE product_id = $1 AND kind = $2 LIMIT 1',
+        [id, kind]
       );
     }
+
+    // Only the main picture falls back. Asking for picture 3 must not quietly
+    // return picture 1 — the gallery would show duplicates.
+    if (!result.rows.length && index > 0) return { statusCode: 404, body: 'not found' };
 
     // Fall back to the other size, then to the older single-image column,
     // so products added before this change still show a picture.

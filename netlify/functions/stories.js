@@ -1,5 +1,30 @@
 const { getPool, json, isAdmin, newId } = require('./_utils');
 
+// posted_at records WHEN a story card was made, so the dashboard can show
+// "made this week" rather than guessing from the submission date.
+// migrate.js adds the column. Between deploying this file and running the
+// migration the column does not exist, and referencing a missing column fails
+// the whole query — so check once and work either way. Deploy order does not
+// matter, and it starts recording on its own after the migration runs.
+let hasPostedAt = null;
+let checkedAt = 0;
+
+async function postedAtReady(pool){
+  const now = Date.now();
+  if (hasPostedAt !== null && now - checkedAt < 60000) return hasPostedAt;
+  try {
+    const r = await pool.query(
+      `SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'stories' AND column_name = 'posted_at' LIMIT 1`
+    );
+    hasPostedAt = r.rows.length > 0;
+  } catch (e) {
+    hasPostedAt = false;
+  }
+  checkedAt = now;
+  return hasPostedAt;
+}
+
 exports.handler = async (event, context) => {
   const pool = getPool();
   const admin = isAdmin(event);
@@ -32,7 +57,15 @@ exports.handler = async (event, context) => {
       const { id, status, posted, category, archived } = JSON.parse(event.body || '{}');
       if (!id) return json(400, { error: 'id is required' });
       if (status) await pool.query('UPDATE stories SET status = $1 WHERE id = $2', [status, id]);
-      if (typeof posted === 'boolean') await pool.query('UPDATE stories SET posted = $1 WHERE id = $2', [posted, id]);
+      if (typeof posted === 'boolean'){
+        // Stamp the time the card was made; clear it if the flag is undone.
+        if (await postedAtReady(pool)){
+          await pool.query('UPDATE stories SET posted = $1, posted_at = $2 WHERE id = $3',
+            [posted, posted ? new Date().toISOString() : null, id]);
+        } else {
+          await pool.query('UPDATE stories SET posted = $1 WHERE id = $2', [posted, id]);
+        }
+      }
       // Admin can correct the category if the submitter picked the wrong one.
       if (category) await pool.query('UPDATE stories SET category = $1 WHERE id = $2', [category, id]);
       // Archiving only tidies the admin screen. The story stays published.
