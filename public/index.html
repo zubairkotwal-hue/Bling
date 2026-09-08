@@ -3372,6 +3372,7 @@ function renderAdmin(){
     ${nav.adminTab === 'queue' ? renderReviewQueue() : ''}
     ${nav.adminTab === 'post' ? renderPostManager() : ''}
     ${nav.adminTab === 'shop' ? renderShopManager() : ''}
+    ${nav.adminTab === 'bulk' ? renderBulkImport() : ''}
     ${nav.adminTab === 'leads' ? renderLeadsManager() : ''}
     ${nav.adminTab === 'reviews' ? renderReviewsAdmin() : ''}
     ${nav.adminTab === 'gifts' ? renderGiftsAdmin() : ''}
@@ -3394,6 +3395,7 @@ const ADMIN_NAV = [
 ];
 const ADMIN_MORE = [
   { tab:'shop',      label:'Shop' },
+  { tab:'bulk',      label:'Bulk import' },
   { tab:'reviews',   label:'Reviews' },
   { tab:'gifts',     label:'Gift cards' },
   { tab:'discounts', label:'Discounts' },
@@ -3609,6 +3611,392 @@ async function approveStory(id){ await apiFetch('/stories', { method: 'PATCH', b
 async function rejectStory(id){ await apiFetch('/stories', { method: 'PATCH', body: JSON.stringify({ id, status: 'rejected' }) }); await fetchStories(); render(); }
 async function approveReply(id){ await apiFetch('/replies', { method: 'PATCH', body: JSON.stringify({ id, status: 'approved' }) }); await fetchReplies(); render(); }
 async function rejectReply(id){ await apiFetch('/replies', { method: 'PATCH', body: JSON.stringify({ id, status: 'rejected' }) }); await fetchReplies(); render(); }
+
+// ---- Admin: bulk import ----
+// Adds many products in one go from a folder of photos. The photos carry no
+// names, so the names come from a sheet pasted into the box below — one line
+// per product. Anything without a line still appears, named after its file,
+// ready to be typed over. Nothing is sent until Import is pressed.
+//
+// Rows live here rather than in the DOM: render() rebuilds everything, and a
+// half-typed name in an input would be thrown away with it.
+let bulk = {
+  files: [],        // File objects, kept until import so nothing is resized early
+  rows: [],
+  previews: {},     // filename -> object URL, made once so re-renders don't leak
+  sheetText: '',
+  price: '450',
+  stockStatus: 'made_to_order',
+  sizeType: 'clothing',
+  orderSizes: ['S','M','L','XL'],
+  running: false,
+  total: 0,
+  done: 0,
+  failed: 0,
+  log: [],
+};
+
+function bulkPreview(file){
+  if (!bulk.previews[file.name]) bulk.previews[file.name] = URL.createObjectURL(file);
+  return bulk.previews[file.name];
+}
+
+// A sheet line is:  filename [+ filename] | Name | Colour / Colour | Category
+// Everything after the filename is optional. Blank lines and lines starting
+// with # are ignored, so a pasted sheet can carry notes.
+function bulkParseSheet(text){
+  return String(text || '').split('\n').map(line => {
+    const t = line.trim();
+    if (!t || t.charAt(0) === '#') return null;
+    const parts = t.split('|').map(s => s.trim());
+    const files = parts[0].split(/[+,]/).map(s => s.trim()).filter(Boolean);
+    if (!files.length) return null;
+    return {
+      files,
+      name: parts[1] || '',
+      colours: (parts[2] || '').split(/[\/,]/).map(s => s.trim()).filter(Boolean),
+      category: parts[3] || '',
+    };
+  }).filter(Boolean);
+}
+
+// Filenames are matched loosely — the tail is enough, so a sheet written
+// against "IMG-1234.jpg" still finds "WA/IMG-1234.jpg" or a renamed copy.
+function bulkFileMatches(actual, wanted){
+  const a = String(actual).toLowerCase();
+  const w = String(wanted).toLowerCase();
+  return a === w || a.endsWith(w) || w.endsWith(a);
+}
+
+// Last resort when a picture has no sheet line: turn the filename into
+// something readable so the row is at least identifiable.
+function bulkNameFromFile(filename){
+  return String(filename)
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/[_\-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Colours are checked against the shop's own list so the filters keep
+// working. Unknown ones are kept on the row and shown in red rather than
+// silently dropped.
+function bulkNormaliseColours(list){
+  const out = [];
+  (list || []).forEach(raw => {
+    const match = COLOURS.find(c => c.name.toLowerCase() === String(raw).trim().toLowerCase());
+    const name = match ? match.name : String(raw).trim();
+    if (name && !out.includes(name)) out.push(name);
+  });
+  return out;
+}
+function bulkColourKnown(name){
+  return COLOURS.some(c => c.name === name);
+}
+
+function bulkMakeRow(files, name, colours, category){
+  const trimmed = String(name || '').trim();
+  return {
+    files,
+    name: trimmed,
+    colours: bulkNormaliseColours(colours),
+    category: category || '',
+    price: '',
+    description: '',
+    // Anything already in the shop starts ticked, so running this twice
+    // cannot make a second copy.
+    skip: !!trimmed && products.some(p => (p.name || '').trim().toLowerCase() === trimmed.toLowerCase()),
+    status: '',
+  };
+}
+
+function bulkBuildRows(){
+  const sheet = bulkParseSheet(bulk.sheetText);
+  const used = new Set();
+  const rows = [];
+  sheet.forEach(entry => {
+    const matched = [];
+    entry.files.forEach(wanted => {
+      const f = bulk.files.find(file => !used.has(file.name) && bulkFileMatches(file.name, wanted));
+      if (f){ used.add(f.name); matched.push(f); }
+    });
+    if (matched.length) rows.push(bulkMakeRow(matched, entry.name, entry.colours, entry.category));
+  });
+  bulk.files.forEach(f => {
+    if (!used.has(f.name)) rows.push(bulkMakeRow([f], bulkNameFromFile(f.name), [], ''));
+  });
+  bulk.rows = rows;
+}
+
+function bulkChooseFiles(event){
+  const chosen = Array.from(event.target.files || []);
+  if (!chosen.length) return;
+  bulk.files = chosen;
+  bulk.done = 0; bulk.failed = 0; bulk.log = [];
+  bulkBuildRows();
+  render();
+}
+
+function bulkApplySheet(){
+  const box = document.getElementById('bulkSheet');
+  if (box) bulk.sheetText = box.value;
+  bulkBuildRows();
+  render();
+}
+
+function bulkToggleOrderSize(size, el){
+  const i = bulk.orderSizes.indexOf(size);
+  if (i === -1) bulk.orderSizes.push(size); else bulk.orderSizes.splice(i, 1);
+  if (el) el.classList.toggle('on');
+}
+
+function bulkSetSizeType(value){
+  bulk.sizeType = value;
+  bulk.orderSizes = bulk.orderSizes.filter(s => SIZE_PRESETS[value].options.includes(s));
+  render();
+}
+
+function bulkSetColours(i, value){
+  bulk.rows[i].colours = bulkNormaliseColours(String(value).split(/[\/,]/));
+  render();
+}
+
+function bulkClear(){
+  if (!confirm('Clear the chosen pictures and start again?')) return;
+  Object.keys(bulk.previews).forEach(k => URL.revokeObjectURL(bulk.previews[k]));
+  bulk = { ...bulk, files: [], rows: [], previews: {}, total: 0, done: 0, failed: 0, log: [], running: false };
+  render();
+}
+
+// Status is written straight into the cell. Re-rendering the whole page for
+// every product would throw away any name still being typed, and with a
+// hundred rows it crawls.
+function bulkSetStatus(i, text, tone){
+  bulk.rows[i].status = text;
+  const cell = document.getElementById('bulkStatus-' + i);
+  if (cell){
+    cell.textContent = text;
+    cell.style.color = tone === 'bad' ? 'var(--risk)' : (tone === 'good' ? 'var(--good, #3f6b46)' : 'var(--grey)');
+  }
+}
+function bulkNote(line){
+  bulk.log.push(line);
+  const box = document.getElementById('bulkLog');
+  if (box){ box.textContent = bulk.log.join('\n'); box.scrollTop = box.scrollHeight; }
+}
+function bulkProgress(){
+  const total = bulk.total;
+  const bar = document.getElementById('bulkBar');
+  const label = document.getElementById('bulkProgressText');
+  const pct = total ? Math.round((bulk.done + bulk.failed) * 100 / total) : 0;
+  if (bar) bar.style.width = pct + '%';
+  if (label) label.textContent = (bulk.done + bulk.failed) + ' of ' + total + ' — ' + bulk.done + ' added, ' + bulk.failed + ' failed';
+}
+
+async function bulkRun(dryRun){
+  if (bulk.running) return;
+  const todo = bulk.rows.filter(r => !r.skip);
+  if (!todo.length){ alert('Nothing to import — every row is ticked to skip.'); return; }
+  const missing = todo.filter(r => !r.name.trim());
+  if (missing.length){ alert(missing.length + ' product(s) have no name. Give them a name or tick Skip.'); return; }
+  if (!dryRun && !confirm('Add ' + todo.length + ' product(s) to the shop? This cannot be undone in one step.')) return;
+
+  bulk.running = true;
+  bulk.total = todo.length;
+  bulk.done = 0; bulk.failed = 0; bulk.log = [];
+  render();
+  bulkNote(dryRun ? 'Dry run — building everything, sending nothing.' : 'Importing…');
+
+  for (let i = 0; i < bulk.rows.length; i++){
+    const row = bulk.rows[i];
+    if (row.skip) continue;
+    try {
+      bulkSetStatus(i, 'Preparing…');
+      const images = [];
+      for (const file of row.files.slice(0, MAX_PICTURES)){
+        const thumb = await resizeImage(file, 500, 0.72);
+        const full  = await resizeImage(file, 1400, 0.82);
+        images.push({ thumb, full });
+      }
+      const payload = {
+        name: row.name.trim(),
+        price: (row.price.trim() || bulk.price),
+        images,
+        sizeType: bulk.sizeType,
+        sizes: bulk.stockStatus === 'in_stock' ? bulk.orderSizes : [],
+        description: row.description || '',
+        stockStatus: bulk.stockStatus,
+        orderSizes: bulk.orderSizes,
+        category: row.category,
+        colours: row.colours,
+        productType: 'item',
+      };
+      if (dryRun){
+        const kb = Math.round(JSON.stringify(payload).length / 1024);
+        bulkSetStatus(i, 'Ready (' + kb + ' KB)', 'good');
+        bulkNote('OK  ' + payload.name + '  — ' + row.files.length + ' picture(s), ' +
+                 (payload.colours.join('/') || 'no colour') + ', R' + payload.price + ', ' + kb + ' KB');
+      } else {
+        bulkSetStatus(i, 'Sending…');
+        await apiFetch('/products', { method: 'POST', body: JSON.stringify(payload) });
+        // Ticking Skip and remembering the name means a second press of
+        // Import cannot add the same product twice.
+        row.skip = true;
+        bulkSetStatus(i, 'Added', 'good');
+        bulkNote('Added  ' + payload.name);
+      }
+      bulk.done += 1;
+    } catch (err) {
+      bulk.failed += 1;
+      bulkSetStatus(i, 'Failed', 'bad');
+      bulkNote('FAILED  ' + (row.name || '(no name)') + '  — ' + err.message);
+    }
+    bulkProgress();
+  }
+
+  bulkNote('Finished. ' + bulk.done + ' done, ' + bulk.failed + ' failed.');
+  bulk.running = false;
+  if (!dryRun) await fetchProducts();
+  render();
+}
+
+function renderBulkImport(){
+  const total = bulk.rows.length;
+  const todo = bulk.rows.filter(r => !r.skip).length;
+  const sizeOptions = SIZE_PRESETS[bulk.sizeType].options;
+  // Drawn from state, not left to the live updates during a run: the render
+  // at the end of a run would otherwise wipe the final tally off the screen.
+  const attempted = bulk.done + bulk.failed;
+  const donePct = bulk.total ? Math.round(attempted * 100 / bulk.total) : 0;
+  const doneText = attempted
+    ? attempted + ' of ' + bulk.total + ' \u2014 ' + bulk.done + ' added, ' + bulk.failed + ' failed'
+    : '';
+
+  return `
+    <div class="bh-card" style="margin-bottom:16px;background:var(--blushp);border:none">
+      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:6px">Bulk import</h3>
+      <p style="font-size:.85rem;color:var(--grey);margin:0">
+        Add a whole folder of photos at once. Choose the pictures, paste the naming sheet,
+        check the table, then press Import. Nothing is sent until you do.
+      </p>
+    </div>
+
+    <div class="bh-card" style="margin-bottom:16px">
+      <label class="bh-label">1 &middot; Choose the pictures</label>
+      <input type="file" accept="image/*" multiple class="bh-input" onchange="bulkChooseFiles(event)">
+      <p class="bh-note" style="margin-top:8px">
+        ${bulk.files.length ? escapeHtml(bulk.files.length + ' picture(s) chosen.') : 'Select them all in one go.'}
+      </p>
+    </div>
+
+    <div class="bh-card" style="margin-bottom:16px">
+      <label class="bh-label">2 &middot; Paste the naming sheet (optional)</label>
+      <p style="font-size:.75rem;color:var(--grey);margin:-2px 0 8px">
+        One line per product:
+        <code>filename | Name | Colour / Colour | Category</code><br>
+        Two photos of the same thing? Join them with a <b>+</b> &mdash; the first is the main picture.
+        Anything with no line is still listed, named after its file, ready to type over.
+      </p>
+      <textarea id="bulkSheet" class="bh-textarea" style="min-height:120px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem"
+                placeholder="IMG-0017.jpg + IMG-0016.jpg | Rosalind Lace Bra &amp; Ruffled High-Waist Set | Burgundy | Date Night">${escapeHtml(bulk.sheetText)}</textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <button class="bh-btn" onclick="bulkApplySheet()">Apply sheet</button>
+        ${bulk.files.length ? `<button class="bh-btn-ghost" onclick="bulkClear()">Start again</button>` : ''}
+      </div>
+    </div>
+
+    <div class="bh-card" style="margin-bottom:16px">
+      <label class="bh-label">3 &middot; Applies to every product</label>
+      <div class="bh-grid2">
+        <div>
+          <label class="bh-label">Price (R)</label>
+          <input class="bh-input" type="number" style="margin-bottom:12px"
+                 value="${escapeHtml(bulk.price)}" oninput="bulk.price = this.value">
+          <label class="bh-label">Size type</label>
+          <select class="bh-select" style="margin-bottom:12px" onchange="bulkSetSizeType(this.value)">
+            ${Object.keys(SIZE_PRESETS).map(k => `<option value="${k}" ${bulk.sizeType === k ? 'selected' : ''}>${SIZE_PRESETS[k].label}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="bh-label">Stock</label>
+          <div class="bh-radio-row" style="margin-bottom:12px">
+            <label><input type="radio" name="bulkStock" value="in_stock" ${bulk.stockStatus !== 'made_to_order' ? 'checked' : ''} onchange="bulk.stockStatus = this.value"> Some in stock</label>
+            <label><input type="radio" name="bulkStock" value="made_to_order" ${bulk.stockStatus === 'made_to_order' ? 'checked' : ''} onchange="bulk.stockStatus = this.value"> Made to order</label>
+          </div>
+          <label class="bh-label">Sizes offered</label>
+          <div class="bh-size-grid">
+            ${sizeOptions.map(s => `<button class="bh-size-opt to-order ${bulk.orderSizes.includes(s) ? 'on' : ''}" onclick="bulkToggleOrderSize('${escapeHtml(s)}', this)">${escapeHtml(s)}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bh-card">
+      <label class="bh-label">4 &middot; Check and import</label>
+      ${total === 0 ? `<p class="bh-empty" style="margin:10px 0 0">No pictures chosen yet.</p>` : `
+      <p style="font-size:.75rem;color:var(--grey);margin:-2px 0 10px">
+        ${total} product(s) from ${bulk.files.length} picture(s) &mdash; ${todo} will be added,
+        ${total - todo} skipped. Anything already in the shop is ticked to skip.
+      </p>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <table style="width:100%;border-collapse:collapse;font-size:.8rem;min-width:640px">
+        <thead>
+          <tr style="text-align:left;color:var(--grey);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">
+            <th style="padding:6px 8px 6px 0">Picture</th>
+            <th style="padding:6px 8px">Name</th>
+            <th style="padding:6px 8px">Colours</th>
+            <th style="padding:6px 8px">Category</th>
+            <th style="padding:6px 8px">Price</th>
+            <th style="padding:6px 8px">Skip</th>
+            <th style="padding:6px 8px">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${bulk.rows.map((row, i) => `
+            <tr style="border-top:1px solid rgba(0,0,0,.08);${row.skip ? 'opacity:.45' : ''}">
+              <td style="padding:8px 8px 8px 0">
+                <div style="display:flex;gap:3px">
+                  ${row.files.slice(0, MAX_PICTURES).map(f => `<img src="${bulkPreview(f)}" alt="" style="width:38px;height:48px;object-fit:cover;border-radius:4px">`).join('')}
+                </div>
+              </td>
+              <td style="padding:8px"><input class="bh-input" style="min-width:190px;margin:0" value="${escapeHtml(row.name)}" oninput="bulk.rows[${i}].name = this.value"></td>
+              <td style="padding:8px">
+                <input class="bh-input" style="min-width:120px;margin:0" value="${escapeHtml(row.colours.join(', '))}"
+                       onchange="bulkSetColours(${i}, this.value)" placeholder="Black, Red">
+                <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">
+                  ${row.colours.map(c => bulkColourKnown(c)
+                    ? `<span title="${escapeHtml(c)}" style="width:13px;height:13px;border-radius:50%;background:${colourHex(c)};border:1px solid rgba(0,0,0,.25)"></span>`
+                    : `<span style="font-size:.65rem;color:var(--risk)">${escapeHtml(c)}?</span>`).join('')}
+                </div>
+              </td>
+              <td style="padding:8px">
+                <select class="bh-select" style="min-width:130px;margin:0" onchange="bulk.rows[${i}].category = this.value">
+                  <option value="">Choose…</option>
+                  ${shopCategories().filter(c => c !== 'Gift Voucher').map(c => `<option value="${escapeHtml(c)}" ${row.category === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+                </select>
+              </td>
+              <td style="padding:8px"><input class="bh-input" type="number" style="width:78px;margin:0" placeholder="${escapeHtml(bulk.price)}" value="${escapeHtml(row.price)}" oninput="bulk.rows[${i}].price = this.value"></td>
+              <td style="padding:8px;text-align:center"><input type="checkbox" ${row.skip ? 'checked' : ''} onchange="bulk.rows[${i}].skip = this.checked"></td>
+              <td style="padding:8px;color:var(--grey);font-size:.75rem;white-space:nowrap" id="bulkStatus-${i}">${escapeHtml(row.status)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+
+      <div style="height:6px;background:rgba(0,0,0,.08);border-radius:3px;margin:16px 0 6px;overflow:hidden">
+        <div id="bulkBar" style="height:100%;width:${donePct}%;background:var(--plum);transition:width .2s"></div>
+      </div>
+      <p id="bulkProgressText" style="font-size:.75rem;color:var(--grey);margin:0 0 12px">${escapeHtml(doneText)}</p>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="bh-btn" onclick="bulkRun(false)" ${bulk.running ? 'disabled' : ''}>${bulk.running ? 'Working…' : 'Import ' + todo + ' product(s)'}</button>
+        <button class="bh-btn-ghost" onclick="bulkRun(true)" ${bulk.running ? 'disabled' : ''}>Dry run</button>
+      </div>
+      <pre id="bulkLog" style="margin-top:14px;max-height:200px;overflow:auto;background:rgba(0,0,0,.04);border-radius:8px;padding:10px;font-size:.72rem;white-space:pre-wrap">${escapeHtml(bulk.log.join('\n'))}</pre>
+      `}
+    </div>
+  `;
+}
 
 // ---- Admin: shop manager ----
 function renderShopManager(){
