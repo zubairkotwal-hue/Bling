@@ -3646,7 +3646,11 @@ function bulkPreview(file){
   return bulk.previews[file.name];
 }
 
-// A sheet line is:  filename [+ filename] | Name | Colour / Colour | Category
+// A sheet line is:  filename [+ filename] | Name | Colour / Colour |
+//                   Category | Price | Stock | Sizes | Description
+// Stock is "stock" or "order"; sizes are separated by spaces or commas
+// (S M L XL, or 32A 32B 34A). Any column left blank falls back to the
+// setting chosen above the sheet.
 // Everything after the filename is optional. Blank lines and lines starting
 // with # are ignored, so a pasted sheet can carry notes.
 function bulkParseSheet(text){
@@ -3661,8 +3665,35 @@ function bulkParseSheet(text){
       name: parts[1] || '',
       colours: (parts[2] || '').split(/[\/,]/).map(s => s.trim()).filter(Boolean),
       category: parts[3] || '',
+      price: (parts[4] || '').replace(/^[Rr]s*/, ''),
+      stock: parts[5] || '',
+      sizes: (parts[6] || '').split(/[s,]+/).map(x => x.trim()).filter(Boolean),
+      description: parts[7] || '',
     };
   }).filter(Boolean);
+}
+
+// A row that names bra sizes imports as a bra-sized product without changing
+// the setting for the whole batch. Anything unrecognised returns blank, which
+// means "use the setting above the sheet".
+function bulkSizeTypeFor(sizes){
+  const list = (sizes || []).map(x => String(x).trim()).filter(Boolean);
+  if (!list.length) return "";
+  const fits = key => list.every(x =>
+    SIZE_PRESETS[key].options.some(o => o.toLowerCase() === x.toLowerCase()));
+  if (fits("clothing")) return "clothing";
+  if (fits("bra")) return "bra";
+  return "";
+}
+
+function bulkNormaliseSizes(sizes, type){
+  if (!type) return [];
+  const out = [];
+  (sizes || []).forEach(raw => {
+    const m = SIZE_PRESETS[type].options.find(o => o.toLowerCase() === String(raw).trim().toLowerCase());
+    if (m && out.indexOf(m) === -1) out.push(m);
+  });
+  return out;
 }
 
 // Filenames are matched loosely — the tail is enough, so a sheet written
@@ -3699,15 +3730,23 @@ function bulkColourKnown(name){
   return COLOURS.some(c => c.name === name);
 }
 
-function bulkMakeRow(files, name, colours, category){
+function bulkMakeRow(files, name, colours, category, extra){
   const trimmed = String(name || '').trim();
+  const e = extra || {};
+  const sizeType = bulkSizeTypeFor(e.sizes);
+  const stock = /^(stock|in.stock|yes)/i.test(e.stock || '') ? 'in_stock'
+    : /^(order|made|no)/i.test(e.stock || '') ? 'made_to_order' : '';
   return {
     files,
     name: trimmed,
     colours: bulkNormaliseColours(colours),
     category: category || '',
-    price: '',
-    description: '',
+    price: e.price || '',
+    description: e.description || '',
+    // Blank means "use the setting above the sheet" for this row.
+    stockStatus: stock,
+    sizeType: sizeType,
+    sizes: bulkNormaliseSizes(e.sizes, sizeType),
     // Anything already in the shop starts ticked, so running this twice
     // cannot make a second copy.
     skip: !!trimmed && products.some(p => (p.name || '').trim().toLowerCase() === trimmed.toLowerCase()),
@@ -3725,7 +3764,7 @@ function bulkBuildRows(){
       const f = bulk.files.find(file => !used.has(file.name) && bulkFileMatches(file.name, wanted));
       if (f){ used.add(f.name); matched.push(f); }
     });
-    if (matched.length) rows.push(bulkMakeRow(matched, entry.name, entry.colours, entry.category));
+    if (matched.length) rows.push(bulkMakeRow(matched, entry.name, entry.colours, entry.category, entry));
   });
   bulk.files.forEach(f => {
     if (!used.has(f.name)) rows.push(bulkMakeRow([f], bulkNameFromFile(f.name), [], ''));
@@ -3823,15 +3862,19 @@ async function bulkRun(dryRun){
         const full  = await resizeImage(file, 1400, 0.82);
         images.push({ thumb, full });
       }
+      const rowStock = row.stockStatus || bulk.stockStatus;
+      const rowSizeType = row.sizeType || bulk.sizeType;
+      const rowSizes = (row.sizes && row.sizes.length) ? row.sizes
+        : (row.sizeType ? [] : bulk.orderSizes);
       const payload = {
         name: row.name.trim(),
         price: (row.price.trim() || bulk.price),
         images,
-        sizeType: bulk.sizeType,
-        sizes: bulk.stockStatus === 'in_stock' ? bulk.orderSizes : [],
+        sizeType: rowSizeType,
+        sizes: rowStock === 'in_stock' ? rowSizes : [],
         description: row.description || '',
-        stockStatus: bulk.stockStatus,
-        orderSizes: bulk.orderSizes,
+        stockStatus: rowStock,
+        orderSizes: rowSizes,
         category: row.category,
         colours: row.colours,
         productType: 'item',
@@ -3840,7 +3883,9 @@ async function bulkRun(dryRun){
         const kb = Math.round(JSON.stringify(payload).length / 1024);
         bulkSetStatus(i, 'Ready (' + kb + ' KB)', 'good');
         bulkNote('OK  ' + payload.name + '  — ' + row.files.length + ' picture(s), ' +
-                 (payload.colours.join('/') || 'no colour') + ', R' + payload.price + ', ' + kb + ' KB');
+                 (payload.colours.join('/') || 'no colour') + ', R' + payload.price + ', ' +
+                 (rowStock === 'in_stock' ? 'in stock' : 'to order') + ' ' +
+                 (payload.orderSizes.join('/') || 'no sizes') + ', ' + kb + ' KB');
       } else {
         bulkSetStatus(i, 'Sending…');
         await apiFetch('/products', { method: 'POST', body: JSON.stringify(payload) });
@@ -3897,8 +3942,11 @@ function renderBulkImport(){
     <div class="bh-card" style="margin-bottom:16px">
       <label class="bh-label">2 &middot; Paste the naming sheet (optional)</label>
       <p style="font-size:.75rem;color:var(--grey);margin:-2px 0 8px">
-        One line per product:
-        <code>filename | Name | Colour / Colour | Category</code><br>
+        One line per product:<br>
+        <code>filename | Name | Colour / Colour | Category | Price | Stock | Sizes | Description</code><br>
+        Everything after the filename is optional. <b>Stock</b> is <code>stock</code> or <code>order</code>,
+        <b>Sizes</b> are separated by spaces (<code>S M L XL</code>, or <code>32A 32B 34A</code>).
+        A blank column uses the setting chosen below, so a batch can mix prices and availability.<br>
         Two photos of the same thing? Join them with a <b>+</b> &mdash; the first is the main picture.
         Anything with no line is still listed, named after its file, ready to type over.
       </p>
