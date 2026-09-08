@@ -1630,7 +1630,12 @@ async function fetchReplies(){
   // so a reply is always linked to its story.
   replies = (rows || []).map(r => ({ ...r, storyId: r.storyId || r.story_id }));
 }
-async function fetchProducts(){ products = await apiFetch('/products'); }
+async function fetchProducts(){
+  products = await apiFetch('/products') || [];
+  // Products created before the multi-picture fix have their pictures saved but
+  // has_image left false, so trust the picture count when it disagrees.
+  products.forEach(p => { if (!p.has_image && Number(p.image_count) > 0) p.has_image = true; });
+}
 async function fetchLeads(){ leads = await apiFetch('/leads'); clearSoldCache(); }
 async function fetchReviews(){ reviews = await apiFetch('/reviews'); }
 async function fetchHelp(){ helpMessages = await apiFetch('/help'); }
