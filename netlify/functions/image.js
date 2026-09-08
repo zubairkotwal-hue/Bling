@@ -5,16 +5,26 @@ const { getPool } = require('./_utils');
 // product list is what stops the shop getting slow as the catalogue grows.
 exports.handler = async (event) => {
   const pool = getPool();
-  const id = (event.queryStringParameters || {}).id;
-  const kind = ((event.queryStringParameters || {}).size === 'full') ? 'full' : 'thumb';
+  const q = event.queryStringParameters || {};
+  const id = q.id;
+  const kind = (q.size === 'full') ? 'full' : 'thumb';
+  const position = parseInt(q.n, 10) || 0;
 
   if (!id) return { statusCode: 400, body: 'missing id' };
 
   try {
     let result = await pool.query(
-      'SELECT data FROM product_images WHERE product_id = $1 AND kind = $2 LIMIT 1',
-      [id, kind]
+      'SELECT data FROM product_images WHERE product_id = $1 AND kind = $2 AND position = $3 LIMIT 1',
+      [id, kind, position]
     );
+
+    // Fall back to the same photo in the other size.
+    if (!result.rows.length){
+      result = await pool.query(
+        'SELECT data FROM product_images WHERE product_id = $1 AND position = $2 LIMIT 1',
+        [id, position]
+      );
+    }
 
     // Fall back to the other size, then to the older single-image column,
     // so products added before this change still show a picture.
