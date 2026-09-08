@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bling · Product importer</title>
+<style>
+  :root{
+    --bg:#fbf7f4; --ink:#2b2028; --muted:#8a7c85; --line:#e6dcdf;
+    --card:#ffffff; --accent:#b3576f; --good:#2f7d55; --bad:#b3312f; --warn:#8a6a17;
+  }
+  *{box-sizing:border-box}
+  body{margin:0 auto;background:var(--bg);color:var(--ink);
+       font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+       padding:16px;max-width:1100px}
+  h1{font-size:20px;margin:0 0 4px}
+  h2{font-size:15px;margin:0 0 10px}
+  p.sub{color:var(--muted);margin:0 0 18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+        padding:14px;margin-bottom:14px}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+  input[type=text],input[type=password],select,textarea{
+    width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;
+    font:inherit;background:#fff;color:inherit}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row > div{flex:1;min-width:150px}
+  button{padding:9px 14px;border-radius:8px;border:1px solid var(--accent);
+         background:var(--accent);color:#fff;font:inherit;cursor:pointer}
+  button.ghost{background:#fff;color:var(--accent)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .ok{color:var(--good)} .err{color:var(--bad)} .warn{color:var(--warn)}
+  .item{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line);align-items:flex-start}
+  .item:first-child{border-top:0}
+  .thumbs{display:flex;gap:4px;flex:0 0 auto}
+  .thumbs img{width:64px;height:84px;object-fit:cover;border-radius:6px;
+              border:1px solid var(--line);background:#eee}
+  .fields{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+  .swatches{display:flex;flex-wrap:wrap;gap:6px}
+  .sw{display:inline-flex;align-items:center;gap:5px;padding:3px 9px 3px 4px;
+      border:1px solid var(--line);border-radius:999px;cursor:pointer;font-size:12px;background:#fff}
+  .sw.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+  .dot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.25);display:inline-block}
+  .sizes{display:flex;gap:6px;flex-wrap:wrap}
+  .sizes label{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ink);margin:0}
+  .status{flex:0 0 118px;text-align:right;font-size:12px}
+  #log{font:12px/1.5 ui-monospace,Consolas,monospace;background:#fff;border:1px solid var(--line);
+       border-radius:8px;padding:10px;max-height:260px;overflow:auto;white-space:pre-wrap}
+  .bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:8px}
+  .bar > i{display:block;height:100%;background:var(--accent);width:0}
+  .note{font-size:12px;color:var(--muted)}
+  .hide{display:none}
+</style>
+</head>
+<body>
+
+<h1>Product importer</h1>
+<p class="sub">Turns a folder of photographs into shop products. Same picture sizes, same fields,
+same result as adding each one by hand in Admin.</p>
+
+<div class="card">
+  <h2>1 &middot; Sign in</h2>
+  <div class="row">
+    <div style="flex:2">
+      <label>Admin password</label>
+      <input type="password" id="pw" autocomplete="current-password" placeholder="the shop admin password">
+    </div>
+    <div style="flex:0 0 auto;align-self:flex-end">
+      <button id="login">Sign in</button>
+    </div>
+  </div>
+  <p class="note" id="loginNote" style="margin:8px 0 0">
+    Open this page on the live site, at <b>/import.html</b>, so it talks to the same server as the shop.
+  </p>
+</div>
+
+<div class="card">
+  <h2>2 &middot; Choose the pictures</h2>
+  <input type="file" id="files" multiple accept="image/*">
+  <p class="note" style="margin:8px 0 0">
+    Pick every picture at once. Files listed in the sheet inside this page get their name and colour
+    filled in already; anything else appears as a blank row for you to name.
+  </p>
+</div>
+
+<div class="card">
+  <h2>3 &middot; Applies to every product</h2>
+  <div class="row">
+    <div>
+      <label>Price (R)</label>
+      <input type="text" id="dPrice" value="450">
+    </div>
+    <div>
+      <label>Stock</label>
+      <select id="dStock">
+        <option value="made_to_order" selected>Made to order</option>
+        <option value="in_stock">Some in stock</option>
+      </select>
+    </div>
+    <div>
+      <label>Size type</label>
+      <select id="dSizeType">
+        <option value="clothing" selected>Clothing (XS&ndash;XXL)</option>
+        <option value="freesize">Free size</option>
+      </select>
+    </div>
+    <div style="flex:1.4">
+      <label>Can be ordered in</label>
+      <div class="sizes" id="dSizes"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>4 &middot; Check and import</h2>
+  <div id="list"><p class="note">Choose pictures above to see them here.</p></div>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="row" style="margin-top:12px;align-items:center">
+    <div style="flex:0 0 auto"><button id="go" disabled>Import</button></div>
+    <div style="flex:0 0 auto"><button class="ghost" id="dry" disabled>Dry run (saves nothing)</button></div>
+    <div style="flex:1" class="note" id="count"></div>
+  </div>
+  <div id="log" class="hide" style="margin-top:12px"></div>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------------
+   The sheet. One entry per product. `files` lists the picture filenames that
+   belong to it -- more than one means a gallery, first is the main picture,
+   up to 4. Names follow ordinary lingerie retail convention: a style name,
+   then what the garment actually is, then the pieces.
+   To import a different batch later, replace this list. Nothing else changes.
+   --------------------------------------------------------------------------- */
+const SHEET = [
+  { files:['IMG-20260908-WA0010.jpg'], name:'Vesper Sheer Mesh Bra, Garter & Glove Set',        colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0011.jpg'], name:'Onyx Cut-Out Mesh Bra, Skirt & Glove Set',         colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0012.jpg'], name:'Anais Eyelash Lace Balconette & Garter Set',       colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0013.jpg'], name:'Delphine Lace Corset, Garter & Choker Set',        colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0014.jpg'], name:'Plume Feather-Strap Striped Mesh Bodysuit',        colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0015.jpg'], name:'Amelie Embroidered Strappy Bra & Garter Set',      colours:['Black'], category:'Date Night' },
+  /* Front and back of the same garment: one product, two pictures. */
+  { files:['IMG-20260908-WA0017.jpg','IMG-20260908-WA0016.jpg'],
+                                       name:'Rosalind Lace Bra & Ruffled High-Waist Set',       colours:['Burgundy'], category:'Date Night' },
+  { files:['IMG-20260908-WA0018.jpg'], name:'Celeste Sheer Mesh Halter Bodysuit with Sleeves',  colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0019.jpg'], name:'Moment Sheer Mesh High-Neck Bodysuit Set',         colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0020.jpg'], name:'Chantilly Lace Bra, Garter & Thigh Cuff Set',      colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0021.jpg'], name:'Fleur Floral Lace Bra, Garter & Choker Set',       colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0022.jpg'], name:'Noelle Lace Corset Tiered Chiffon Mini Dress',     colours:['Black','Grey'], category:'Date Night' },
+  { files:['IMG-20260908-WA0023.jpg'], name:'Lattice Cage Bralette & Strappy Thong Set',        colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0024.jpg'], name:'Seraphine Embroidered Corset Teddy with Gloves',   colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0025.jpg'], name:'Odette Embroidered Bustier & Garter Set',          colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0026.jpg'], name:'Marlowe Chain-Lace Strappy Bustier Bodysuit',      colours:['Black'], category:'Date Night' },
+  { files:['IMG-20260908-WA0027.jpg'], name:'Leopard Strappy Harness Bodysuit',                 colours:['Leopard','Red'], category:'Date Night' },
+  { files:['IMG-20260908-WA0028.jpg'], name:'Camille Floral Lace Bra, Garter & Choker Set',     colours:['Black'], category:'Date Night' },
+];
+
+/* These three lists must stay identical to the ones in index.html, or the
+   colour swatches and the category filter will not match what is imported. */
+const COLOURS = [
+  { name:'Black', hex:'#1c1c1c' }, { name:'White', hex:'#ffffff' },
+  { name:'Ivory', hex:'#f6f0e2' }, { name:'Nude', hex:'#e3c3a8' },
+  { name:'Champagne', hex:'#e6d3b3' }, { name:'Blush', hex:'#f2c6cd' },
+  { name:'Pink', hex:'#e87ea6' }, { name:'Red', hex:'#c0192f' },
+  { name:'Burgundy', hex:'#6d1b2c' }, { name:'Purple', hex:'#6b3560' },
+  { name:'Blue', hex:'#2f4d8a' }, { name:'Green', hex:'#3f6b46' },
+  { name:'Grey', hex:'#8a8a8a' }, { name:'Leopard', hex:'#b58b4c' },
+];
+const CATEGORIES = ['Bride','Date Night','Sleepwear','Dressing gowns','Undies','Mum to be',
+                    'Slippers','Slips','Bedroom Accessories','Gift Voucher','Fun-Size'];
+const CLOTHING_SIZES = ['XS','S','M','L','XL','XXL'];
+const DEFAULT_ORDER_SIZES = ['S','M','L','XL'];
+const MAX_PICTURES = 4;
+
+const API = '/.netlify/functions';
+let adminPassword = '';
+let rows = [];
+let existingNames = new Set();
+
+/* the same request helper the shop uses */
+function authHeader(){ return adminPassword ? { 'X-Admin-Password': adminPassword } : {}; }
+async function apiFetch(path, options){
+  options = options || {};
+  const headers = Object.assign({ 'Content-Type':'application/json' },
+                                options.headers || {}, authHeader());
+  const res = await fetch(API + path, Object.assign({}, options, { headers }));
+  if (!res.ok){
+    const err = await res.json().catch(function(){ return { error: res.statusText }; });
+    throw new Error(err.error || ('Request failed (' + res.status + ')'));
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+/* the same picture resizer the admin form uses */
+function resizeImage(file, maxSize, quality){
+  return new Promise(function(resolve, reject){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const img = new Image();
+      img.onload = function(){
+        let width = img.width, height = img.height;
+        if (width > height){
+          if (width > maxSize){ height = Math.round(height * maxSize / width); width = maxSize; }
+        } else {
+          if (height > maxSize){ width = Math.round(width * maxSize / height); height = maxSize; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = function(){ reject(new Error('Could not read ' + file.name)); };
+      img.src = e.target.result;
+    };
+    reader.onerror = function(){ reject(new Error('Could not read ' + file.name)); };
+    reader.readAsDataURL(file);
+  });
+}
+
+function $(id){ return document.getElementById(id); }
+function log(msg, cls){
+  const box = $('log');
+  box.classList.remove('hide');
+  const line = document.createElement('div');
+  if (cls) line.className = cls;
+  line.textContent = msg;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+CLOTHING_SIZES.forEach(function(s){
+  const l = document.createElement('label');
+  l.innerHTML = '<input type="checkbox" value="' + s + '"' +
+                (DEFAULT_ORDER_SIZES.indexOf(s) !== -1 ? ' checked' : '') + '> ' + s;
+  $('dSizes').appendChild(l);
+});
+function defaultOrderSizes(){
+  return Array.prototype.slice.call($('dSizes').querySelectorAll('input:checked'))
+              .map(function(i){ return i.value; });
+}
+
+/* 1. sign in */
+$('login').onclick = async function(){
+  const value = $('pw').value.trim();
+  if (!value) return;
+  $('login').disabled = true;
+  try {
+    const res = await fetch(API + '/admin-login', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'X-Admin-Password': value }
+    });
+    if (!res.ok) throw new Error('That password was not accepted.');
+    adminPassword = value;
+    $('loginNote').innerHTML = '<span class="ok">Signed in.</span> Reading the shop&hellip;';
+    /* Knowing what is already there is what stops a second run making duplicates. */
+    try {
+      const products = await apiFetch('/products');
+      existingNames = new Set((products || []).map(function(p){
+        return String(p.name || '').trim().toLowerCase();
+      }));
+      $('loginNote').innerHTML = '<span class="ok">Signed in.</span> ' + existingNames.size +
+                                 ' products already in the shop.';
+    } catch (e){
+      $('loginNote').innerHTML = '<span class="warn">Signed in, but could not read the existing ' +
+                                 'products (' + e.message + '). Duplicate checking is off.</span>';
+    }
+    refresh();
+  } catch (err){
+    $('loginNote').innerHTML = '<span class="err">' + err.message + '</span>';
+  } finally {
+    $('login').disabled = false;
+  }
+};
+
+/* 2. pictures chosen -> build the rows */
+$('files').onchange = function(){
+  const picked = Array.prototype.slice.call($('files').files);
+  const byName = new Map(picked.map(function(f){ return [f.name.toLowerCase(), f]; }));
+  const used = new Set();
+  rows = [];
+
+  /* Sheet entries first, in sheet order, so the catalogue reads sensibly. */
+  SHEET.forEach(function(entry){
+    const files = entry.files.map(function(n){ return byName.get(n.toLowerCase()); })
+                             .filter(Boolean);
+    if (!files.length) return;
+    files.forEach(function(f){ used.add(f.name.toLowerCase()); });
+    rows.push({
+      files: files.slice(0, MAX_PICTURES),
+      name: entry.name,
+      colours: entry.colours.slice(),
+      category: entry.category,
+      description: '',
+      price: '',
+      skip: false,
+      state: ''
+    });
+  });
+
+  /* Anything not in the sheet still gets a row, blank, for you to name. */
+  picked.forEach(function(f){
+    if (used.has(f.name.toLowerCase())) return;
+    rows.push({ files:[f], name:'', colours:[], category:'', description:'',
+                price:'', skip:false, state:'not in the sheet' });
+  });
+
+  refresh();
+};
+
+function refresh(){
+  const list = $('list');
+  list.innerHTML = '';
+  if (!rows.length){
+    list.innerHTML = '<p class="note">Choose pictures above to see them here.</p>';
+    $('go').disabled = true; $('dry').disabled = true;
+    $('count').textContent = '';
+    return;
+  }
+
+  rows.forEach(function(row, i){
+    /* A product whose name is already in the shop is skipped by default. */
+    if (row.name && existingNames.has(row.name.trim().toLowerCase()) && !row.state){
+      row.skip = true;
+      row.state = 'already in the shop';
+    }
+
+    const el = document.createElement('div');
+    el.className = 'item';
+
+    const thumbs = document.createElement('div');
+    thumbs.className = 'thumbs';
+    row.files.forEach(function(f){
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(f);
+      img.title = f.name;
+      thumbs.appendChild(img);
+    });
+
+    const fields = document.createElement('div');
+    fields.className = 'fields';
+
+    const nameWrap = document.createElement('div');
+    nameWrap.innerHTML = '<label>Name</label>';
+    const name = document.createElement('input');
+    name.type = 'text';
+    name.value = row.name;
+    name.placeholder = row.files.map(function(f){ return f.name; }).join(', ');
+    name.oninput = function(){ row.name = name.value; };
+    nameWrap.appendChild(name);
+
+    const sw = document.createElement('div');
+    sw.innerHTML = '<label>Colour</label>';
+    const swBox = document.createElement('div');
+    swBox.className = 'swatches';
+    COLOURS.forEach(function(c){
+      const b = document.createElement('span');
+      b.className = 'sw' + (row.colours.indexOf(c.name) !== -1 ? ' on' : '');
+      b.innerHTML = '<i class="dot" style="background:' + c.hex + '"></i>' + c.name;
+      b.onclick = function(){
+        const at = row.colours.indexOf(c.name);
+        if (at === -1) row.colours.push(c.name); else row.colours.splice(at, 1);
+        b.classList.toggle('on');
+      };
+      swBox.appendChild(b);
+    });
+    sw.appendChild(swBox);
+
+    const bits = document.createElement('div');
+    bits.className = 'row';
+
+    const catWrap = document.createElement('div');
+    catWrap.innerHTML = '<label>Category</label>';
+    const cat = document.createElement('select');
+    cat.innerHTML = '<option value="">-- choose --</option>' +
+      CATEGORIES.map(function(c){
+        return '<option' + (c === row.category ? ' selected' : '') + '>' + c + '</option>';
+      }).join('');
+    cat.onchange = function(){ row.category = cat.value; };
+    catWrap.appendChild(cat);
+
+    const priceWrap = document.createElement('div');
+    priceWrap.innerHTML = '<label>Price (blank = default)</label>';
+    const price = document.createElement('input');
+    price.type = 'text';
+    price.value = row.price;
+    price.placeholder = 'default';
+    price.oninput = function(){ row.price = price.value; };
+    priceWrap.appendChild(price);
+
+    const skipWrap = document.createElement('div');
+    skipWrap.style.flex = '0 0 auto';
+    skipWrap.innerHTML = '<label>&nbsp;</label>';
+    const skipLbl = document.createElement('label');
+    skipLbl.style.color = 'var(--ink)';
+    const skip = document.createElement('input');
+    skip.type = 'checkbox';
+    skip.checked = row.skip;
+    skip.onchange = function(){ row.skip = skip.checked; updateCount(); };
+    skipLbl.appendChild(skip);
+    skipLbl.appendChild(document.createTextNode(' Skip'));
+    skipWrap.appendChild(skipLbl);
+
+    bits.appendChild(catWrap);
+    bits.appendChild(priceWrap);
+    bits.appendChild(skipWrap);
+    fields.appendChild(nameWrap);
+    fields.appendChild(sw);
+    fields.appendChild(bits);
+
+    const status = document.createElement('div');
+    status.className = 'status' + (row.state ? ' warn' : '');
+    status.id = 'st' + i;
+    status.textContent = row.state || '';
+
+    el.appendChild(thumbs);
+    el.appendChild(fields);
+    el.appendChild(status);
+    list.appendChild(el);
+  });
+
+  $('go').disabled = !adminPassword;
+  $('dry').disabled = !adminPassword;
+  if (!adminPassword) $('count').textContent = 'Sign in first.';
+  else updateCount();
+}
+
+function updateCount(){
+  const live = rows.filter(function(r){ return !r.skip; });
+  const pics = live.reduce(function(s, r){ return s + r.files.length; }, 0);
+  $('count').textContent = live.length + ' products, ' + pics + ' pictures to import.';
+}
+
+/* 4. the run */
+async function run(dryRun){
+  const todo = rows.filter(function(r){ return !r.skip; });
+  if (!todo.length) return;
+  const problems = todo.filter(function(r){ return !r.name.trim() || !r.category; });
+  if (problems.length){
+    alert(problems.length + ' product(s) still need a name and a category. ' +
+          'Fill them in, or tick Skip.');
+    return;
+  }
+  $('go').disabled = true; $('dry').disabled = true;
+  $('log').innerHTML = '';
+  $('log').classList.remove('hide');
+  log(dryRun ? '-- Dry run: resizing pictures, saving nothing --' : '-- Importing --');
+
+  const price = $('dPrice').value.trim();
+  const stockStatus = $('dStock').value;
+  const sizeType = $('dSizeType').value;
+  const orderSizes = sizeType === 'clothing' ? defaultOrderSizes() : ['Free size'];
+  let done = 0, failed = 0;
+
+  for (let i = 0; i < rows.length; i++){
+    const row = rows[i];
+    if (row.skip) continue;
+    const st = $('st' + i);
+    st.className = 'status';
+    st.textContent = 'working...';
+    try {
+      /* Exactly the two sizes the admin form makes: a small one for the grid,
+         a bigger one for the product page. */
+      const images = [];
+      for (let k = 0; k < row.files.length; k++){
+        const file = row.files[k];
+        const pair = await Promise.all([
+          resizeImage(file, 500, 0.72),
+          resizeImage(file, 1400, 0.82)
+        ]);
+        images.push({ thumb: pair[0], full: pair[1] });
+      }
+
+      const payload = {
+        name: row.name.trim(),
+        price: (row.price.trim() || price),
+        images: images,
+        sizeType: sizeType,
+        sizes: stockStatus === 'in_stock' ? orderSizes : [],
+        description: row.description || '',
+        stockStatus: stockStatus,
+        orderSizes: orderSizes,
+        category: row.category,
+        colours: row.colours,
+        productType: 'item'
+      };
+
+      if (dryRun){
+        const kb = Math.round(JSON.stringify(payload).length / 1024);
+        st.className = 'status ok';
+        st.textContent = 'ready (' + kb + ' KB)';
+        log('OK   ' + payload.name + '  -  ' + images.length + ' picture(s), ' + kb + ' KB, ' +
+            (payload.colours.join('/') || 'no colour') + ', R' + payload.price);
+      } else {
+        const res = await apiFetch('/products', { method:'POST', body: JSON.stringify(payload) });
+        existingNames.add(payload.name.toLowerCase());
+        row.skip = true;                       /* never post the same row twice */
+        st.className = 'status ok';
+        st.textContent = 'imported';
+        log('OK   ' + payload.name + '  -  id ' + (res && res.id) + ', ' +
+            ((res && res.images && res.images.count) || images.length) + ' picture(s)');
+      }
+      done++;
+    } catch (err){
+      failed++;
+      st.className = 'status err';
+      st.textContent = 'failed';
+      log('FAIL ' + (row.name || row.files[0].name) + '  -  ' + err.message, 'err');
+    }
+    $('bar').style.width = Math.round((done + failed) / todo.length * 100) + '%';
+  }
+
+  log('-- ' + done + ' done, ' + failed + ' failed --', failed ? 'err' : 'ok');
+  if (!dryRun && done) log('Open the shop and check the pictures before importing the next batch.');
+  $('go').disabled = false; $('dry').disabled = false;
+  updateCount();
+}
+
+$('go').onclick = function(){
+  const n = rows.filter(function(r){ return !r.skip; }).length;
+  if (!n) return;
+  if (confirm('Import ' + n + ' product(s) into the live shop?')) run(false);
+};
+$('dry').onclick = function(){ run(true); };
+</script>
+</body>
+</html>
