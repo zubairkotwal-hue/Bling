@@ -17,7 +17,7 @@
      Instrument Sans are still loaded because the story-card and gift-card
      canvas generators draw with them — changing those would change every card
      she posts, so they are left alone deliberately. */
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,700;9..144,1,400&family=Instrument+Sans:wght@400;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,700;9..144,1,400&family=Instrument+Sans:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
   .bh-root{ --ink:#241521; --plum:#3d1e3a; --plum2:#6b3560; --plum3:#8a4877; --blush:#f0c4cf; --blushp:#fbf1ef; --gold:#c9a15a; --goldl:#e4c989; --line:#ead9dc; --grey:#6b5a67; --ok:#5c7a5e; --risk:#a13d4c;
     /* Swap the whole site's typography by changing these two lines. */
     --f-display:'Cormorant Garamond', Georgia, serif;
@@ -336,6 +336,24 @@
   .bh-pic .x{ right:3px; background:rgba(161,61,76,.9); color:#fff; }
   .bh-pic .up{ left:3px; background:rgba(255,253,249,.9); color:var(--plum); }
   .bh-pics-note{ font-size:.72rem; color:var(--grey); margin:0 0 10px; }
+
+  /* Room for the on-screen keyboard. In-app browsers (Instagram, Facebook)
+     often do not shrink the page when the keyboard opens, so a box near the
+     bottom ends up underneath it with nothing left to scroll. --kb-inset is
+     set from the visual viewport at runtime; the 0px default means this costs
+     nothing when no keyboard is showing. */
+  .bh-root{ padding-bottom:var(--kb-inset, 0px); transition:padding-bottom .18s ease-out; }
+  .bh-root textarea, .bh-root input, .bh-root select{ scroll-margin-bottom:120px; scroll-margin-top:90px; }
+
+  .bh-trim{ background:var(--blushp); border:1px solid var(--line); border-radius:12px;
+    padding:13px 14px; margin-bottom:16px; }
+  .bh-trim-head{ display:flex; justify-content:space-between; align-items:baseline;
+    font-size:.7rem; text-transform:uppercase; letter-spacing:.07em; color:var(--grey);
+    margin-bottom:7px; }
+  .bh-trim-acts{ display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; }
+  .bh-trim-acts button{ background:#fff; border:1px solid var(--line); color:var(--plum);
+    border-radius:8px; padding:8px 13px; font-family:var(--f-ui); font-size:.78rem; cursor:pointer; }
+  .bh-trim-note{ font-size:.72rem; color:var(--grey); margin:8px 0 0; line-height:1.5; }
 
   .bh-ord-owed{ background:#fdf0f2; border:1px solid #f0d3d8; border-radius:12px;
     padding:13px 15px; margin-bottom:20px; font-size:.85rem; color:var(--risk); }
@@ -779,12 +797,38 @@ function wrapCanvasText(ctx, text, maxWidth){
   return lines;
 }
 
+// The card body is set in Inter: a screen typeface with a tall x-height and
+// even strokes, which survives light-on-dark rendering and Instagram's
+// re-compression far better than a high-contrast serif. Fraunces stays for the
+// brand furniture — the quote mark, the tag, the logo — so the card still looks
+// like Bling Happiness.
+const CARD_BODY_FONT = '"Inter", "Helvetica Neue", Arial, sans-serif';
+const CARD_BRAND_FONT = 'Fraunces, Georgia, serif';
+
+// Body text is never drawn smaller than this on a 1080px-wide card. A Story is
+// shown at roughly 400px on a phone, so 42px here lands at about 15px on screen;
+// the old floor of 26px landed near 10px, which is below the level anyone should
+// be asked to read.
+const CARD_MIN_BODY = 42;
+const CARD_LEAD = 1.45;   // was 1.32 — too tight for long text
+
 async function loadCanvasFonts(){
   try {
-    await document.fonts.load('700 100px Fraunces');
-    await document.fonts.load('italic 400 60px Fraunces');
-    await document.fonts.load('700 30px "Instrument Sans"');
+    await Promise.all([
+      document.fonts.load('700 100px Fraunces'),
+      document.fonts.load('italic 400 60px Fraunces'),
+      document.fonts.load('700 30px "Instrument Sans"'),
+      document.fonts.load('500 60px "Inter"'),
+      document.fonts.load('600 60px "Inter"'),
+    ]);
   } catch (e) { /* falls back to system fonts if this fails */ }
+}
+
+// True once the card body font is genuinely available. Canvas silently falls
+// back to a system font, so a card drawn on a slow connection can come out in
+// the wrong face with nothing to show for it.
+function cardFontReady(){
+  try { return document.fonts.check('500 60px "Inter"'); } catch (e) { return true; }
 }
 
 // Load the logo mark once, reuse for every card.
@@ -836,24 +880,24 @@ async function drawStoryCard(canvas, storyText, tagText){
   // Shrink the text until it fits between the quote mark and the footer,
   // so a long story never runs off the card.
   function measure(size){
-    ctx.font = `italic 400 ${size}px Fraunces, Georgia, serif`;
+    ctx.font = `500 ${size}px ${CARD_BODY_FONT}`;
     const lines = wrapCanvasText(ctx, storyText, contentWidth);
-    return { lines, lead: size * 1.32, total: lines.length * (size * 1.32) };
+    return { lines, lead: size * CARD_LEAD, total: lines.length * (size * CARD_LEAD) };
   }
 
   let size = 62;
   let plan = measure(size);
-  while (plan.total > available && size > 26){
+  while (plan.total > available && size > CARD_MIN_BODY){
     size -= 2;
     plan = measure(size);
   }
 
   ctx.fillStyle = T.accent;
-  ctx.font = "700 200px Fraunces, Georgia, serif";
+  ctx.font = `700 200px ${CARD_BRAND_FONT}`;
   ctx.fillText('\u201C', marginX - 10, quoteY);
 
   ctx.fillStyle = T.text;
-  ctx.font = `italic 400 ${size}px Fraunces, Georgia, serif`;
+  ctx.font = `500 ${size}px ${CARD_BODY_FONT}`;
 
   // Sit the block in the middle of the space available, but never above it.
   let startY = topLimit + (available - plan.total) / 2 + plan.lead * 0.8;
@@ -902,10 +946,10 @@ async function drawCompileCard(canvas, replyTexts, tagText, storyText, storyPseu
   // until it fits. This is what stops a long story or lots of replies
   // running off the bottom of the card.
   function layout(scale){
-    const storySize = 44 * scale;
-    const replySize = 36 * scale;
-    const storyLead = storySize * 1.34;
-    const replyLead = replySize * 1.34;
+    const storySize = 46 * scale;
+    const replySize = 42 * scale;
+    const storyLead = storySize * CARD_LEAD;
+    const replyLead = replySize * CARD_LEAD;
     const gapAfterStory = 54 * scale;
     const gapBetween = 40 * scale;
 
@@ -913,13 +957,13 @@ async function drawCompileCard(canvas, replyTexts, tagText, storyText, storyPseu
     let total = 0;
 
     if (storyText){
-      ctx.font = `italic 400 ${storySize}px Fraunces, Georgia, serif`;
+      ctx.font = `500 ${storySize}px ${CARD_BODY_FONT}`;
       const lines = wrapCanvasText(ctx, storyText, contentWidth - 30);
       blocks.push({ kind: 'story', lines, size: storySize, lead: storyLead });
       total += lines.length * storyLead + gapAfterStory;
     }
 
-    ctx.font = `italic 400 ${replySize}px Fraunces, Georgia, serif`;
+    ctx.font = `400 ${replySize}px ${CARD_BODY_FONT}`;
     replyTexts.forEach((t, i) => {
       const lines = wrapCanvasText(ctx, t, contentWidth - 50);
       blocks.push({ kind: 'reply', lines, size: replySize, lead: replyLead });
@@ -931,15 +975,18 @@ async function drawCompileCard(canvas, replyTexts, tagText, storyText, storyPseu
 
   let scale = 1;
   let plan = layout(scale);
-  // Shrink in small steps rather than one guess, so it stays readable.
-  while (plan.total > available && scale > 0.45){
+  // Shrink in small steps, but never past the point where the reply text drops
+  // below the readable floor. Beyond that, trim the story instead — the admin
+  // offers a shorter version for exactly this reason.
+  const minScale = CARD_MIN_BODY / 42;
+  while (plan.total > available && scale > minScale){
     scale -= 0.04;
     plan = layout(scale);
   }
 
   // Heading
   ctx.fillStyle = T.accent;
-  ctx.font = "700 64px Fraunces, Georgia, serif";
+  ctx.font = `700 64px ${CARD_BRAND_FONT}`;
   ctx.fillText('Here\u2019s what', marginX, headingY);
   ctx.fillText('you said', marginX, headingY + 75);
 
@@ -956,12 +1003,12 @@ async function drawCompileCard(canvas, replyTexts, tagText, storyText, storyPseu
     if (block.kind === 'story'){
       // The original story, in gold.
       ctx.fillStyle = T.accent;
-      ctx.font = `700 ${Math.round(block.size * 1.15)}px Fraunces, Georgia, serif`;
+      ctx.font = `700 ${Math.round(block.size * 1.15)}px ${CARD_BRAND_FONT}`;
       ctx.fillText('\u201C', marginX, y);
       y += block.lead * 0.55;
 
       ctx.fillStyle = T.accent;
-      ctx.font = `italic 400 ${block.size}px Fraunces, Georgia, serif`;
+      ctx.font = `500 ${block.size}px ${CARD_BODY_FONT}`;
       let lastLine = '', lastY = y;
       block.lines.forEach(line => {
         ctx.fillText(line, marginX + 30, y);
@@ -975,9 +1022,9 @@ async function drawCompileCard(canvas, replyTexts, tagText, storyText, storyPseu
       if (storyPseudonym){
         const credit = '\u2014 ' + storyPseudonym;
         const small = Math.round(block.size * 0.62);
-        ctx.font = `italic 400 ${block.size}px Fraunces, Georgia, serif`;
+        ctx.font = `500 ${block.size}px ${CARD_BODY_FONT}`;
         const lastW = ctx.measureText(lastLine).width;
-        ctx.font = `italic 400 ${small}px Fraunces, Georgia, serif`;
+        ctx.font = `500 ${small}px ${CARD_BODY_FONT}`;
         ctx.fillStyle = T.accent + 'cc';
         const x = marginX + 30 + lastW + small * 0.7;
         if (x + ctx.measureText(credit).width <= marginX + contentWidth){
@@ -991,11 +1038,11 @@ async function drawCompileCard(canvas, replyTexts, tagText, storyText, storyPseu
     } else {
       // Replies, in the lighter cream.
       ctx.fillStyle = T.accent + 'cc';
-      ctx.font = `700 ${Math.round(block.size * 1.05)}px Fraunces, Georgia, serif`;
+      ctx.font = `700 ${Math.round(block.size * 1.05)}px ${CARD_BRAND_FONT}`;
       ctx.fillText('\u2014', marginX, y);
 
       ctx.fillStyle = T.text;
-      ctx.font = `italic 400 ${block.size}px Fraunces, Georgia, serif`;
+      ctx.font = `400 ${block.size}px ${CARD_BODY_FONT}`;
       block.lines.forEach(line => { ctx.fillText(line, marginX + 50, y); y += block.lead; });
       if (idx < plan.blocks.length - 1) y += plan.gapBetween;
     }
@@ -1082,7 +1129,7 @@ async function drawDocCard(canvas, order, kind){
   // still fits on one card.
   const itemRoom = (h - 420) - 460;   // space before the totals and footer
   function measureItems(sz){
-    ctx.font = `italic 400 ${sz}px Fraunces, Georgia, serif`;
+    ctx.font = `400 ${sz}px ${CARD_BODY_FONT}`;
     let total = 0;
     const rows = basket.map(i => {
       const label = `${i.qty} x ${i.name}${i.size ? ' (' + i.size + ')' : ''}`;
@@ -1107,7 +1154,7 @@ async function drawDocCard(canvas, order, kind){
   items.rows.forEach(({ lines, i }) => {
     const amount = 'R' + ((parseFloat(i.price) || 0) * (i.qty || 1)).toFixed(0);
     ctx.fillStyle = T.text;
-    ctx.font = `italic 400 ${itemSize}px Fraunces, Georgia, serif`;
+    ctx.font = `400 ${itemSize}px ${CARD_BODY_FONT}`;
     lines.forEach((line, idx) => {
       ctx.fillText(line, marginX, y);
       if (idx === 0 && kind !== 'delivery'){
@@ -1150,7 +1197,7 @@ async function drawDocCard(canvas, order, kind){
     ctx.fillText(label.toUpperCase(), marginX, y);
     y += 44;
     ctx.fillStyle = T.text;
-    ctx.font = "italic 400 40px Fraunces, Georgia, serif";
+    ctx.font = `400 40px ${CARD_BODY_FONT}`;
     wrapCanvasText(ctx, String(value), contentWidth).forEach(line => { ctx.fillText(line, marginX, y); y += 48; });
   });
 
@@ -1712,6 +1759,7 @@ let transient = {
   orderSent: false,
   shopImageData: null,
   compileStoryId: '',
+  compileTrim: null,   // shortened version of the story for the round-up card
   compileChecked: {},
   postDownloadStatus: '',
   compileStatus: '',
@@ -2156,6 +2204,64 @@ function renderFolder(){
     }).join('')}
   `;
 }
+
+// ---- On-screen keyboard ----
+// Reserve space the height of the keyboard and lift the focused field into
+// view. Without this, the reply box on a story page sits under the keyboard in
+// the Instagram in-app browser and cannot be scrolled to at all.
+(function(){
+  const root = document.documentElement;
+  // Read this lazily rather than caching it — some in-app webviews attach
+  // visualViewport after the page script has already run.
+  const vp = () => window.visualViewport;
+
+  function applyInset(){
+    const vv = vp();
+    if (!vv) return;
+    // How much of the window the keyboard is covering.
+    const inset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+    root.style.setProperty('--kb-inset', (inset > 80 ? inset : 0) + 'px');
+  }
+
+  function liftIntoView(el){
+    if (!el || !el.getBoundingClientRect) return;
+    const vv = vp();
+    const visibleBottom = vv ? vv.height + vv.offsetTop : window.innerHeight;
+    const box = el.getBoundingClientRect();
+    // Only scroll if it is actually hidden or crowded against the keyboard.
+    if (box.bottom > visibleBottom - 16 || box.top < 0){
+      try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+      catch (e) { el.scrollIntoView(); }
+    }
+  }
+
+  let bound = false;
+  function bindViewport(){
+    const vv = vp();
+    if (bound || !vv || !vv.addEventListener) return;
+    vv.addEventListener('resize', applyInset);
+    vv.addEventListener('scroll', applyInset);
+    bound = true;
+  }
+  bindViewport();
+  // Try again shortly in case the webview attaches it late.
+  setTimeout(bindViewport, 500);
+  setTimeout(bindViewport, 2000);
+
+  document.addEventListener('focusin', function(e){
+    const el = e.target;
+    if (!el || !/^(TEXTAREA|INPUT|SELECT)$/.test(el.tagName)) return;
+    bindViewport();
+    applyInset();
+    // The keyboard animates in, so measure again once it has settled.
+    setTimeout(function(){ applyInset(); liftIntoView(el); }, 300);
+    setTimeout(function(){ applyInset(); liftIntoView(el); }, 650);
+  });
+
+  document.addEventListener('focusout', function(){
+    setTimeout(applyInset, 150);
+  });
+})();
 
 // ---- Story + replies ----
 function renderStory(){
@@ -5242,6 +5348,28 @@ function renderPostManager(){
         <option value="">Choose a story…</option>
         ${approvedStories.map(s => `<option value="${s.id}" ${transient.compileStoryId === s.id ? 'selected' : ''}>${escapeHtml(s.text.slice(0, 60))}${s.text.length > 60 ? '…' : ''}</option>`).join('')}
       </select>
+      ${compileStory ? (function(){
+        const full = compileStory.text || '';
+        const shown = transient.compileTrim !== null ? transient.compileTrim : full;
+        const trimmed = transient.compileTrim !== null;
+        const longish = full.length > TRIM_TARGET;
+        return `
+          <div class="bh-trim">
+            <div class="bh-trim-head">
+              <span>The story on the card</span>
+              <span id="trimCount">${shown.length} characters</span>
+            </div>
+            <textarea class="bh-textarea" style="min-height:90px"
+              oninput="editTrim(this.value)">${escapeHtml(shown)}</textarea>
+            <div class="bh-trim-acts">
+              ${longish && !trimmed ? `<button onclick="useSuggestedTrim()">Shorten it for me</button>` : ''}
+              ${trimmed ? `<button onclick="resetTrim()">Use the full story</button>` : ''}
+            </div>
+            <p class="bh-trim-note">${longish
+              ? 'This one is long. Shortening it leaves the replies more room and keeps the text bigger \u2014 but read the shortened version before you post it, the last line often carries the point.'
+              : 'Short enough to fit as it is. Edit here if you want to.'}</p>
+          </div>`;
+      })() : ''}
       ${compileStory && compileReplies.length === 0 ? `<p class="bh-empty">This story has no approved replies yet.</p>` : ''}
       ${compileStory && compileReplies.length > 0 ? `
         <div style="margin-bottom:16px">
@@ -5263,7 +5391,53 @@ function renderPostManager(){
   `;
 }
 
-function setCompileStory(id){ transient.compileStoryId = id; transient.compileChecked = {}; transient.compileStatus = ''; render(); }
+// A first cut at shortening a long story: keep whole sentences up to about
+// 200 characters. Never used without her seeing it — the last line of these
+// stories usually carries the point, and no automatic rule can spot that.
+const TRIM_TARGET = 200;
+function suggestTrim(text){
+  const t = (text || '').trim();
+  if (t.length <= TRIM_TARGET) return t;
+  const sentences = t.match(/[^.!?]+[.!?]*/g) || [t];
+  let out = '';
+  for (const sn of sentences){
+    if ((out + sn).trim().length > TRIM_TARGET) break;
+    out += sn;
+  }
+  out = out.trim();
+  // No sentence break early enough — cut on a word instead.
+  if (!out) out = t.slice(0, TRIM_TARGET).replace(/\s+\S*$/, '') + '\u2026';
+  return out;
+}
+
+// The text the round-up card actually uses: her edit if there is one,
+// otherwise the story as written.
+function compileStoryText(){
+  const story = stories.find(s => s.id === transient.compileStoryId);
+  if (!story) return '';
+  return transient.compileTrim !== null ? transient.compileTrim : story.text;
+}
+
+function setCompileStory(id){
+  transient.compileStoryId = id;
+  transient.compileChecked = {};
+  transient.compileStatus = '';
+  transient.compileTrim = null;
+  render();
+}
+
+function useSuggestedTrim(){
+  const story = stories.find(s => s.id === transient.compileStoryId);
+  if (!story) return;
+  transient.compileTrim = suggestTrim(story.text);
+  render();
+}
+function resetTrim(){ transient.compileTrim = null; render(); }
+function editTrim(v){
+  transient.compileTrim = v;
+  const c = document.getElementById('trimCount');
+  if (c) c.textContent = v.length + ' characters';
+}
 function toggleCompileCheck(id){ transient.compileChecked[id] = !transient.compileChecked[id]; render(); }
 
 async function downloadStoryCard(id){
@@ -5313,7 +5487,7 @@ async function createRoundupCard(){
   transient.compileStatus = 'Preparing image…';
   render();
   const canvas = document.getElementById('exportCanvas');
-  await drawCompileCard(canvas, chosen, tagText2, compileStoryForCard ? compileStoryForCard.text : '',
+  await drawCompileCard(canvas, chosen, tagText2, compileStoryText(),
     compileStoryForCard ? (compileStoryForCard.pseudonym || '') : '');
   await downloadCanvas(canvas, 'bling-happiness-roundup.jpg');
   transient.compileStatus = 'Downloaded — ready to post back to Stories.';
