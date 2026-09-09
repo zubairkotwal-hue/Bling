@@ -356,6 +356,18 @@
   body.kb-open .bh-root{ padding-bottom:max(var(--kb-inset, 0px), 70vh); }
   .bh-root textarea, .bh-root input, .bh-root select{ scroll-margin-bottom:120px; scroll-margin-top:90px; }
 
+  .bh-notify-state{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--blushp); border:1px solid var(--line); border-radius:10px; padding:12px 14px;
+    font-size:.86rem; flex-wrap:wrap; }
+  .bh-notify-state.on{ background:#eef5ec; border-color:#cfe0ca; color:var(--ok); }
+  .bh-notify-row{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:12px 0; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .bh-notify-row:last-child{ border-bottom:none; }
+  .bh-notify-row .lbl{ display:block; font-size:.88rem; color:var(--ink); }
+  .bh-notify-row .note{ display:block; font-size:.72rem; color:var(--grey); margin-top:2px; max-width:34ch; }
+  .bh-notify-row select{ border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+    font-family:var(--f-ui); font-size:.8rem; background:#fff; color:var(--ink); }
+
   .bh-trim{ background:var(--blushp); border:1px solid var(--line); border-radius:12px;
     padding:13px 14px; margin-bottom:16px; }
   .bh-trim-head{ display:flex; justify-content:space-between; align-items:baseline;
@@ -1865,7 +1877,15 @@ function storyLinkRow(id, label){
 }
 
 async function copyStoryLink(id, btn){
-  const url = storyUrl(id);
+  return copyLink(storyUrl(id), btn);
+}
+async function copyProductLink(id, btn){
+  return copyLink(productUrl(id), btn);
+}
+
+// Shared by story and product links. Three fallbacks, because phone browsers
+// block the clipboard in ways that vary and fail silently.
+async function copyLink(url, btn){
   const field = btn && btn.parentElement ? btn.parentElement.querySelector('.bh-linkfield') : null;
   const flash = (msg) => {
     if (!btn) return;
@@ -1899,9 +1919,30 @@ async function copyStoryLink(id, btn){
   flash('Select & copy');
 }
 
-// If someone arrives on a story link, open that story straight away.
+function productUrl(p){
+  const id = typeof p === 'string' ? p : (p && p.id);
+  return `${window.location.origin}${window.location.pathname}?item=${encodeURIComponent(id)}`;
+}
+
+// If someone arrives on a story or product link, open it straight away.
 function openDeepLink(){
   const params = new URLSearchParams(window.location.search);
+
+  const itemId = params.get('item');
+  if (itemId){
+    const product = products.find(p => p.id === itemId);
+    if (product){
+      nav.view = 'shop';
+      transient.viewingProductId = product.id;
+      return true;
+    }
+    // The product has been removed since the link was shared. Send them to the
+    // shop rather than a dead page.
+    nav.view = 'shop';
+    transient.loadError = "That item isn't available any more \u2014 here's the rest of the shop.";
+    return true;
+  }
+
   const id = params.get('story');
   if (!id) return false;
   const story = stories.find(s => s.id === id && s.status === 'approved');
@@ -3602,6 +3643,7 @@ function openAdminMore(){ nav.adminMoreOpen = true; render(); }
 function closeAdminMore(){ nav.adminMoreOpen = false; render(); }
 
 function setAdminTab(tab){
+  if (tab === 'settings') setTimeout(checkNotifyState, 0);
   nav.adminTab = tab;
   nav.adminMoreOpen = false;
   window.scrollTo({ top: 0, behavior: 'auto' });
@@ -4191,6 +4233,20 @@ function renderBulkImport(){
 }
 
 // ---- Admin: shop manager ----
+// A link straight to this product, for the Instagram link sticker. Shown as
+// selectable text rather than only behind a button, so it can be copied by
+// hand if the browser blocks the clipboard — the same problem the story links
+// had.
+function productLinkRow(p){
+  const url = productUrl(p);
+  return `
+    <div class="bh-linkrow" style="margin-top:8px">
+      <input class="bh-linkfield" readonly value="${escapeHtml(url)}"
+             onclick="this.select()" onfocus="this.select()" aria-label="Link to this product">
+      <button class="bh-btn-outline bh-linkcopy" onclick="copyProductLink('${p.id}', this)">Copy</button>
+    </div>`;
+}
+
 function renderShopManager(){
   const editing = !!transient.editingProductId;
   const edited = editing ? products.find(p => p.id === transient.editingProductId) : null;
@@ -4290,6 +4346,7 @@ function renderShopManager(){
               <button class="bh-btn-ghost" style="font-size:.75rem" onclick="editProduct('${p.id}')">✏️ Edit</button>
               <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeProduct('${p.id}')">🗑 Remove</button>
             </div>
+            ${productLinkRow(p)}
           </div>
         </div>
       `).join('')}
@@ -5098,6 +5155,188 @@ async function deleteHelp(id){
 }
 
 // ---- Admin: settings ----
+
+// ---- Admin notifications ----
+// Per-type, because the volumes are wildly different: a couple of orders a day
+// against 50-100 stories. One setting for all of them would either bury the
+// orders or turn the phone into an alarm.
+const NOTIFY_TYPES = [
+  { key:'orders',  label:'New orders',      note:'Someone has bought something.' },
+  { key:'help',    label:'Help messages',   note:'A customer is waiting on a reply.' },
+  { key:'replies',  label:'Replies to stories', note:'Needs approving before it shows.' },
+  { key:'reviews', label:'Product reviews', note:'Needs approving before it shows.' },
+  { key:'stories', label:'New stories',     note:'Busy \u2014 50 to 100 a day. Batched is usually wiser.' },
+];
+const NOTIFY_DEFAULTS = {
+  orders:'instant', help:'instant', replies:'instant', reviews:'instant',
+  stories:'batched', quietFrom:22, quietTo:7,
+};
+
+function notifyPrefs(){
+  try {
+    const raw = setting('notifyPrefs');
+    return raw ? Object.assign({}, NOTIFY_DEFAULTS, JSON.parse(raw)) : Object.assign({}, NOTIFY_DEFAULTS);
+  } catch (e) { return Object.assign({}, NOTIFY_DEFAULTS); }
+}
+
+function setNotifyPref(key, value){
+  const prefs = notifyPrefs();
+  prefs[key] = value;
+  settings.notifyPrefs = JSON.stringify(prefs);
+  transient.notifyDirty = true;
+  render();
+}
+
+function urlBase64ToUint8Array(base64){
+  const padding = '='.repeat((4 - base64.length % 4) % 4);
+  const raw = atob((base64 + padding).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+async function enableNotifications(){
+  transient.notifyStatus = 'Setting up\u2026';
+  render();
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)){
+      transient.notifyStatus = "This browser can't do notifications. On an iPhone, add the site to your home screen first, then try again.";
+      return render();
+    }
+
+    const info = await apiFetch('/push');
+    if (!info.configured){
+      transient.notifyStatus = 'The server has no notification keys set up yet \u2014 see the setup note below.';
+      return render();
+    }
+
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted'){
+      transient.notifyStatus = permission === 'denied'
+        ? 'Notifications are blocked for this site. You will have to allow them in your browser settings for this site, then try again.'
+        : 'Not enabled \u2014 you can tap again whenever you like.';
+      return render();
+    }
+
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub){
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(info.publicKey),
+      });
+    }
+
+    const res = await apiFetch('/push', {
+      method: 'POST',
+      body: JSON.stringify({ subscription: sub.toJSON() }),
+    });
+    transient.notifyOn = true;
+    transient.notifyStatus = `This device is signed up${res.devices > 1 ? ` (${res.devices} devices)` : ''}. Send yourself a test to be sure.`;
+  } catch (e) {
+    transient.notifyStatus = "Couldn't set that up \u2014 " + (e.message || 'try again');
+  }
+  render();
+}
+
+async function testNotification(){
+  transient.notifyStatus = 'Sending\u2026';
+  render();
+  try {
+    const r = await apiFetch('/push', { method: 'POST', body: JSON.stringify({ test: true }) });
+    transient.notifyStatus = r.sent
+      ? 'Sent. It should appear in a second or two.'
+      : "Nothing was sent \u2014 this device may need signing up again.";
+  } catch (e) {
+    transient.notifyStatus = "Couldn't send \u2014 " + (e.message || 'try again');
+  }
+  render();
+}
+
+async function disableNotifications(){
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    const sub = reg && await reg.pushManager.getSubscription();
+    if (sub){
+      await apiFetch('/push', { method: 'DELETE', body: JSON.stringify({ endpoint: sub.endpoint }) });
+      await sub.unsubscribe();
+    }
+    transient.notifyOn = false;
+    transient.notifyStatus = 'Turned off on this device.';
+  } catch (e) {
+    transient.notifyStatus = "Couldn't turn it off \u2014 " + (e.message || 'try again');
+  }
+  render();
+}
+
+async function checkNotifyState(){
+  try {
+    if (!('serviceWorker' in navigator)) return;
+    const reg = await navigator.serviceWorker.getRegistration();
+    const sub = reg && await reg.pushManager.getSubscription();
+    const on = !!sub && Notification.permission === 'granted';
+    if (on !== transient.notifyOn){ transient.notifyOn = on; render(); }
+  } catch (e) { /* not supported */ }
+}
+
+
+function renderNotifySettings(){
+  const prefs = notifyPrefs();
+  const on = transient.notifyOn;
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+
+  return `
+    <div class="bh-card" style="margin-bottom:20px">
+      <h3 class="bh-serif" style="font-size:1.05rem;color:var(--plum);margin-bottom:4px">Notifications</h3>
+      <p style="font-size:.78rem;color:var(--grey);margin:0 0 14px">
+        Alerts on this phone when something happens. Sign up on each device you want them on.
+      </p>
+
+      <div class="bh-notify-state ${on ? 'on' : ''}">
+        <span>${on ? 'On for this device' : 'Off for this device'}</span>
+        ${on
+          ? `<span><button class="bh-btn-ghost" style="font-size:.76rem" onclick="testNotification()">Send a test</button>
+             <button class="bh-btn-ghost" style="font-size:.76rem;color:var(--risk)" onclick="disableNotifications()">Turn off</button></span>`
+          : `<button class="bh-btn" style="padding:9px 15px;font-size:.8rem" onclick="enableNotifications()">Turn on</button>`}
+      </div>
+      ${transient.notifyStatus ? `<p style="font-size:.78rem;color:var(--plum2);margin:10px 0 0">${escapeHtml(transient.notifyStatus)}</p>` : ''}
+
+      <div style="margin-top:18px">
+        ${NOTIFY_TYPES.map(t => `
+          <div class="bh-notify-row">
+            <div>
+              <span class="lbl">${t.label}</span>
+              <span class="note">${t.note}</span>
+            </div>
+            <select onchange="setNotifyPref('${t.key}', this.value)">
+              <option value="instant" ${prefs[t.key] === 'instant' ? 'selected' : ''}>Straight away</option>
+              <option value="batched" ${prefs[t.key] === 'batched' ? 'selected' : ''}>Every 2 hours</option>
+              <option value="off"     ${prefs[t.key] === 'off' ? 'selected' : ''}>Never</option>
+            </select>
+          </div>`).join('')}
+
+        <div class="bh-notify-row">
+          <div>
+            <span class="lbl">Quiet hours</span>
+            <span class="note">Nothing arrives between these times.</span>
+          </div>
+          <span style="white-space:nowrap">
+            <select onchange="setNotifyPref('quietFrom', parseInt(this.value,10))">
+              ${hours.map(h => `<option value="${h}" ${prefs.quietFrom === h ? 'selected' : ''}>${String(h).padStart(2,'0')}:00</option>`).join('')}
+            </select>
+            <span style="color:var(--grey);font-size:.78rem"> to </span>
+            <select onchange="setNotifyPref('quietTo', parseInt(this.value,10))">
+              ${hours.map(h => `<option value="${h}" ${prefs.quietTo === h ? 'selected' : ''}>${String(h).padStart(2,'0')}:00</option>`).join('')}
+            </select>
+          </span>
+        </div>
+      </div>
+
+      ${transient.notifyDirty ? `<p style="font-size:.75rem;color:var(--risk);margin:12px 0 0">Press <strong>Save changes</strong> at the bottom to keep these.</p>` : ''}
+    </div>
+  `;
+}
+
 function renderSettings(){
   const field = (key, label, help, rows) => `
     <div class="bh-set-block">
@@ -5126,6 +5365,8 @@ function renderSettings(){
     <div class="bh-card" style="margin-bottom:18px;background:var(--blushp);border:none">
       <p style="font-size:.85rem;color:var(--grey);margin:0">Change anything here whenever you like \u2014 prices, banking details, collection info, or the exact wording of every message. Nothing else needs to be updated.</p>
     </div>
+
+    ${renderNotifySettings()}
 
     <div class="bh-card" style="margin-bottom:18px">
       <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Delivery &amp; payment</h3>
@@ -5198,7 +5439,7 @@ function renderSettings(){
   `;
 }
 
-const SETTING_KEYS = ['shippingCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','shopCategories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage','reminderMessage','updateMessage'];
+const SETTING_KEYS = ['notifyPrefs','shippingCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','shopCategories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage','reminderMessage','updateMessage'];
 
 function readCategoryInputs(){
   return Array.from(document.querySelectorAll('.bh-cat-input'))
@@ -5289,11 +5530,14 @@ async function saveSettings(){
     return;
   }
   updates.shopCategories = JSON.stringify(shopCats);
+  // Notification choices live in state, not an input, so carry them through.
+  updates.notifyPrefs = JSON.stringify(notifyPrefs());
   if (updates.shippingCost !== undefined && isNaN(parseFloat(updates.shippingCost))){
     status.style.color = 'var(--risk)';
     status.textContent = 'Shipping cost must be a number, like 99.';
     return;
   }
+  transient.notifyDirty = false;
   status.style.color = 'var(--grey)';
   status.textContent = 'Saving\u2026';
   try {
