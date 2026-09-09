@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keyboard check</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:#fbf1ef;color:#241521}
+  .wrap{padding:14px 14px 70vh}
+  h1{font-size:1.05rem;margin:0 0 4px}
+  p.l{font-size:.8rem;color:#6b5a67;margin:0 0 14px;line-height:1.5}
+  .box{background:#fff;border:1px solid #ead9dc;border-radius:10px;padding:12px;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:.78rem}
+  td{padding:5px 0;border-bottom:1px solid #f2e6e8;vertical-align:top}
+  td:first-child{color:#6b5a67;width:52%}
+  td:last-child{text-align:right;font-family:ui-monospace,monospace;font-weight:600}
+  .bad{color:#a13d4c}.good{color:#3f6b3a}
+  textarea{width:100%;min-height:80px;padding:11px;border:1px solid #ead9dc;border-radius:8px;
+    font-size:16px;font-family:inherit}
+  button{background:#3d1e3a;color:#fffdf9;border:none;border-radius:8px;padding:12px 16px;
+    font-size:.85rem;width:100%;margin-top:10px}
+  .verdict{background:#241521;color:#f0e2d0;border-radius:10px;padding:13px;font-size:.8rem;
+    line-height:1.55;margin-bottom:12px}
+  #log{font-family:ui-monospace,monospace;font-size:.68rem;white-space:pre-wrap;color:#6b5a67;
+    max-height:160px;overflow:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Keyboard check</h1>
+  <p class="l">Open this in the <b>Instagram browser</b> (send yourself the link and tap it from a DM). Tap the box below, type a letter, then screenshot the whole page and send it back.</p>
+
+  <div class="verdict" id="verdict">Tap the box below to start.</div>
+
+  <div class="box">
+    <textarea id="ta" placeholder="Tap here and type something"></textarea>
+    <button onclick="document.getElementById('ta').blur()">Close the keyboard</button>
+  </div>
+
+  <div class="box">
+    <table id="t"></table>
+  </div>
+
+  <div class="box">
+    <div style="font-size:.7rem;color:#6b5a67;margin-bottom:6px">EVENT LOG</div>
+    <div id="log"></div>
+  </div>
+</div>
+
+<script>
+var start = { inner: window.innerHeight, vv: window.visualViewport ? window.visualViewport.height : null };
+var seen = { resize: 0, vvResize: 0, vvScroll: 0, focus: 0 };
+var minInner = start.inner, minVV = start.vv;
+var logLines = [];
+
+function log(m){
+  logLines.unshift(new Date().toISOString().slice(14,19) + '  ' + m);
+  document.getElementById('log').textContent = logLines.slice(0, 14).join('\n');
+}
+
+function row(k, v, cls){
+  return '<tr><td>' + k + '</td><td class="' + (cls || '') + '">' + v + '</td></tr>';
+}
+
+function paint(){
+  var vv = window.visualViewport;
+  var inner = window.innerHeight;
+  if (inner < minInner) minInner = inner;
+  if (vv && (minVV === null || vv.height < minVV)) minVV = vv.height;
+
+  var t = '';
+  t += row('visualViewport exists', vv ? 'yes' : 'NO', vv ? 'good' : 'bad');
+  t += row('window.innerHeight now', inner);
+  t += row('innerHeight at load', start.inner);
+  t += row('smallest innerHeight seen', minInner, minInner < start.inner ? 'good' : '');
+  if (vv){
+    t += row('visualViewport.height now', Math.round(vv.height));
+    t += row('smallest vv.height seen', Math.round(minVV), minVV < start.vv ? 'good' : 'bad');
+    t += row('vv.offsetTop', Math.round(vv.offsetTop || 0));
+    t += row('gap (inner - vv.height)', Math.round(inner - vv.height));
+  }
+  t += row('vv resize events', seen.vvResize, seen.vvResize ? 'good' : 'bad');
+  t += row('vv scroll events', seen.vvScroll);
+  t += row('window resize events', seen.resize);
+  t += row('focus events', seen.focus, seen.focus ? 'good' : '');
+  t += row('page scrollHeight', document.documentElement.scrollHeight);
+  t += row('page scrollTop', Math.round(window.scrollY));
+  t += row('can page scroll?',
+    document.documentElement.scrollHeight > inner ? 'yes' : 'NO',
+    document.documentElement.scrollHeight > inner ? 'good' : 'bad');
+  t += row('user agent', navigator.userAgent.slice(0, 60));
+  document.getElementById('t').innerHTML = t;
+
+  var v;
+  if (!seen.focus){
+    v = 'Tap the box above to start.';
+  } else if (vv && minVV < start.vv - 80){
+    v = 'GOOD: this browser reports the keyboard through visualViewport (' +
+        Math.round(start.vv - minVV) + 'px). The measured fix should work here.';
+  } else if (minInner < start.inner - 80){
+    v = 'This browser shrinks the whole window instead of reporting a visual viewport. ' +
+        'The page should be able to scroll normally — the spacer fix covers this.';
+  } else {
+    v = 'PROBLEM: neither the window nor the visual viewport changed when the keyboard opened. ' +
+        'This browser gives no signal at all, so only the unconditional spacer can help.';
+  }
+  document.getElementById('verdict').textContent = v;
+}
+
+window.addEventListener('resize', function(){ seen.resize++; log('window resize -> ' + window.innerHeight); paint(); });
+if (window.visualViewport){
+  window.visualViewport.addEventListener('resize', function(){
+    seen.vvResize++; log('vv resize -> ' + Math.round(window.visualViewport.height)); paint();
+  });
+  window.visualViewport.addEventListener('scroll', function(){ seen.vvScroll++; paint(); });
+}
+document.getElementById('ta').addEventListener('focus', function(){
+  seen.focus++; log('focus on textarea'); paint();
+  [100, 400, 800, 1500].forEach(function(ms){ setTimeout(paint, ms); });
+});
+document.getElementById('ta').addEventListener('blur', function(){ log('blur'); paint(); });
+setInterval(paint, 1000);
+paint();
+</script>
+</body>
+</html>
