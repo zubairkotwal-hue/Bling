@@ -347,7 +347,13 @@
      bottom ends up underneath it with nothing left to scroll. --kb-inset is
      set from the visual viewport at runtime; the 0px default means this costs
      nothing when no keyboard is showing. */
+  /* Two layers, because in-app browsers cannot be relied on to report the
+     keyboard. kb-open adds a big slab of empty space unconditionally while a
+     field is focused, which guarantees there is somewhere to scroll to even if
+     no measurement works. --kb-inset then refines it where the browser is
+     honest about the viewport. */
   .bh-root{ padding-bottom:var(--kb-inset, 0px); transition:padding-bottom .18s ease-out; }
+  body.kb-open .bh-root{ padding-bottom:max(var(--kb-inset, 0px), 70vh); }
   .bh-root textarea, .bh-root input, .bh-root select{ scroll-margin-bottom:120px; scroll-margin-top:90px; }
 
   .bh-trim{ background:var(--blushp); border:1px solid var(--line); border-radius:12px;
@@ -2253,18 +2259,40 @@ function renderFolder(){
   setTimeout(bindViewport, 500);
   setTimeout(bindViewport, 2000);
 
+  // Scroll the field to the top of the screen rather than the centre. With the
+  // spacer below it there is always room, and it does not depend on knowing how
+  // tall the keyboard is.
+  function lift(el){
+    if (!el || !el.getBoundingClientRect) return;
+    try { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+    catch (e) { el.scrollIntoView(true); }
+  }
+
   document.addEventListener('focusin', function(e){
     const el = e.target;
     if (!el || !/^(TEXTAREA|INPUT|SELECT)$/.test(el.tagName)) return;
     bindViewport();
+    document.body.classList.add('kb-open');
     applyInset();
-    // The keyboard animates in, so measure again once it has settled.
-    setTimeout(function(){ applyInset(); liftIntoView(el); }, 300);
-    setTimeout(function(){ applyInset(); liftIntoView(el); }, 650);
+    // Keep nudging while the keyboard animates in — a single attempt lands
+    // before the layout has settled and is silently undone.
+    [60, 200, 400, 700].forEach(function(ms){
+      setTimeout(function(){
+        if (document.activeElement !== el) return;
+        applyInset();
+        lift(el);
+      }, ms);
+    });
   });
 
   document.addEventListener('focusout', function(){
-    setTimeout(applyInset, 150);
+    setTimeout(function(){
+      const a = document.activeElement;
+      // Moving between two fields should not collapse the space and jump the page.
+      if (a && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName)) return;
+      document.body.classList.remove('kb-open');
+      applyInset();
+    }, 200);
   });
 })();
 
