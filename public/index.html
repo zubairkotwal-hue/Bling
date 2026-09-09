@@ -22,6 +22,10 @@
     /* Swap the whole site's typography by changing these two lines. */
     --f-display:'Cormorant Garamond', Georgia, serif;
     --f-ui:'Jost', -apple-system, sans-serif;
+    /* Story text people actually sit and read. Jost is a geometric display
+       sans and gets tiring over paragraphs; Inter is built for screen reading
+       and has a taller x-height. */
+    --f-read:'Inter', -apple-system, 'Helvetica Neue', sans-serif;
     font-family:var(--f-ui); color:var(--ink); background:var(--blushp); min-height:100vh;
     font-weight:300; -webkit-font-smoothing:antialiased; }
   /* Family and weight only. This rule must NOT set font-size: it outranks the
@@ -169,11 +173,12 @@
   .bh-folder .name{ font-weight:700; color:var(--plum); font-size:.92rem; margin-top:2px; }
   .bh-tile{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:10px; cursor:pointer; }
   .bh-tile:hover{ border-color:var(--gold); }
-  .bh-tile p{ font-family:var(--f-display); font-style:italic; font-size:.95rem; margin:0 0 6px; }
+  .bh-tile p{ font-family:var(--f-read); font-size:.93rem; line-height:1.55; margin:0 0 8px; }
   .bh-tile .sub{ font-size:.75rem; color:var(--grey); }
   .bh-storyhero{ background:linear-gradient(155deg,var(--plum),var(--plum2)); color:#fff; border-radius:18px; padding:28px; }
   .bh-storyhero .mark{ font-family:var(--f-display); font-size:2.2rem; color:var(--gold); line-height:1; }
-  .bh-storyhero p{ font-family:var(--f-display); font-style:italic; font-size:1.1rem; line-height:1.5; margin:6px 0 14px; }
+  .bh-storyhero p{ font-family:var(--f-read); font-size:1.06rem; line-height:1.65;
+    letter-spacing:.002em; margin:6px 0 16px; }
   .bh-storyhero .tag{ font-size:.72rem; letter-spacing:.06em; color:var(--goldl); font-weight:700; }
   .bh-btn{ background:linear-gradient(135deg,var(--goldl),var(--gold)); color:var(--ink); font-weight:700; padding:11px 20px; border-radius:9px; font-size:.88rem; border:none; cursor:pointer; }
   .bh-btn:disabled{ opacity:.5; cursor:not-allowed; }
@@ -183,10 +188,10 @@
   .bh-textarea{ min-height:110px; resize:vertical; }
   .bh-label{ display:block; font-weight:700; font-size:.82rem; color:var(--plum); margin-bottom:6px; }
   .bh-card{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; }
-  .bh-reply{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:8px; font-size:.88rem; }
+  .bh-reply{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:13px 15px; margin-bottom:8px; font-family:var(--f-read); font-size:.9rem; line-height:1.6; }
   .bh-reply .rt{ display:block; font-size:.62rem; text-transform:uppercase; letter-spacing:.06em; color:var(--gold); font-weight:700; margin-bottom:4px; }
   .bh-qrow{ display:flex; align-items:flex-start; gap:12px; padding:13px; border:1px solid var(--line); border-radius:10px; margin-bottom:8px; flex-wrap:wrap; }
-  .bh-qrow .txt{ flex:1; font-size:.86rem; min-width:180px; }
+  .bh-qrow .txt{ flex:1; font-family:var(--f-read); font-size:.88rem; line-height:1.6; min-width:180px; }
   .bh-qrow .catpill{ font-size:.65rem; font-weight:700; text-transform:uppercase; background:var(--blushp); color:var(--plum); padding:3px 8px; border-radius:20px; margin-right:6px; }
   .bh-qrow .actions{ display:flex; gap:6px; }
   .bh-qrow .actions button{ padding:6px 12px; font-size:.72rem; font-weight:700; border-radius:7px; border:none; cursor:pointer; }
@@ -416,7 +421,7 @@
   .bh-linkcopy{ flex:none; font-size:.75rem; padding:9px 14px; }
   .bh-linklbl{ width:100%; font-size:.68rem; font-weight:700; text-transform:uppercase;
     letter-spacing:.08em; color:var(--grey); margin-top:12px; }
-  .bh-post-item .snip{ flex:1; font-family:var(--f-display); font-style:italic; font-size:.9rem; min-width:180px; }
+  .bh-post-item .snip{ flex:1; font-family:var(--f-read); font-size:.88rem; line-height:1.55; min-width:180px; }
   .bh-postedtag{ font-size:.68rem; font-weight:700; color:var(--ok); text-transform:uppercase; }
   .bh-checkrow{ display:flex; align-items:flex-start; gap:10px; font-size:.86rem; padding:9px 0; border-bottom:1px solid var(--line); }
 /* ---- Filter and sort: trigger row + right-hand drawer (KAAL pattern) ---- */
