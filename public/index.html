@@ -368,6 +368,64 @@
   .bh-notify-row select{ border:1px solid var(--line); border-radius:8px; padding:8px 10px;
     font-family:var(--f-ui); font-size:.8rem; background:#fff; color:var(--ink); }
 
+  .bh-promote{ width:100%; background:var(--blushp); border:1px solid var(--line);
+    border-radius:10px; padding:13px; margin-top:10px; }
+  .bh-promote .hint{ font-size:.74rem; color:var(--grey); margin:0 0 8px; line-height:1.5; }
+  .bh-promote .row{ display:flex; align-items:center; gap:10px; margin-top:8px; }
+  .bh-promote select{ flex:1; border:1px solid var(--line); border-radius:8px; padding:9px 10px;
+    font-family:var(--f-ui); font-size:.82rem; background:#fff; }
+  .bh-promote .keep{ display:flex; align-items:flex-start; gap:8px; margin-top:10px;
+    font-size:.76rem; color:var(--grey); line-height:1.45; }
+  .bh-promote .acts{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  .bh-promote .stat{ font-size:.76rem; color:var(--plum2); margin:8px 0 0; }
+
+  .bh-share{ width:100%; margin-top:10px; background:var(--plum); color:#fffdf9; border:none;
+    border-radius:10px; padding:12px 16px; font-family:var(--f-ui); font-size:.85rem; cursor:pointer; }
+  .bh-share-note{ font-size:.75rem; color:var(--ok); margin:8px 0 0; line-height:1.5; }
+
+  .bh-share-ready .alt{ display:flex; gap:14px; justify-content:center; margin-top:8px; }
+  .bh-share-ready .alt button{ background:none; border:none; color:var(--grey);
+    font-family:var(--f-ui); font-size:.76rem; cursor:pointer; text-decoration:underline;
+    text-underline-offset:3px; padding:4px 0; }
+
+  /* ---- Queue ---- */
+  .bh-qchips{ display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:10px;
+    scrollbar-width:none; }
+  .bh-qchips::-webkit-scrollbar{ display:none; }
+  .bh-qchips button{ flex:none; background:#fff; border:1px solid var(--line); border-radius:20px;
+    padding:9px 14px; font-family:var(--f-ui); font-size:.8rem; color:var(--grey); cursor:pointer;
+    white-space:nowrap; }
+  .bh-qchips button.on{ background:var(--plum); border-color:var(--plum); color:#fffdf9; }
+  .bh-qchips button b{ font-weight:600; }
+
+  .bh-qbar{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-bottom:8px; flex-wrap:wrap; }
+  .bh-qtypes{ display:flex; gap:4px; background:var(--blushp); border-radius:8px; padding:3px; }
+  .bh-qtypes button{ background:none; border:none; border-radius:6px; padding:6px 12px;
+    font-family:var(--f-ui); font-size:.76rem; color:var(--grey); cursor:pointer; }
+  .bh-qtypes button.on{ background:#fff; color:var(--plum); font-weight:500; }
+  .bh-qsort{ background:none; border:none; color:var(--plum); font-family:var(--f-ui);
+    font-size:.76rem; cursor:pointer; padding:6px 0; }
+  .bh-qfind{ width:100%; box-sizing:border-box; border:1px solid var(--line); border-radius:9px;
+    padding:10px 12px; font-family:var(--f-ui); font-size:.85rem; background:#fff;
+    color:var(--ink); margin-bottom:6px; }
+  .bh-qhint{ font-size:.72rem; color:var(--grey); margin:0 0 12px; }
+
+  .bh-qday{ font-size:.68rem; font-weight:600; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--grey); margin:18px 0 8px; padding-bottom:5px; border-bottom:1px solid var(--line); }
+  .bh-qtag{ display:inline-block; font-size:.6rem; font-weight:600; letter-spacing:.06em;
+    text-transform:uppercase; padding:3px 8px; border-radius:20px; margin-right:7px; }
+  .bh-qtag.story{ background:var(--plum); color:#fffdf9; }
+  .bh-qtag.reply{ background:var(--blushp); color:var(--plum); border:1px solid var(--line); }
+  .bh-qstamp{ font-size:.7rem; color:var(--grey); }
+  .bh-qstamp em{ font-style:normal; color:var(--risk); margin-left:6px; }
+  .bh-qmore{ width:100%; background:#fff; border:1px solid var(--line); border-radius:10px;
+    padding:12px; margin-top:14px; font-family:var(--f-ui); font-size:.82rem; color:var(--plum);
+    cursor:pointer; }
+
+  .bh-masknote{ font-size:.7rem; color:#a6752f; background:#fdf6ea; border-radius:6px;
+    padding:5px 8px; margin-top:7px; display:inline-block; }
+
   .bh-trim{ background:var(--blushp); border:1px solid var(--line); border-radius:12px;
     padding:13px 14px; margin-bottom:16px; }
   .bh-trim-head{ display:flex; justify-content:space-between; align-items:baseline;
@@ -879,7 +937,9 @@ async function drawWatermark(ctx, w, h){
   ctx.restore();
 }
 
-async function drawStoryCard(canvas, storyText, tagText){
+async function drawStoryCard(canvas, rawStoryText, tagText){
+  // Masked here, at the point of drawing, so every caller gets it.
+  const storyText = maskText(rawStoryText, 'cards');
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   await loadCanvasFonts();
@@ -944,7 +1004,9 @@ async function drawStoryCard(canvas, storyText, tagText){
   await drawWatermark(ctx, w, h);
 }
 
-async function drawCompileCard(canvas, replyTexts, tagText, storyText, storyPseudonym){
+async function drawCompileCard(canvas, rawReplyTexts, tagText, rawStoryText, storyPseudonym){
+  const replyTexts = (rawReplyTexts || []).map(t => maskText(t, 'cards'));
+  const storyText = maskText(rawStoryText, 'cards');
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   await loadCanvasFonts();
@@ -2249,7 +2311,7 @@ function renderFolder(){
       const snippet = s.text.length > 120 ? s.text.slice(0, 120) + '…' : s.text;
       return `
         <div class="bh-tile" onclick="openStory('${s.id}')">
-          <p>"${escapeHtml(snippet)}"</p>
+          <p>"${escapeHtml(maskText(snippet, 'site'))}"</p>
           <div class="sub">${count} ${count === 1 ? 'reply' : 'replies'}</div>
         </div>
       `;
@@ -2337,6 +2399,82 @@ function renderFolder(){
   });
 })();
 
+// ---- Masking words on shared cards ----
+// Two separate lists, because they are two different problems.
+//
+// STRONG is swearing. EXPLICIT is mostly anatomical or sexual language, which
+// is not offensive on a page built for women to talk frankly — but it does get
+// Instagram posts throttled or removed. So by default both are masked on the
+// picture cards, and the website itself is left exactly as written.
+//
+// Masking keeps the first letter and the length, so the meaning survives:
+// "fuck" becomes "f***", "vagina" becomes "v*****".
+const DEFAULT_MASK_STRONG = [
+  'fuck','fucking','fucked','fucker','motherfucker','shit','shitty','bullshit',
+  'cunt','bitch','bastard','asshole','arsehole','wanker','dickhead','prick',
+  'slut','whore','twat','bollocks',
+];
+const DEFAULT_MASK_EXPLICIT = [
+  'sex','sexual','sexually','vagina','vaginal','penis','dick','cock','pussy',
+  'tits','titties','boobs','clit','clitoris','orgasm','orgasms','masturbate',
+  'masturbating','horny','nipples','anal','blowjob','cum','erection','foreplay',
+];
+
+function maskList(key, fallback){
+  try {
+    const raw = setting(key);
+    if (raw){
+      const list = raw.split(',').map(w => w.trim().toLowerCase()).filter(Boolean);
+      if (list.length) return list;
+    }
+  } catch (e) {}
+  return fallback;
+}
+
+function maskingOn(where){
+  // 'cards' defaults on, 'site' defaults off.
+  const v = setting(where === 'site' ? 'maskOnSite' : 'maskOnCards');
+  if (v === 'off') return false;
+  if (v === 'on') return true;
+  return where !== 'site';
+}
+
+function escapeRegex(w){ return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+let _maskRe = null;
+let _maskReKey = '';
+function maskRegex(){
+  const words = maskList('maskWordsStrong', DEFAULT_MASK_STRONG)
+    .concat(maskList('maskWordsExplicit', DEFAULT_MASK_EXPLICIT));
+  const key = words.join('|');
+  if (_maskRe && _maskReKey === key) return _maskRe;
+  // Longest first so "fucking" is matched before "fuck".
+  const sorted = words.slice().sort((a, b) => b.length - a.length).map(escapeRegex);
+  // Word boundaries matter: without them "analysis" and "Essex" get mangled.
+  _maskRe = new RegExp('\\b(' + sorted.join('|') + ')\\b', 'gi');
+  _maskReKey = key;
+  return _maskRe;
+}
+
+function maskWord(word){
+  if (word.length <= 1) return word;
+  return word[0] + '*'.repeat(word.length - 1);
+}
+
+// Returns the text with matched words masked. Safe on empty input.
+function maskText(text, where){
+  const str = String(text == null ? '' : text);
+  if (!str || !maskingOn(where || 'cards')) return str;
+  return str.replace(maskRegex(), (m) => maskWord(m));
+}
+
+// What would be masked, so she can see it before posting.
+function maskedWordsIn(text){
+  const found = String(text || '').match(maskRegex());
+  if (!found) return [];
+  return [...new Set(found.map(w => w.toLowerCase()))];
+}
+
 // ---- Story + replies ----
 function renderStory(){
   const story = stories.find(s => s.id === nav.activeStoryId);
@@ -2346,7 +2484,7 @@ function renderStory(){
     <button class="bh-btn-ghost" onclick="openFolder('${escapeHtml(story.category)}')" style="margin-bottom:14px">← Back to ${escapeHtml(story.category)}</button>
     <div class="bh-storyhero">
       <div class="mark">&ldquo;</div>
-      <p>${escapeHtml(story.text)}</p>
+      <p>${escapeHtml(maskText(story.text, 'site'))}</p>
       <div class="tag">${escapeHtml(story.category)} · ${storyReplies.length} ${storyReplies.length === 1 ? 'reply' : 'replies'}</div>
     </div>
     <div style="margin-top:26px">
@@ -2355,7 +2493,7 @@ function renderStory(){
       ${storyReplies.map(r => `
         <div class="bh-reply">
           <span class="rt">${escapeHtml(authorLabel(r))}</span>
-          ${escapeHtml(r.text)}
+          ${escapeHtml(maskText(r.text, 'site'))}
           ${nav.adminUnlocked ? `<div style="margin-top:8px"><button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteReply('${r.id}')">Delete this reply</button></div>` : ''}
         </div>`).join('')}
     </div>
@@ -3471,7 +3609,7 @@ function renderDashboard(){
       <span class="n">0</span>
       <p class="what">Nothing waiting to be read</p>
       <p class="sub">You are completely caught up. ${d.submittedToday} came in today.</p>
-      <button class="bh-btn" onclick="setAdminTab('post')">Make a story picture</button>
+      <button class="bh-btn" onclick="openQueue('ready')">Make a story picture</button>
       <div class="bh-spark">
         ${d.days.map((n,i) => `<div class="${i===6?'today':''}" style="height:${Math.round((n/rand)*100)}%"></div>`).join('')}
       </div>
@@ -3480,7 +3618,7 @@ function renderDashboard(){
 
   const todo = [
     d.repliesWaiting && { n:d.repliesWaiting, t:`${d.repliesWaiting === 1 ? 'reply' : 'replies'} to read`, tab:'queue' },
-    d.readyToPost   && { n:d.readyToPost, t:'approved and ready to post', tab:'post' },
+    d.readyToPost   && { n:d.readyToPost, t:'approved and ready to post', tab:'queue', state:'ready' },
     d.awaitingPayment && { n:d.awaitingPayment, t:'orders not paid yet', tab:'leads', warn:true },
     d.toPack        && { n:d.toPack, t:'orders paid, waiting to be packed', tab:'leads' },
     d.toSend        && { n:d.toSend, t:'orders ready to go out', tab:'leads' },
@@ -3555,7 +3693,6 @@ function renderAdmin(){
     <div class="bh-admin-pad">
     ${nav.adminTab === 'home' ? renderDashboard() : ''}
     ${nav.adminTab === 'queue' ? renderReviewQueue() : ''}
-    ${nav.adminTab === 'post' ? renderPostManager() : ''}
     ${nav.adminTab === 'shop' ? renderShopManager() : ''}
     ${nav.adminTab === 'bulk' ? renderBulkImport() : ''}
     ${nav.adminTab === 'leads' ? renderLeadsManager() : ''}
@@ -3575,11 +3712,10 @@ function renderAdmin(){
 const ADMIN_NAV = [
   { tab:'home',  label:'Dashboard', icon:'<path d="M4 13h7V4H4zM13 20h7v-9h-7zM4 20h7v-5H4zM13 9h7V4h-7z"/>' },
   { tab:'queue', label:'Queue',     icon:'<path d="M4 13h4l2 3h4l2-3h4"/><path d="M5 5h14l1 8v6H4v-6z"/>' },
-  { tab:'post',  label:'Post',      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M3 17l5-4 4 3 3-2 6 5"/>' },
   { tab:'leads', label:'Orders',    icon:'<path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>' },
+  { tab:'shop',  label:'Shop',      icon:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/>' },
 ];
 const ADMIN_MORE = [
-  { tab:'shop',      label:'Shop' },
   { tab:'bulk',      label:'Bulk import' },
   { tab:'reviews',   label:'Reviews' },
   { tab:'gifts',     label:'Gift cards' },
@@ -3590,7 +3726,7 @@ const ADMIN_MORE = [
 
 function adminBadge(tab){
   if (tab === 'queue')   return stories.filter(s => !s.archived_at && s.status === 'pending').length;
-  if (tab === 'post')    return stories.filter(s => !s.archived_at && s.status === 'approved' && !s.posted).length;
+
   if (tab === 'leads')   return leads.filter(l => l.status === 'Enquired').length;
   if (tab === 'reviews') return reviews.filter(r => r.status === 'pending').length;
   if (tab === 'help')    return helpMessages.filter(h => h.status === 'new').length;
@@ -3642,7 +3778,17 @@ function renderAdminMore(){
 function openAdminMore(){ nav.adminMoreOpen = true; render(); }
 function closeAdminMore(){ nav.adminMoreOpen = false; render(); }
 
+// Opens the queue on a particular filter.
+function openQueue(state){
+  transient.qState = state || 'waiting';
+  transient.qSort = null;
+  transient.qLimit = 25;
+  setAdminTab('queue');
+}
+
 function setAdminTab(tab){
+  // The Post tab was folded into the queue; old links still work.
+  if (tab === 'post'){ transient.qState = 'ready'; tab = 'queue'; }
   if (tab === 'settings') setTimeout(checkNotifyState, 0);
   nav.adminTab = tab;
   nav.adminMoreOpen = false;
@@ -3651,60 +3797,357 @@ function setAdminTab(tab){
 }
 
 // ---- Admin: review queue ----
-function renderReviewQueue(){
-  const pendingStories = stories.filter(s => s.status === 'pending' && !isArchived(s));
-  const pendingReplies = replies.filter(r => r.status === 'pending' && !isArchived(r));
-  return `
-    <div class="bh-card" style="margin-bottom:16px;background:var(--blushp);border:none">
-      <p style="font-size:.85rem;color:var(--grey);margin:0">Approving a story automatically files it into its folder below — no separate filing step. Same for replies: approve, and it appears on the story's page right away.</p>
-    </div>
-    <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:10px">New stories (${pendingStories.length})</h3>
-    ${pendingStories.length === 0 ? `<p class="bh-empty">Nothing waiting right now.</p>` : ''}
-    ${pendingStories.map(s => `
-      <div class="bh-qrow">
-        <span class="txt">
-          <span class="bh-author">${escapeHtml(authorLabel(s))}</span>
-          ${escapeHtml(s.text)}
-          <div style="margin-top:8px;display:flex;align-items:center;gap:7px;flex-wrap:wrap">
-            <span style="font-size:.72rem;color:var(--grey);font-weight:700">Category</span>
-            <select class="bh-select" style="width:auto;padding:5px 9px;font-size:.78rem" onchange="recategoriseStory('${s.id}', this.value)">
-              ${categories().map(cat => `<option value="${escapeHtml(cat)}" ${s.category === cat ? 'selected' : ''}>${escapeHtml(cat)}</option>`).join('')}
-            </select>
-          </div>
-        </span>
-        <span class="actions">
-          <button class="bh-approve" onclick="approveStory('${s.id}')">✓ Approve</button>
-          <button class="bh-reject" onclick="rejectStory('${s.id}')">✕ Reject</button>
-          <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveStory('${s.id}', true)">Archive</button>
-          <button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteStory('${s.id}')">Delete</button>
-        </span>
-      </div>
-    `).join('')}
-    <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin:24px 0 10px">Replies (${pendingReplies.length})</h3>
-    ${pendingReplies.length === 0 ? `<p class="bh-empty">Nothing waiting right now.</p>` : ''}
-    ${pendingReplies.map(r => {
-      const parent = stories.find(s => s.id === r.storyId);
-      const parentSnip = parent ? (parent.text.slice(0, 40) + '…') : 'a story';
-      return `
-        <div class="bh-qrow">
-          <span class="txt"><span class="catpill">Reply</span> <span class="bh-author">${escapeHtml(authorLabel(r))}</span> to "${escapeHtml(parentSnip)}"<br>${escapeHtml(r.text)}</span>
-          <span class="actions">
-            <button class="bh-approve" onclick="approveReply('${r.id}')">✓ Approve</button>
-            <button class="bh-reject" onclick="rejectReply('${r.id}')">✕ Reject</button>
-            <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveReply('${r.id}', true)">Archive</button>
-            <button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteReply('${r.id}')">Delete</button>
-          </span>
-        </div>
-      `;
-    }).join('')}
-
-    ${renderArchiveSection()}
-  `;
+// Turning a reply into its own story.
+// Someone often asks a question in a reply that deserves its own discussion.
+// This copies the text into a new story so it can collect replies of its own.
+// The wording is editable first, because a reply is usually phrased as an
+// answer to something and needs a small rewrite to stand alone.
+function startPromote(replyId){
+  const r = replies.find(x => x.id === replyId);
+  if (!r) return;
+  const parent = stories.find(s => s.id === r.storyId);
+  transient.promoteReplyId = replyId;
+  transient.promoteText = r.text;
+  transient.promoteCategory = (parent && parent.category) || categories()[0];
+  transient.promoteKeep = false;
+  transient.promoteStatus = '';
+  render();
+}
+function cancelPromote(){
+  transient.promoteReplyId = null;
+  transient.promoteStatus = '';
+  render();
 }
 
-// Archived items sit quietly at the bottom, grouped by the day they were
-// archived, and drop off this screen after a week. They are NEVER deleted —
-// approved stories stay published in their folder the whole time.
+function renderPromotePanel(r){
+  return `
+    <div class="bh-promote">
+      <p class="hint">This becomes a new story that people can reply to. Tidy the wording if it only makes sense as a reply.</p>
+      <textarea class="bh-textarea" style="min-height:90px"
+        oninput="transient.promoteText = this.value">${escapeHtml(transient.promoteText || '')}</textarea>
+      <div class="row">
+        <label class="bh-label" style="margin:0">Folder</label>
+        <select onchange="transient.promoteCategory = this.value">
+          ${categories().map(c => `<option value="${escapeHtml(c)}" ${transient.promoteCategory === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+        </select>
+      </div>
+      <label class="keep">
+        <input type="checkbox" ${transient.promoteKeep ? 'checked' : ''}
+          onchange="transient.promoteKeep = this.checked">
+        <span>Also keep it as a reply under "${escapeHtml((stories.find(s => s.id === r.storyId) || {}).text ? (stories.find(s => s.id === r.storyId).text.slice(0, 30) + '\u2026') : 'the original story')}"</span>
+      </label>
+      <div class="acts">
+        <button class="bh-btn" onclick="promoteReply('${r.id}')">Make it a story</button>
+        <button class="bh-btn-ghost" onclick="cancelPromote()">Cancel</button>
+      </div>
+      ${transient.promoteStatus ? `<p class="stat">${escapeHtml(transient.promoteStatus)}</p>` : ''}
+    </div>`;
+}
+
+async function promoteReply(replyId){
+  const text = (transient.promoteText || '').trim();
+  if (text.length < 10){
+    transient.promoteStatus = 'Give it a bit more text first.';
+    return render();
+  }
+  const reply = replies.find(x => x.id === replyId);
+  transient.promoteStatus = 'Making the story\u2026';
+  render();
+
+  try {
+    // Created silently and already approved: she is deliberately publishing it,
+    // and does not need a notification about her own action.
+    const made = await apiFetch('/stories', {
+      method: 'POST',
+      body: JSON.stringify({
+        text,
+        category: transient.promoteCategory || categories()[0],
+        pseudonym: (reply && reply.pseudonym) || null,
+        silent: true,
+      }),
+    });
+    await apiFetch('/stories', {
+      method: 'PATCH',
+      body: JSON.stringify({ id: made.id, status: 'approved' }),
+    });
+
+    // Unless she ticked the box, take the reply out of the queue so the same
+    // words are not sitting in two places waiting to be dealt with.
+    if (!transient.promoteKeep && reply){
+      await apiFetch('/replies', { method: 'PATCH', body: JSON.stringify({ id: replyId, archived: true }) });
+    } else if (reply && reply.status === 'pending'){
+      await apiFetch('/replies', { method: 'PATCH', body: JSON.stringify({ id: replyId, status: 'approved' }) });
+    }
+
+    transient.promoteReplyId = null;
+    transient.promoteStatus = '';
+    await Promise.all([fetchStories(), fetchReplies()]);
+    transient.loadError = '';
+    render();
+  } catch (e) {
+    transient.promoteStatus = "Couldn't do that \u2014 " + (e.message || 'try again');
+    render();
+  }
+}
+
+// ---- The queue ----
+// One list, filtered. Waiting, ready to post, posted and archived used to be
+// spread across two tabs; they are the same items at different stages.
+
+const Q_STATES = [
+  { key:'waiting',  label:'Waiting' },
+  { key:'ready',    label:'To post' },
+  { key:'posted',   label:'Posted' },
+  { key:'archived', label:'Archived' },
+  { key:'roundup',  label:'Round-up' },
+];
+
+function qState(){ return transient.qState || 'waiting'; }
+function qType(){ return transient.qType || 'all'; }
+function qSearch(){ return (transient.qSearch || '').trim().toLowerCase(); }
+
+// Oldest first while clearing a backlog, so a story from four days ago does not
+// sink below today's forty and never get read. Newest first everywhere else,
+// because that is history being scanned.
+function qSort(){
+  if (transient.qSort) return transient.qSort;
+  return qState() === 'waiting' ? 'oldest' : 'newest';
+}
+
+function setQState(v){
+  transient.qState = v;
+  transient.qSort = null;      // back to the sensible default for that view
+  transient.qLimit = 25;
+  render();
+}
+function setQType(v){ transient.qType = v; transient.qLimit = 25; render(); }
+function setQSort(v){ transient.qSort = v; render(); }
+function setQSearch(v){ transient.qSearch = v; transient.qLimit = 25; renderQueueList(); }
+function showMoreQueue(){ transient.qLimit = (transient.qLimit || 25) + 25; render(); }
+
+// Everything as one list of {kind, obj, at, text}.
+function queueItems(state, type){
+  const out = [];
+  const wantStories = type !== 'replies';
+  const wantReplies = type !== 'stories';
+
+  if (wantStories){
+    stories.forEach(st => {
+      const archived = isArchived(st);
+      let keep = false;
+      if (state === 'waiting')  keep = st.status === 'pending' && !archived;
+      if (state === 'ready')    keep = st.status === 'approved' && !st.posted && !archived;
+      if (state === 'posted')   keep = st.status === 'approved' && st.posted && !archived;
+      if (state === 'archived') keep = archived;
+      if (keep) out.push({ kind:'story', obj:st, at:st.created_at, text:st.text || '' });
+    });
+  }
+  if (wantReplies){
+    replies.forEach(r => {
+      const archived = isArchived(r);
+      let keep = false;
+      if (state === 'waiting')  keep = r.status === 'pending' && !archived;
+      if (state === 'archived') keep = archived;
+      // A reply is never made into a card of its own, so "To post" and
+      // "Posted" are story-only. An approved reply is simply live on its
+      // story's page.
+
+      if (keep) out.push({ kind:'reply', obj:r, at:r.created_at, text:r.text || '' });
+    });
+  }
+
+  const needle = qSearch();
+  const filtered = needle ? out.filter(i => i.text.toLowerCase().includes(needle)) : out;
+
+  const dir = qSort() === 'oldest' ? 1 : -1;
+  filtered.sort((a, b) => (new Date(a.at) - new Date(b.at)) * dir);
+  return filtered;
+}
+
+function queueCount(state){ return queueItems(state, 'all').length; }
+
+// "Today", "Yesterday", then the date. Grouping beats a column of timestamps.
+function dayLabel(iso){
+  const d = new Date(iso);
+  if (isNaN(d)) return 'Undated';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const then = new Date(d); then.setHours(0,0,0,0);
+  const days = Math.round((today - then) / 86400000);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return d.toLocaleDateString('en-ZA', { weekday:'long' });
+  return d.toLocaleDateString('en-ZA', { day:'numeric', month:'long' });
+}
+
+function timeLabel(iso){
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  return d.toLocaleTimeString('en-ZA', { hour:'2-digit', minute:'2-digit', hour12:false });
+}
+
+function waitingTooLong(iso){
+  const days = daysSince(iso);
+  return days !== null && days >= 2;
+}
+
+function renderQueueList(){
+  const el = document.getElementById('queueList');
+  if (el) el.innerHTML = queueListHtml();
+}
+
+function queueListHtml(){
+  const state = qState();
+  const items = queueItems(state, qType());
+  const limit = transient.qLimit || 25;
+  const shown = items.slice(0, limit);
+
+  if (!items.length){
+    return `<p class="bh-empty">${qSearch()
+      ? 'Nothing matches that.'
+      : 'Nothing here right now.'}</p>`;
+  }
+
+  let html = '';
+  let lastDay = null;
+  shown.forEach(item => {
+    const day = dayLabel(item.at);
+    if (day !== lastDay){
+      html += `<div class="bh-qday">${escapeHtml(day)}</div>`;
+      lastDay = day;
+    }
+    html += item.kind === 'story' ? queueStoryRow(item.obj, state) : queueReplyRow(item.obj, state);
+  });
+
+  if (items.length > shown.length){
+    html += `<button class="bh-qmore" onclick="showMoreQueue()">Show more (${items.length - shown.length} left)</button>`;
+  }
+  return html;
+}
+
+function queueStamp(item){
+  return `<span class="bh-qstamp">${escapeHtml(timeLabel(item.created_at))}
+    ${waitingTooLong(item.created_at) && item.status === 'pending'
+      ? `<em>waiting ${escapeHtml(agoWords(item.created_at))}</em>` : ''}</span>`;
+}
+
+function queueStoryRow(s, state){
+  const masked = maskingOn('cards') ? maskedWordsIn(s.text) : [];
+  return `
+    <div class="bh-qrow">
+      <span class="txt">
+        <span class="bh-qtag story">Story</span>
+        ${queueStamp(s)}
+        <span class="bh-author">${escapeHtml(authorLabel(s))}</span>
+        ${escapeHtml(s.text)}
+        ${masked.length ? `<div class="bh-masknote">On the picture: ${masked.map(w => escapeHtml(maskWord(w))).join(', ')}</div>` : ''}
+        ${state === 'waiting' ? `
+          <div style="margin-top:8px;display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+            <span style="font-size:.72rem;color:var(--grey);font-weight:700">Folder</span>
+            <select class="bh-select" style="width:auto;padding:5px 9px;font-size:.78rem" onchange="recategoriseStory('${s.id}', this.value)">
+              ${categories().map(c => `<option value="${escapeHtml(c)}" ${s.category === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+            </select>
+          </div>` : ''}
+      </span>
+      <span class="actions">
+        ${state === 'waiting' ? `
+          <button class="bh-approve" onclick="approveStory('${s.id}')">\u2713 Approve</button>
+          <button class="bh-reject" onclick="rejectStory('${s.id}')">\u2715 Reject</button>` : ''}
+        ${state === 'ready' ? `
+          <button class="bh-btn" onclick="downloadStoryCard('${s.id}')">Make the picture</button>` : ''}
+        ${state === 'posted' ? `
+          <span class="bh-postedtag">Posted \u2713</span>
+          <button class="bh-btn-ghost" style="font-size:.72rem" onclick="downloadStoryCard('${s.id}')">Make it again</button>` : ''}
+        ${state === 'archived' ? `
+          <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveStory('${s.id}', false)">Put back</button>` : ''}
+        ${state !== 'archived' ? `
+          <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveStory('${s.id}', true)">Archive</button>` : ''}
+        <button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteStory('${s.id}')">Delete</button>
+      </span>
+      ${(state === 'ready' || state === 'posted') ? storyLinkRow(s.id, 'Link for the Instagram link sticker') : ''}
+    </div>`;
+}
+
+function queueReplyRow(r, state){
+  const parent = stories.find(x => x.id === r.storyId);
+  const parentSnip = parent ? (parent.text.length > 50 ? parent.text.slice(0, 50) + '\u2026' : parent.text) : 'a story';
+  return `
+    <div class="bh-qrow">
+      <span class="txt">
+        <span class="bh-qtag reply">Reply</span>
+        ${queueStamp(r)}
+        <span class="bh-author">${escapeHtml(authorLabel(r))}</span>
+        <span style="color:var(--grey);font-size:.78rem"> to "${escapeHtml(parentSnip)}"</span>
+        <br>${escapeHtml(r.text)}
+        ${transient.promoteReplyId === r.id ? renderPromotePanel(r) : ''}
+      </span>
+      <span class="actions">
+        ${state === 'waiting' ? `
+          <button class="bh-approve" onclick="approveReply('${r.id}')">\u2713 Approve</button>
+          <button class="bh-reject" onclick="rejectReply('${r.id}')">\u2715 Reject</button>
+          <button class="bh-btn-ghost" style="font-size:.72rem" onclick="startPromote('${r.id}')">Make it a story</button>` : ''}
+        ${state === 'archived' ? `
+          <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveReply('${r.id}', false)">Put back</button>` : ''}
+        ${state !== 'archived' ? `
+          <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveReply('${r.id}', true)">Archive</button>` : ''}
+        <button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteReply('${r.id}')">Delete</button>
+      </span>
+    </div>`;
+}
+
+function renderReviewQueue(){
+  const state = qState();
+  if (state === 'roundup') return renderQueueChrome() + renderRoundup();
+
+  return renderQueueChrome() + `
+    ${state === 'ready' ? `
+      <div class="bh-card" style="margin-bottom:14px">
+        <div class="bh-grid2">
+          <div>
+            <label class="bh-label">Wording at the bottom</label>
+            <input id="cardTagInput" class="bh-input" value="${escapeHtml(transient.cardTag || setting('storyCardTag'))}" oninput="transient.cardTag = this.value">
+          </div>
+          <div>
+            <label class="bh-label">Card colour</label>
+            <select id="cardThemeSelect" class="bh-select" onchange="transient.cardTheme = this.value">
+              ${Object.keys(CARD_THEMES).map(k =>
+                `<option value="${k}" ${(transient.cardTheme || setting('cardTheme')) === k ? 'selected' : ''}>${escapeHtml(CARD_THEMES[k].label)}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <p style="font-size:.75rem;color:var(--grey);margin:8px 0 0">Both apply to the next picture you make. Download it, then paste the link into Instagram's link sticker.</p>
+      </div>` : ''}
+    ${transient.postDownloadStatus ? `<p style="font-size:.78rem;color:var(--ok);margin:0 0 10px">${escapeHtml(transient.postDownloadStatus)}</p>` : ''}
+    <div id="queueList">${queueListHtml()}</div>`;
+}
+
+function renderQueueChrome(){
+  const state = qState();
+  const sort = qSort();
+  return `
+    <div class="bh-qchips">
+      ${Q_STATES.map(st => {
+        const n = st.key === 'roundup' ? null : queueCount(st.key);
+        return `<button class="${state === st.key ? 'on' : ''}" onclick="setQState('${st.key}')">
+          ${st.label}${n ? ` <b>${n}</b>` : ''}</button>`;
+      }).join('')}
+    </div>
+    ${state === 'roundup' ? '' : `
+      <div class="bh-qbar">
+        <div class="bh-qtypes">
+          ${[['all','All'],['stories','Stories'],['replies','Replies']].map(([k, l]) =>
+            `<button class="${qType() === k ? 'on' : ''}" onclick="setQType('${k}')">${l}</button>`).join('')}
+        </div>
+        <button class="bh-qsort" onclick="setQSort('${sort === 'oldest' ? 'newest' : 'oldest'}')">
+          ${sort === 'oldest' ? 'Oldest first' : 'Newest first'} \u21c5
+        </button>
+      </div>
+      <input class="bh-qfind" placeholder="Search these\u2026" value="${escapeHtml(transient.qSearch || '')}"
+             oninput="setQSearch(this.value)">
+      ${state === 'waiting' && qSort() === 'oldest' && queueCount('waiting') > 0
+        ? `<p class="bh-qhint">Oldest first, so nothing sits unread for days. Tap the arrows to flip it.</p>` : ''}
+    `}`;
+}
+
 function renderArchiveSection(){
   const archived = []
     .concat(stories.filter(archivedRecently).map(s => ({ ...s, kind: 'story' })))
@@ -4237,9 +4680,195 @@ function renderBulkImport(){
 // selectable text rather than only behind a button, so it can be copied by
 // hand if the browser blocks the clipboard — the same problem the story links
 // had.
+// ---- Sharing a product to Instagram ----
+// Instagram's API cannot add a link sticker, so the paste step cannot be
+// removed. What can be removed is the hunting: this makes the story picture and
+// puts the link on the clipboard in one action, then hands the picture straight
+// to Instagram through the phone's share sheet.
+
+function loadProductImage(url){
+  return new Promise((resolve) => {
+    if (!url) return resolve(null);
+    const img = new Image();
+    // Same origin, so the canvas stays clean and can still be exported.
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+
+// Draws the photo filling the frame, cropped to fit rather than squashed.
+function drawCover(ctx, img, x, y, w, h){
+  const scale = Math.max(w / img.width, h / img.height);
+  const dw = img.width * scale, dh = img.height * scale;
+  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+}
+
+async function drawProductCard(canvas, product){
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const T = cardTheme();
+  await loadCanvasFonts();
+
+  const grad = ctx.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, T.from); grad.addColorStop(1, T.to);
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+
+  // The photo, large, in the upper two thirds.
+  const img = await loadProductImage(productImageUrl(product, 'full'));
+  const boxX = 80, boxY = 300, boxW = w - 160, boxH = 1080;
+  if (img){
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(boxX, boxY, boxW, boxH);
+    ctx.clip();
+    drawCover(ctx, img, boxX, boxY, boxW, boxH);
+    ctx.restore();
+  } else {
+    ctx.fillStyle = 'rgba(255,253,249,.12)';
+    ctx.fillRect(boxX, boxY, boxW, boxH);
+  }
+
+  ctx.textBaseline = 'alphabetic';
+
+  // Name, wrapped, under the photo.
+  ctx.fillStyle = T.text;
+  ctx.font = `600 62px ${CARD_BRAND_FONT}`;
+  const nameLines = wrapCanvasText(ctx, product.name || '', boxW).slice(0, 2);
+  let y = boxY + boxH + 110;
+  nameLines.forEach((line) => { ctx.fillText(line, boxX, y); y += 74; });
+
+  // Price.
+  const price = isVoucher(product) ? 'Gift voucher' : 'R' + (product.price || '');
+  ctx.fillStyle = T.accent;
+  ctx.font = `500 54px ${CARD_BODY_FONT}`;
+  ctx.fillText(price, boxX, y + 14);
+
+  // A nudge towards the link sticker.
+  ctx.fillStyle = T.text;
+  ctx.font = `500 30px ${CARD_BODY_FONT}`;
+  ctx.globalAlpha = 0.75;
+  ctx.fillText('Tap the link to see it', boxX, y + 86);
+  ctx.globalAlpha = 1;
+
+  await drawWatermark(ctx, w, h);
+}
+
+function canvasToBlob(canvas){
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+}
+
+// Two taps, deliberately.
+//
+// Safari on iPhone only allows navigator.share() and clipboard writes while a
+// user gesture is still "live". Drawing the card and reading the photo takes
+// long enough that the gesture has expired by the time share() is called, and
+// iOS then refuses with no useful message. So: the first tap prepares the
+// picture, the second tap shares it — and that second tap calls share()
+// immediately, with nothing awaited in between.
+async function prepareShare(id){
+  const product = products.find(p => p.id === id);
+  if (!product) return;
+
+  // Fire the clipboard write BEFORE anything is awaited, while the gesture is
+  // still valid. On iOS this is the only moment it will be allowed.
+  const url = productUrl(product);
+  let copying = null;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      copying = navigator.clipboard.writeText(url);
+    }
+  } catch (e) { /* the link is shown underneath anyway */ }
+
+  transient.shareStatus = { id, text: 'Making the picture\u2026' };
+  render();
+
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080; canvas.height = 1920;
+    await drawProductCard(canvas, product);
+    const blob = await canvasToBlob(canvas);
+    const name = (product.name || 'product').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+
+    let copied = false;
+    try { if (copying){ await copying; copied = true; } } catch (e) { copied = false; }
+
+    transient.sharePrepared = {
+      id,
+      file: new File([blob], `bling-${name}.jpg`, { type: 'image/jpeg' }),
+      canvas,
+      name,
+      copied,
+    };
+    transient.shareStatus = { id, text: copied
+      ? 'Ready. The link is copied \u2014 now send the picture to Instagram.'
+      : 'Ready. Copy the link below, then send the picture to Instagram.' };
+  } catch (e) {
+    transient.sharePrepared = null;
+    transient.shareStatus = { id, text: "Couldn't make the picture \u2014 " + (e.message || 'try again') };
+  }
+  render();
+}
+
+// Second tap. Nothing is awaited before share() so the gesture stays valid.
+function sendPreparedShare(){
+  const ready = transient.sharePrepared;
+  if (!ready) return;
+
+  if (navigator.canShare && navigator.canShare({ files: [ready.file] })){
+    navigator.share({ files: [ready.file], title: 'Bling Happiness' })
+      .then(() => {
+        transient.shareStatus = { id: ready.id, text: ready.copied
+          ? 'Sent. Paste the link into a link sticker.'
+          : 'Sent. Copy the link below for the sticker.' };
+        transient.sharePrepared = null;
+        render();
+      })
+      .catch((e) => {
+        // Cancelling is not a failure.
+        if (!/abort/i.test(e.name || '')){
+          transient.shareStatus = { id: ready.id, text: 'Sharing was blocked \u2014 use Save picture instead.' };
+          render();
+        }
+      });
+    return;
+  }
+
+  // No share sheet: save it to the camera roll instead.
+  savePreparedShare();
+}
+
+function savePreparedShare(){
+  const ready = transient.sharePrepared;
+  if (!ready) return;
+  downloadCanvas(ready.canvas, `bling-${ready.name}.jpg`);
+  transient.shareStatus = { id: ready.id, text: ready.copied
+    ? 'Picture saved. The link is copied \u2014 add both in Instagram.'
+    : 'Picture saved. Copy the link below for the sticker.' };
+  transient.sharePrepared = null;
+  render();
+}
+
+function cancelShare(){
+  transient.sharePrepared = null;
+  transient.shareStatus = null;
+  render();
+}
+
 function productLinkRow(p){
   const url = productUrl(p);
   return `
+    ${transient.sharePrepared && transient.sharePrepared.id === p.id
+      ? `<div class="bh-share-ready">
+           <button class="bh-share" onclick="sendPreparedShare()">Send to Instagram</button>
+           <div class="alt">
+             <button onclick="savePreparedShare()">Save the picture instead</button>
+             <button onclick="cancelShare()">Cancel</button>
+           </div>
+         </div>`
+      : `<button class="bh-share" onclick="prepareShare('${p.id}')">Post to Instagram</button>`}
+    ${transient.shareStatus && transient.shareStatus.id === p.id && transient.shareStatus.text
+      ? `<p class="bh-share-note">${escapeHtml(transient.shareStatus.text)}</p>` : ''}
     <div class="bh-linkrow" style="margin-top:8px">
       <input class="bh-linkfield" readonly value="${escapeHtml(url)}"
              onclick="this.select()" onfocus="this.select()" aria-label="Link to this product">
@@ -5280,6 +5909,58 @@ async function checkNotifyState(){
 }
 
 
+function renderMaskSettings(){
+  const onCards = maskingOn('cards');
+  const onSite = maskingOn('site');
+  return `
+    <div class="bh-card" style="margin-bottom:20px">
+      <h3 class="bh-serif" style="font-size:1.05rem;color:var(--plum);margin-bottom:4px">Masking words</h3>
+      <p style="font-size:.78rem;color:var(--grey);margin:0 0 4px;line-height:1.55">
+        Replaces the middle of a word with stars \u2014 "f***", "v*****" \u2014 so the
+        meaning is still clear.
+      </p>
+      <p style="font-size:.75rem;color:var(--grey);background:var(--blushp);border-radius:8px;padding:10px 12px;margin:0 0 14px;line-height:1.55">
+        This is mainly about Instagram, not offence. Explicit words can get a post
+        throttled or taken down, so masking on the pictures protects your reach.
+        The website is left as written by default \u2014 people choose to open a
+        story there, and starring out ordinary words for a woman's own body can
+        read as if those words are shameful.
+      </p>
+
+      <div class="bh-notify-row">
+        <div><span class="lbl">On story and round-up pictures</span>
+             <span class="note">The ones posted to Instagram.</span></div>
+        <select onchange="settings.maskOnCards = this.value; transient.maskDirty = true; render()">
+          <option value="on" ${onCards ? 'selected' : ''}>Mask them</option>
+          <option value="off" ${!onCards ? 'selected' : ''}>Leave as written</option>
+        </select>
+      </div>
+      <div class="bh-notify-row">
+        <div><span class="lbl">On the website</span>
+             <span class="note">Stories and replies as people read them on the site.</span></div>
+        <select onchange="settings.maskOnSite = this.value; transient.maskDirty = true; render()">
+          <option value="off" ${!onSite ? 'selected' : ''}>Leave as written</option>
+          <option value="on" ${onSite ? 'selected' : ''}>Mask them</option>
+        </select>
+      </div>
+
+      <div class="bh-set-block" style="margin-top:16px">
+        <label class="bh-label">Swear words</label>
+        <p class="bh-set-help">Separated by commas. Whole words only, so "class" is safe from "ass".</p>
+        <textarea id="set_maskWordsStrong" class="bh-textarea" style="min-height:66px">${escapeHtml(maskList('maskWordsStrong', DEFAULT_MASK_STRONG).join(', '))}</textarea>
+      </div>
+      <div class="bh-set-block">
+        <label class="bh-label">Explicit words</label>
+        <p class="bh-set-help">Anatomical and sexual words. These are the ones Instagram reacts to. Remove any you would rather leave alone.</p>
+        <textarea id="set_maskWordsExplicit" class="bh-textarea" style="min-height:66px">${escapeHtml(maskList('maskWordsExplicit', DEFAULT_MASK_EXPLICIT).join(', '))}</textarea>
+      </div>
+      <p style="font-size:.75rem;color:var(--grey);margin:6px 0 0">
+        Try it: <em>${escapeHtml(maskText('That fucking conversation about sex changed everything.', 'cards'))}</em>
+      </p>
+    </div>
+  `;
+}
+
 function renderNotifySettings(){
   const prefs = notifyPrefs();
   const on = transient.notifyOn;
@@ -5366,6 +6047,7 @@ function renderSettings(){
       <p style="font-size:.85rem;color:var(--grey);margin:0">Change anything here whenever you like \u2014 prices, banking details, collection info, or the exact wording of every message. Nothing else needs to be updated.</p>
     </div>
 
+    ${renderMaskSettings()}
     ${renderNotifySettings()}
 
     <div class="bh-card" style="margin-bottom:18px">
@@ -5439,7 +6121,7 @@ function renderSettings(){
   `;
 }
 
-const SETTING_KEYS = ['notifyPrefs','shippingCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','shopCategories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage','reminderMessage','updateMessage'];
+const SETTING_KEYS = ['notifyPrefs','maskOnCards','maskOnSite','maskWordsStrong','maskWordsExplicit','shippingCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','shopCategories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage','reminderMessage','updateMessage'];
 
 function readCategoryInputs(){
   return Array.from(document.querySelectorAll('.bh-cat-input'))
@@ -5564,59 +6246,11 @@ function resetSettings(){
 }
 
 // ---- Admin: post manager ----
-function renderPostManager(){
+function renderRoundup(){
   const approvedStories = stories.filter(s => s.status === 'approved');
-  const readyToPost = approvedStories.filter(s => !s.posted && !isArchived(s));
-  const alreadyPosted = approvedStories.filter(s => s.posted && !isArchived(s));
   const compileStory = stories.find(s => s.id === transient.compileStoryId);
   const compileReplies = compileStory ? replies.filter(r => r.storyId === compileStory.id && r.status === 'approved') : [];
-
   return `
-    <div class="bh-card" style="margin-bottom:20px">
-      <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:10px">Ready to post (${readyToPost.length})</h3>
-      <p style="font-size:.83rem;color:var(--grey);margin-bottom:10px">Approved stories, turned into a finished picture with one tap. Sized for Instagram Stories.</p>
-      <p style="font-size:.78rem;color:var(--grey);margin:0 0 14px;background:var(--blushp);border-radius:8px;padding:10px 12px">
-        <strong>To post:</strong> download the picture, then tap <strong>Copy link</strong> and paste it into Instagram's link sticker when you add the Story. That link opens this exact story, so people can read the replies and add their own.
-      </p>
-      <div class="bh-grid2" style="margin-bottom:6px">
-        <div>
-          <label class="bh-label">Wording at the bottom</label>
-          <input id="cardTagInput" class="bh-input" value="${escapeHtml(transient.cardTag || setting('storyCardTag'))}" oninput="transient.cardTag = this.value">
-        </div>
-        <div>
-          <label class="bh-label">Card colour</label>
-          <select id="cardThemeSelect" class="bh-select" onchange="transient.cardTheme = this.value">
-            ${Object.keys(CARD_THEMES).map(k =>
-              `<option value="${k}" ${(transient.cardTheme || setting('cardTheme')) === k ? 'selected' : ''}>${escapeHtml(CARD_THEMES[k].label)}</option>`
-            ).join('')}
-          </select>
-        </div>
-      </div>
-      <p style="font-size:.75rem;color:var(--grey);margin:0 0 16px">Both apply to the next picture you make. Leave the wording as is for anonymous, or type a name if someone is happy to be credited.</p>
-      ${readyToPost.length === 0 ? `<p class="bh-empty">Nothing waiting to be posted right now.</p>` : ''}
-      ${readyToPost.map(s => `
-        <div class="bh-post-item">
-          <span class="snip">${s.pseudonym ? `<span class="bh-author">${escapeHtml(s.pseudonym)}</span> ` : ''}"${escapeHtml(s.text.length > 90 ? s.text.slice(0, 90) + '…' : s.text)}"</span>
-          <span style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="bh-btn" onclick="downloadStoryCard('${s.id}')">Download as JPEG →</button>
-          </span>
-          ${storyLinkRow(s.id, 'Link for the Instagram link sticker')}
-        </div>
-      `).join('')}
-      <p style="font-size:.78rem;color:var(--ok);margin-top:8px">${escapeHtml(transient.postDownloadStatus)}</p>
-      ${alreadyPosted.length > 0 ? `
-        <h3 class="bh-serif" style="font-size:.95rem;color:var(--plum);margin:20px 0 10px">Already downloaded (${alreadyPosted.length})</h3>
-        ${alreadyPosted.map(s => `
-          <div class="bh-post-item">
-            <span class="snip" style="opacity:.65">"${escapeHtml(s.text.length > 90 ? s.text.slice(0, 90) + '…' : s.text)}"</span>
-            <span class="bh-postedtag">Downloaded ✓</span>
-            <button class="bh-btn-ghost" style="font-size:.72rem" onclick="downloadStoryCard('${s.id}')">Download again</button>
-            <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveStory('${s.id}', true)">Archive</button>
-            ${storyLinkRow(s.id, 'Link for the Instagram link sticker')}
-          </div>
-        `).join('')}
-      ` : ''}
-    </div>
     <div class="bh-card">
       <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:6px">Compile replies into a repost</h3>
       <p style="font-size:.83rem;color:var(--grey);margin-bottom:14px">Pick a story, choose a few of its approved replies, and turn them into a "here's what people said" card.</p>
