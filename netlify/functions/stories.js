@@ -1,4 +1,5 @@
 const { getPool, json, isAdmin, newId } = require('./_utils');
+const { notify } = require('./_push');
 
 // posted_at records WHEN a story card was made, so the dashboard can show
 // "made this week" rather than guessing from the submission date.
@@ -41,13 +42,22 @@ exports.handler = async (event, context) => {
 
     // Anyone can submit a story — no login required, exactly as designed.
     if (event.httpMethod === 'POST'){
-      const { text, category, pseudonym } = JSON.parse(event.body || '{}');
+      const { text, category, pseudonym, silent } = JSON.parse(event.body || '{}');
       if (!text || !category) return json(400, { error: 'text and category are required' });
       const id = newId();
       await pool.query(
         'INSERT INTO stories (id, text, category, status, pseudonym) VALUES ($1, $2, $3, $4, $5)',
         [id, text, category, 'pending', (pseudonym || '').trim() || null]
       );
+      // Stories arrive 50-100 a day, so this is set to 'batched' by default
+      // and only fires instantly if she deliberately turns it on.
+      // `silent` is used when the admin turns a reply into a story — she does
+      // not need a notification about something she just did herself.
+      if (!silent){
+        // No preview: the body of a story must never appear on a lock screen.
+        await notify(pool, 'stories', 'New story to read',
+          'Open the queue to read it.', '/?admin=1');
+      }
       return json(201, { id });
     }
 

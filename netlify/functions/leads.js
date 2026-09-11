@@ -1,4 +1,5 @@
 const { getPool, json, isAdmin, newId } = require('./_utils');
+const { notify } = require('./_push');
 const { lookupCode, discountAmount } = require('./discounts');
 
 exports.handler = async (event, context) => {
@@ -53,6 +54,8 @@ exports.handler = async (event, context) => {
         'INSERT INTO leads (id, buyer, phone, item, price, delivery_method, address, status, size, items, total, shipping, subtotal, lead_time, discount_code, discount_amount) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)',
         [id, buyer, phone || null, summary, price || null, deliveryMethod || 'Collection', address || null, 'Enquired', size || null, basket.length ? JSON.stringify(basket) : null, total || null, shipping || null, subtotal || null, leadTime || null, appliedCode, appliedAmount ? String(appliedAmount) : null]
       );
+      await notify(pool, 'orders', 'New order \u2014 R' + (total || price || '?'),
+        buyer + ' \u00b7 ' + summary, '/?admin=1');
       return json(201, { id });
     }
 

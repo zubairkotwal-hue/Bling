@@ -1,4 +1,5 @@
 const { getPool, json, isAdmin, newId } = require('./_utils');
+const { notify } = require('./_push');
 
 // Help messages carry a phone number, so only the admin may read them.
 exports.handler = async (event) => {
@@ -18,6 +19,9 @@ exports.handler = async (event) => {
         'INSERT INTO help_messages (id, name, phone, message, status) VALUES ($1,$2,$3,$4,$5)',
         [id, (name || '').trim() || null, phone, message, 'new']
       );
+      // The name is useful and not sensitive; the message itself is not shown.
+      await notify(pool, 'help', 'Help message' + (name ? ' from ' + name : ''),
+        'Open Help messages to read it.', '/?admin=1');
       return json(201, { id });
     }
 

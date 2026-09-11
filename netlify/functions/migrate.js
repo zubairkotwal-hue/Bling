@@ -29,6 +29,15 @@ exports.handler = async () => {
       -- Up to 4 pictures per product. Each picture is two rows (thumb + full)
       -- sharing a position; position 0 is the main one shown in the grid.
       -- Existing single pictures become position 0, so nothing is disturbed.
+      -- Admin push notifications: one row per device she signs up on.
+      CREATE TABLE IF NOT EXISTS push_subscriptions (
+        id TEXT PRIMARY KEY,
+        endpoint TEXT NOT NULL UNIQUE,
+        p256dh TEXT NOT NULL,
+        auth TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
       ALTER TABLE product_images ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
       UPDATE product_images SET position = 0 WHERE position IS NULL;
       ALTER TABLE products ADD COLUMN IF NOT EXISTS image_count INTEGER DEFAULT 1;

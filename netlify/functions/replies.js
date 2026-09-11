@@ -1,4 +1,5 @@
 const { getPool, json, isAdmin, newId } = require('./_utils');
+const { notify } = require('./_push');
 
 exports.handler = async (event, context) => {
   const pool = getPool();
@@ -21,6 +22,8 @@ exports.handler = async (event, context) => {
         'INSERT INTO replies (id, story_id, text, status) VALUES ($1, $2, $3, $4)',
         [id, storyId, text, 'pending']
       );
+      await notify(pool, 'replies', 'New reply to approve',
+        'Open the queue to read it.', '/?admin=1');
       return json(201, { id });
     }
 

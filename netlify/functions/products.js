@@ -132,12 +132,7 @@ exports.handler = async (event) => {
       if (!name || !price) return json(400, { error: 'name and price are required' });
 
       const id = newId();
-      // images may be one object or an array of up to 4 — the array form was
-      // being read as a single object here, so bulk-added products came out
-      // with their pictures saved but has_image false.
-      const hasImage = Array.isArray(images)
-        ? images.some(im => im && (im.thumb || im.full))
-        : !!(images && (images.thumb || images.full));
+      const hasImage = !!(images && (images.thumb || images.full));
       const saved = await saveImages(pool, id, images);
       const version = saved ? saved.version : null;
       const withVersion = await imageVersionReady(pool);

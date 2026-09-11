@@ -1,4 +1,5 @@
 const { getPool, json, isAdmin, newId } = require('./_utils');
+const { notify } = require('./_push');
 
 exports.handler = async (event) => {
   const pool = getPool();
@@ -22,6 +23,8 @@ exports.handler = async (event) => {
         'INSERT INTO reviews (id, product_id, rating, text, pseudonym, status) VALUES ($1,$2,$3,$4,$5,$6)',
         [id, productId, r, text, (pseudonym || '').trim() || null, 'pending']
       );
+      await notify(pool, 'reviews', r + '-star review to approve',
+        'Open Reviews to read it.', '/?admin=1');
       return json(201, { id });
     }
 
