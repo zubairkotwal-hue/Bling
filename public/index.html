@@ -411,6 +411,10 @@
     color:var(--ink); margin-bottom:6px; }
   .bh-qhint{ font-size:.72rem; color:var(--grey); margin:0 0 12px; }
 
+  .bh-qjump{ width:100%; background:#fdf6ea; border:1px solid #e8d5ae; border-radius:9px;
+    padding:11px 12px; margin:0 0 8px; font-family:var(--f-ui); font-size:.8rem;
+    color:#8a6520; cursor:pointer; text-align:left; }
+
   .bh-qday{ font-size:.68rem; font-weight:600; letter-spacing:.09em; text-transform:uppercase;
     color:var(--grey); margin:18px 0 8px; padding-bottom:5px; border-bottom:1px solid var(--line); }
   .bh-qtag{ display:inline-block; font-size:.6rem; font-weight:600; letter-spacing:.06em;
@@ -4134,8 +4138,10 @@ function renderQueueChrome(){
     ${state === 'roundup' ? '' : `
       <div class="bh-qbar">
         <div class="bh-qtypes">
-          ${[['all','All'],['stories','Stories'],['replies','Replies']].map(([k, l]) =>
-            `<button class="${qType() === k ? 'on' : ''}" onclick="setQType('${k}')">${l}</button>`).join('')}
+          ${[['all','All'],['stories','Stories'],['replies','Replies']].map(([k, l]) => {
+            const n = queueItems(state, k).length;
+            return `<button class="${qType() === k ? 'on' : ''}" onclick="setQType('${k}')">${l}${n ? ` ${n}` : ''}</button>`;
+          }).join('')}
         </div>
         <button class="bh-qsort" onclick="setQSort('${sort === 'oldest' ? 'newest' : 'oldest'}')">
           ${sort === 'oldest' ? 'Oldest first' : 'Newest first'} \u21c5
@@ -4143,6 +4149,18 @@ function renderQueueChrome(){
       </div>
       <input class="bh-qfind" placeholder="Search these\u2026" value="${escapeHtml(transient.qSearch || '')}"
              oninput="setQSearch(this.value)">
+      ${(function(){
+        // Replies are the newest items, so oldest-first pushes them below the
+        // visible page. Without this they look as though they have vanished.
+        if (qType() !== 'all') return '';
+        const items = queueItems(state, 'all');
+        const limit = transient.qLimit || 25;
+        const hidden = items.slice(limit).filter(i => i.kind === 'reply').length;
+        if (!hidden) return '';
+        return `<button class="bh-qjump" onclick="setQType('replies')">
+          ${hidden} ${hidden === 1 ? 'reply is' : 'replies are'} further down — show ${hidden === 1 ? 'it' : 'them'}
+        </button>`;
+      })()}
       ${state === 'waiting' && qSort() === 'oldest' && queueCount('waiting') > 0
         ? `<p class="bh-qhint">Oldest first, so nothing sits unread for days. Tap the arrows to flip it.</p>` : ''}
     `}`;
