@@ -4079,6 +4079,21 @@ function queueStoryRow(s, state){
     </div>`;
 }
 
+// Jump from a live reply straight into the round-up tool, with its story
+// chosen and that reply already ticked. Without this she had to note which
+// story it belonged to, switch view, and find it in a dropdown.
+function useReplyInRoundup(replyId){
+  const r = replies.find(x => x.id === replyId);
+  if (!r) return;
+  transient.compileStoryId = r.storyId;
+  transient.compileTrim = null;
+  transient.compileStatus = '';
+  transient.compileChecked = transient.compileChecked || {};
+  // Keep anything already ticked on this story, add this one.
+  transient.compileChecked[replyId] = true;
+  setQState('roundup');
+}
+
 function queueReplyRow(r, state){
   const parent = stories.find(x => x.id === r.storyId);
   const parentSnip = parent ? (parent.text.length > 50 ? parent.text.slice(0, 50) + '\u2026' : parent.text) : 'a story';
@@ -4097,13 +4112,18 @@ function queueReplyRow(r, state){
           <button class="bh-approve" onclick="approveReply('${r.id}')">\u2713 Approve</button>
           <button class="bh-reject" onclick="rejectReply('${r.id}')">\u2715 Reject</button>
           <button class="bh-btn-ghost" style="font-size:.72rem" onclick="startPromote('${r.id}')">Make it a story</button>` : ''}
-        ${state === 'live' ? `<span class="bh-postedtag">Showing on the story \u2713</span>` : ''}
+        ${state === 'live' ? `
+          <span class="bh-postedtag">Showing on the story \u2713</span>
+          <button class="bh-btn" style="font-size:.78rem;padding:9px 14px" onclick="useReplyInRoundup('${r.id}')">Use in a round-up card</button>` : ''}
         ${state === 'archived' ? `
           <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveReply('${r.id}', false)">Put back</button>` : ''}
         ${state !== 'archived' ? `
           <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveReply('${r.id}', true)">Archive</button>` : ''}
         <button class="bh-btn-ghost" style="color:var(--risk);font-size:.72rem" onclick="deleteReply('${r.id}')">Delete</button>
       </span>
+      ${state === 'live' && r.storyId
+        ? storyLinkRow(r.storyId, 'Link to the story this reply is on')
+        : ''}
     </div>`;
 }
 
