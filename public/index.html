@@ -3951,11 +3951,12 @@ function queueItems(state, type){
       const archived = isArchived(r);
       let keep = false;
       if (state === 'waiting')  keep = r.status === 'pending' && !archived;
+      // A reply is never made into a card of its own, so "To post" stays
+      // story-only. But an approved reply IS live on its story's page, so it
+      // belongs under "Posted" — without this it matched no filter at all and
+      // disappeared from the admin the moment it was approved.
+      if (state === 'posted')   keep = r.status === 'approved' && !archived;
       if (state === 'archived') keep = archived;
-      // A reply is never made into a card of its own, so "To post" and
-      // "Posted" are story-only. An approved reply is simply live on its
-      // story's page.
-
       if (keep) out.push({ kind:'reply', obj:r, at:r.created_at, text:r.text || '' });
     });
   }
@@ -4089,6 +4090,7 @@ function queueReplyRow(r, state){
           <button class="bh-approve" onclick="approveReply('${r.id}')">\u2713 Approve</button>
           <button class="bh-reject" onclick="rejectReply('${r.id}')">\u2715 Reject</button>
           <button class="bh-btn-ghost" style="font-size:.72rem" onclick="startPromote('${r.id}')">Make it a story</button>` : ''}
+        ${state === 'posted' ? `<span class="bh-postedtag">Live \u2713</span>` : ''}
         ${state === 'archived' ? `
           <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveReply('${r.id}', false)">Put back</button>` : ''}
         ${state !== 'archived' ? `
