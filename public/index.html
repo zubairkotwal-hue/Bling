@@ -3902,9 +3902,16 @@ const Q_STATES = [
   { key:'waiting',  label:'Waiting' },
   { key:'ready',    label:'To post' },
   { key:'posted',   label:'Posted' },
+  { key:'live',     label:'Live replies' },
   { key:'archived', label:'Archived' },
   { key:'roundup',  label:'Round-up' },
 ];
+
+// "Live replies" is its own state on purpose. An approved reply is not
+// something she posted — it is simply showing on its story's page. Counting
+// them under "Posted" made it look as though she had posted 135 things when
+// she had posted 7.
+const REPLY_ONLY_STATES = ['live'];
 
 function qState(){ return transient.qState || 'waiting'; }
 function qType(){ return transient.qType || 'all'; }
@@ -3920,6 +3927,8 @@ function qSort(){
 
 function setQState(v){
   transient.qState = v;
+  if (REPLY_ONLY_STATES.includes(v)) transient.qType = 'replies';
+  else if (transient.qType === 'replies') transient.qType = 'all';
   transient.qSort = null;      // back to the sensible default for that view
   transient.qLimit = 25;
   render();
@@ -3943,6 +3952,7 @@ function queueItems(state, type){
       if (state === 'ready')    keep = st.status === 'approved' && !st.posted && !archived;
       if (state === 'posted')   keep = st.status === 'approved' && st.posted && !archived;
       if (state === 'archived') keep = archived;
+      if (state === 'live')     keep = false;
       if (keep) out.push({ kind:'story', obj:st, at:st.created_at, text:st.text || '' });
     });
   }
@@ -3951,11 +3961,8 @@ function queueItems(state, type){
       const archived = isArchived(r);
       let keep = false;
       if (state === 'waiting')  keep = r.status === 'pending' && !archived;
-      // A reply is never made into a card of its own, so "To post" stays
-      // story-only. But an approved reply IS live on its story's page, so it
-      // belongs under "Posted" — without this it matched no filter at all and
-      // disappeared from the admin the moment it was approved.
-      if (state === 'posted')   keep = r.status === 'approved' && !archived;
+      // Approved replies live under their own state, not "Posted".
+      if (state === 'live')     keep = r.status === 'approved' && !archived;
       if (state === 'archived') keep = archived;
       if (keep) out.push({ kind:'reply', obj:r, at:r.created_at, text:r.text || '' });
     });
@@ -4090,7 +4097,7 @@ function queueReplyRow(r, state){
           <button class="bh-approve" onclick="approveReply('${r.id}')">\u2713 Approve</button>
           <button class="bh-reject" onclick="rejectReply('${r.id}')">\u2715 Reject</button>
           <button class="bh-btn-ghost" style="font-size:.72rem" onclick="startPromote('${r.id}')">Make it a story</button>` : ''}
-        ${state === 'posted' ? `<span class="bh-postedtag">Live \u2713</span>` : ''}
+        ${state === 'live' ? `<span class="bh-postedtag">Showing on the story \u2713</span>` : ''}
         ${state === 'archived' ? `
           <button class="bh-btn-ghost" style="font-size:.72rem" onclick="archiveReply('${r.id}', false)">Put back</button>` : ''}
         ${state !== 'archived' ? `
@@ -4139,7 +4146,7 @@ function renderQueueChrome(){
     </div>
     ${state === 'roundup' ? '' : `
       <div class="bh-qbar">
-        <div class="bh-qtypes">
+        <div class="bh-qtypes" style="${REPLY_ONLY_STATES.includes(state) ? 'visibility:hidden' : ''}">
           ${[['all','All'],['stories','Stories'],['replies','Replies']].map(([k, l]) => {
             const n = queueItems(state, k).length;
             return `<button class="${qType() === k ? 'on' : ''}" onclick="setQType('${k}')">${l}${n ? ` ${n}` : ''}</button>`;
