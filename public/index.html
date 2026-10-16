@@ -577,7 +577,13 @@
   .bh-shop-card .name{ font-family:var(--f-display); font-weight:500; font-size:.95rem; color:var(--ink); line-height:1.25; }
   .bh-shop-card .price{ font-size:.86rem; color:var(--grey); font-weight:500; margin-top:5px; letter-spacing:.01em; }
   .bh-wa-btn{ background:#25d366; color:#fff; font-weight:700; padding:11px 20px; border-radius:9px; font-size:.86rem; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+  .bh-prodsearch{ display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+  .bh-prodsearch .bh-input{ margin-bottom:0; }
+  .bh-prodsearch-count{ font-size:.75rem; color:var(--grey); margin:0 0 12px; min-height:1.05em; }
   .bh-radio-row{ display:flex; gap:16px; margin-bottom:16px; }
+  /* Four delivery options will not fit across a phone, so the checkout one
+     stacks. The two admin radio rows are left as they were. */
+  .bh-radio-row.bh-radio-stack{ flex-direction:column; gap:11px; }
 .bh-detail{ background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
   .bh-detail-img{ width:100%; aspect-ratio:1; object-fit:cover; display:block; }
   .bh-detail-body{ padding:22px; }
@@ -615,6 +621,8 @@
 // before anything has been saved.
 const DEFAULT_SETTINGS = {
   shippingCost: '99',
+  pudoCost: '80',
+  cgKioskCost: '80',
   freeShippingOver: '1500',
   announcement: 'Free shipping over R1500 \u00b7 Share your story',
 
@@ -680,6 +688,45 @@ function setting(key){
 function shippingCost(){
   const n = parseFloat(setting('shippingCost'));
   return isNaN(n) ? 0 : n;
+}
+
+// Every way an order can reach the customer.
+//
+// `value` is what gets written into the order's delivery_method column, so the
+// first two must never be renamed — orders already in the database are saved
+// with exactly those words. Each rate is editable in Admin -> Settings.
+// Collection has no rateKey, which is what marks it as the free,
+// no-address-needed option everywhere else in this file.
+const DELIVERY_METHODS = [
+  { value: 'Collection', label: 'Collection', rateKey: null,
+    addressTitle: null, addressPlaceholder: '' },
+  { value: 'Shipping', label: 'Shipping', rateKey: 'shippingCost',
+    addressTitle: 'Shipping address',
+    addressPlaceholder: 'Where should we send it?' },
+  { value: 'Pudo', label: 'Pudo locker', rateKey: 'pudoCost',
+    addressTitle: 'Pudo locker',
+    addressPlaceholder: 'Which Pudo locker? e.g. Pudo at Shell, Rivonia' },
+  { value: 'CG Kiosk', label: 'Courier Guy kiosk', rateKey: 'cgKioskCost',
+    addressTitle: 'Courier Guy kiosk',
+    addressPlaceholder: 'Which kiosk? e.g. The Courier Guy, Mall of Africa' },
+];
+
+function deliveryMethodDef(method){
+  return DELIVERY_METHODS.find(m => m.value === method) || DELIVERY_METHODS[0];
+}
+// Collection is the only method that is free and needs no address, so the rest
+// are treated identically — that way adding a courier later changes nothing
+// but this table.
+function isCollection(method){ return !deliveryMethodDef(method).rateKey; }
+function deliveryRate(method){
+  const key = deliveryMethodDef(method).rateKey;
+  if (!key) return 0;
+  const n = parseFloat(setting(key));
+  return isNaN(n) ? 0 : n;
+}
+function cheapestDeliveryRate(){
+  const rates = DELIVERY_METHODS.filter(m => m.rateKey).map(m => deliveryRate(m.value));
+  return rates.length ? Math.min.apply(null, rates) : 0;
 }
 
 // Fills {name}, {items}, {total} etc. into a message template.
@@ -842,7 +889,7 @@ function productImageUrl(p, size, index){
 function isVoucher(p){ return p && p.product_type === 'voucher'; }
 
 const SIZE_PRESETS = {
-  clothing: { label: 'Clothing (XS–XXL)', options: ['XS','S','M','L','XL','XXL'] },
+  clothing: { label: 'Clothing (XS–6XL)', options: ['XS','S','M','L','XL','XXL','3XL','4XL','5XL','6XL'] },
   bra: { label: 'Bra sizes', options: (function(){
       const bands = [30,32,34,36,38,40,42,44];
       const cups = ['A','B','C','D','DD','E','F','G'];
@@ -1273,9 +1320,10 @@ async function drawDocCard(canvas, order, kind){
   }
 
   const deliveryMethod = order.delivery_method || order.deliveryMethod || 'Collection';
-  const rows = [['For', order.buyer], ['Delivery', deliveryMethod]];
-  if (kind === 'delivery' && deliveryMethod === 'Shipping' && order.address){
-    rows.push(['Address', order.address]);
+  const dmDef = deliveryMethodDef(deliveryMethod);
+  const rows = [['For', order.buyer], ['Delivery', dmDef.label]];
+  if (kind === 'delivery' && !isCollection(deliveryMethod) && order.address){
+    rows.push([dmDef.addressTitle, order.address]);
   }
   if (kind !== 'delivery' && order.phone) rows.push(['Contact', order.phone]);
 
@@ -1303,9 +1351,9 @@ async function drawDocCard(canvas, order, kind){
     // on the delivery method.
     let deliveryNote;
     if (order.status === 'Sent'){
-      deliveryNote = deliveryMethod === 'Shipping' ? 'PACKED AND ON ITS WAY' : 'COLLECTED';
+      deliveryNote = isCollection(deliveryMethod) ? 'COLLECTED' : 'PACKED AND ON ITS WAY';
     } else {
-      deliveryNote = deliveryMethod === 'Shipping' ? 'PACKED AND READY TO SHIP' : 'READY FOR COLLECTION';
+      deliveryNote = isCollection(deliveryMethod) ? 'READY FOR COLLECTION' : 'PACKED AND READY TO SEND';
     }
     ctx.fillText(deliveryNote, marginX, y);
   }
@@ -1489,15 +1537,16 @@ async function makeOrderPDF(order, kind){
   // Customer / delivery blocks
   doc.setColor(...GREY);
   doc.text('CUSTOMER', M, y, { size: 7.5, bold: true });
-  doc.text(deliveryMethod === 'Shipping' ? 'SHIPPING TO' : 'COLLECTION FROM', W / 2, y, { size: 7.5, bold: true });
+  const pdfDm = deliveryMethodDef(deliveryMethod);
+  doc.text(isCollection(deliveryMethod) ? 'COLLECTION FROM' : String(pdfDm.addressTitle).toUpperCase(), W / 2, y, { size: 7.5, bold: true });
   y += 6;
   doc.setColor(...INK);
   doc.text(String(order.buyer || ''), M, y, { size: 10 });
   if (order.phone) doc.text(String(order.phone), M, y + 5, { size: 10 });
 
-  const rightLines = deliveryMethod === 'Shipping'
-    ? doc.wrap(String(order.address || '(address to confirm)'), W / 2 - M - 4, 10, false)
-    : ['Ormonde Close, Upavon Road', 'House 33, Ormonde'];
+  const rightLines = isCollection(deliveryMethod)
+    ? ['Ormonde Close, Upavon Road', 'House 33, Ormonde']
+    : doc.wrap(String(order.address || '(to confirm)'), W / 2 - M - 4, 10, false);
   rightLines.forEach((l, i) => doc.text(l, W / 2, y + i * 5, { size: 10 }));
   y += Math.max(14, rightLines.length * 5 + 8);
 
@@ -1535,7 +1584,7 @@ async function makeOrderPDF(order, kind){
       doc.setColor(...GREY).text('Subtotal', W - M - 38, y, { size: 10, align: 'right' });
       doc.setColor(...INK).text('R' + parseFloat(order.subtotal).toFixed(2), W - M, y, { size: 10, align: 'right' });
       y += 6;
-      doc.setColor(...GREY).text(ship > 0 ? 'Shipping' : 'Collection', W - M - 38, y, { size: 10, align: 'right' });
+      doc.setColor(...GREY).text(isCollection(deliveryMethod) ? 'Collection' : pdfDm.label, W - M - 38, y, { size: 10, align: 'right' });
       doc.setColor(...INK).text(ship > 0 ? 'R' + ship.toFixed(2) : 'Free', W - M, y, { size: 10, align: 'right' });
       y += 8;
     }
@@ -1558,7 +1607,7 @@ async function makeOrderPDF(order, kind){
   } else if (kind === 'receipt'){
     doc.setColor(...PLUM).text('PAYMENT RECEIVED \u2014 THANK YOU', M, y, { size: 10, bold: true }); y += 7;
     doc.setColor(...GREY).text("We'll let you know as soon as your order is ready.", M, y, { size: 9 });
-  } else if (deliveryMethod === 'Collection'){
+  } else if (isCollection(deliveryMethod)){
     doc.setColor(...PLUM).text('COLLECTION DETAILS', M, y, { size: 9, bold: true }); y += 7;
     doc.setColor(...INK);
     // Uses whatever is saved in Settings, line for line.
@@ -1719,7 +1768,9 @@ function buildLeadMessage(lead, kind){
   if (kind === 'reminder') tpl = setting('reminderMessage');
   else if (kind === 'update') tpl = setting('updateMessage');
   else if (kind === 'receipt') tpl = setting('receiptMessage');
-  else if (kind === 'delivery') tpl = deliveryMethod === 'Shipping' ? setting('shippingMessage') : setting('collectionMessage');
+  // Pudo and the kiosk reuse the shipping wording — {address} fills in
+  // whichever locker or kiosk the customer chose.
+  else if (kind === 'delivery') tpl = isCollection(deliveryMethod) ? setting('collectionMessage') : setting('shippingMessage');
   else tpl = setting('orderMessage');
 
   return fillTemplate(tpl, vars);
@@ -1799,6 +1850,7 @@ let transient = {
   checkingOut: false,
   deliveryMethod: 'Collection',
   filterCategory: '',
+  shopSearch: '',
   shopSeeAll: '',
   // Colour, size and availability are multi-select (tick boxes), like KAAL.
   filterColour: [],
@@ -1871,10 +1923,10 @@ function freeShippingOver(){
   return isNaN(n) ? 0 : n;
 }
 function shippingFor(method){
-  if (method !== 'Shipping') return 0;
+  if (isCollection(method)) return 0;
   const threshold = freeShippingOver();
   if (threshold > 0 && cartSubtotal() >= threshold) return 0;
-  return shippingCost();
+  return deliveryRate(method);
 }
 function cartTotal(method){ return Math.max(0, cartSubtotal() - (transient.discountAmount || 0)) + shippingFor(method || transient.deliveryMethod); }
 
@@ -2287,7 +2339,7 @@ function renderHome(){
     <div class="bh-badges">
       <div class="bh-badge">
         <svg viewBox="0 0 24 24"><path d="M2 8h11v9H2z"/><path d="M13 11h5l3 3v3h-8z"/><circle cx="6" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg>
-        <div class="t">Countrywide delivery</div><div class="s">R${shippingCost()} anywhere in SA${freeShippingOver() > 0 ? `, free over R${freeShippingOver()}` : ''}</div>
+        <div class="t">Countrywide delivery</div><div class="s">Door, Pudo or kiosk from R${cheapestDeliveryRate()}${freeShippingOver() > 0 ? `, free over R${freeShippingOver()}` : ''}</div>
       </div>
       <div class="bh-badge">
         <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
@@ -2633,13 +2685,13 @@ function renderShop(){
         <input id="orderBuyer" class="bh-input" placeholder="Full name" style="margin-bottom:14px">
         <label class="bh-label">WhatsApp number</label>
         <input id="orderPhone" class="bh-input" placeholder="e.g. 082 123 4567" style="margin-bottom:14px">
-        <label class="bh-label">Collection or shipping?</label>
-        <div class="bh-radio-row">
-          <label><input type="radio" name="deliveryMethod" value="Collection" ${transient.deliveryMethod !== 'Shipping' ? 'checked' : ''} onchange="toggleShippingField()"> Collection <span style="color:var(--grey);font-size:.78rem">(free)</span></label>
-          <label><input type="radio" name="deliveryMethod" value="Shipping" ${transient.deliveryMethod === 'Shipping' ? 'checked' : ''} onchange="toggleShippingField()"> Shipping <span style="color:var(--grey);font-size:.78rem">(+R${shippingCost()})</span></label>
+        <label class="bh-label">How would you like to get it?</label>
+        <div class="bh-radio-row bh-radio-stack">
+          ${DELIVERY_METHODS.map(m => `
+          <label><input type="radio" name="deliveryMethod" value="${escapeHtml(m.value)}" ${transient.deliveryMethod === m.value ? 'checked' : ''} onchange="toggleShippingField()"> ${escapeHtml(m.label)} <span style="color:var(--grey);font-size:.78rem">${m.rateKey ? `(+R${deliveryRate(m.value)})` : '(free)'}</span></label>`).join('')}
         </div>
         <div id="shippingAddressWrap" style="display:none">
-          <label class="bh-label">Shipping address</label>
+          <label class="bh-label" id="shippingAddressLabel">Shipping address</label>
           <textarea id="orderAddress" class="bh-textarea" style="min-height:70px;margin-bottom:14px" placeholder="Where should we send it?"></textarea>
         </div>
         <p class="bh-note">Payment is by EFT — we'll send banking details and confirm your order over WhatsApp.</p>
@@ -2672,7 +2724,7 @@ function renderShop(){
         <div class="bh-cart-line bh-cart-total" style="margin-top:16px">
           <span>Subtotal</span><span>R${cartSubtotal().toFixed(0)}</span>
         </div>
-        <p style="font-size:.78rem;color:var(--grey);margin:6px 0 0">Shipping is R${shippingCost()} if you choose delivery. Collection is free.</p>
+        <p style="font-size:.78rem;color:var(--grey);margin:6px 0 0">Delivery from R${cheapestDeliveryRate()} — to your door, a Pudo locker or a Courier Guy kiosk. Collection is free.</p>
         <button class="bh-btn" style="width:100%;margin-top:16px" onclick="startCheckout()">Checkout →</button>
       `}`;
   }
@@ -3262,7 +3314,7 @@ function renderCheckoutSummary(){
     ${cart.map(i => `<div class="bh-cart-line"><span>${i.qty} \u00d7 ${escapeHtml(i.name)}${i.size ? ' (' + escapeHtml(i.size) + ')' : ''}${i.toOrder ? ' \u2014 ' + escapeHtml(setting('leadTimeLabel')) : ''}</span><span>R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}</span></div>`).join('')}
     <div class="bh-cart-line"><span>Subtotal</span><span>R${cartSubtotal().toFixed(0)}</span></div>
     ${transient.discountAmount ? `<div class="bh-cart-line" style="color:var(--ok)"><span>Discount (${escapeHtml(transient.discountCode)})</span><span>\u2212R${transient.discountAmount.toFixed(0)}</span></div>` : ''}
-    <div class="bh-cart-line"><span>${method === 'Shipping' ? 'Shipping' : 'Collection'}</span><span>${ship ? 'R' + ship.toFixed(0) : 'Free'}</span></div>
+    <div class="bh-cart-line"><span>${escapeHtml(deliveryMethodDef(method).label)}</span><span>${ship ? 'R' + ship.toFixed(0) : 'Free'}</span></div>
     <div class="bh-cart-line bh-cart-total"><span>Total</span><span>R${cartTotal(method).toFixed(0)}</span></div>`;
 }
 
@@ -3302,8 +3354,15 @@ async function applyDiscount(){
 function toggleShippingField(){
   const method = document.querySelector('input[name=deliveryMethod]:checked').value;
   transient.deliveryMethod = method;
+  const def = deliveryMethodDef(method);
   const wrap = document.getElementById('shippingAddressWrap');
-  if (wrap) wrap.style.display = method === 'Shipping' ? 'block' : 'none';
+  if (wrap) wrap.style.display = isCollection(method) ? 'none' : 'block';
+  // Relabelled rather than re-rendered, so anything already typed survives
+  // switching between couriers.
+  const lbl = document.getElementById('shippingAddressLabel');
+  if (lbl && def.addressTitle) lbl.textContent = def.addressTitle;
+  const box = document.getElementById('orderAddress');
+  if (box && def.addressPlaceholder) box.placeholder = def.addressPlaceholder;
   // Update the totals in place so typed details aren't lost.
   const summary = document.getElementById('checkoutSummary');
   if (summary) summary.innerHTML = renderCheckoutSummary();
@@ -3313,11 +3372,14 @@ async function submitOrder(){
   const buyer = document.getElementById('orderBuyer').value.trim();
   const phone = document.getElementById('orderPhone').value.trim();
   const deliveryMethod = document.querySelector('input[name=deliveryMethod]:checked').value;
-  const address = deliveryMethod === 'Shipping' ? document.getElementById('orderAddress').value.trim() : '';
+  const address = isCollection(deliveryMethod) ? '' : document.getElementById('orderAddress').value.trim();
   const errEl = document.getElementById('orderError');
 
   if (!buyer || !phone){ errEl.textContent = 'Please add your name and WhatsApp number.'; return; }
-  if (deliveryMethod === 'Shipping' && !address){ errEl.textContent = 'Please add a shipping address.'; return; }
+  if (!isCollection(deliveryMethod) && !address){
+    errEl.textContent = 'Please add your ' + String(deliveryMethodDef(deliveryMethod).addressTitle).toLowerCase() + '.';
+    return;
+  }
   if (cart.length === 0){ errEl.textContent = 'Your basket is empty.'; return; }
 
   errEl.textContent = 'Sending…';
@@ -5006,11 +5068,56 @@ function renderShopManager(){
       </div>
     </div>
     <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:12px">Current products (${products.length})</h3>
-    ${products.length === 0 ? `<p class="bh-empty">No products added yet.</p>` : ''}
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px">
-      ${products.map(p => `
+    <div class="bh-prodsearch">
+      <input id="shopSearchBox" class="bh-input" type="search" autocomplete="off"
+             placeholder="Search by name, department, colour or size…"
+             value="${escapeHtml(transient.shopSearch)}" oninput="filterShopManager(this.value)">
+      <button class="bh-btn-ghost" style="font-size:.75rem" onclick="clearShopSearch()">Clear</button>
+    </div>
+    <p id="shopSearchCount" class="bh-prodsearch-count">${shopSearchCountText()}</p>
+    <div id="shopManagerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px">
+      ${shopManagerGridHtml()}
+    </div>
+  `;
+}
+
+// Searching 100+ products by name is how an order gets put together for the
+// supplier, so it matches on everything printed on the card — name,
+// department, colours and sizes — and every word has to match somewhere.
+// "black 3xl" finds the black ones that come in 3XL.
+function matchesShopSearch(p, query){
+  const q = String(query || '').trim().toLowerCase();
+  if (!q) return true;
+  const haystack = [
+    p.name, p.category, p.description,
+    productColours(p).join(' '),
+    productSizes(p).join(' '),
+    orderOnlySizes(p).join(' '),
+  ].filter(Boolean).join(' ').toLowerCase();
+  return q.split(/\s+/).every(word => haystack.indexOf(word) !== -1);
+}
+
+function shopSearchResults(){
+  return products.filter(p => matchesShopSearch(p, transient.shopSearch));
+}
+
+function shopSearchCountText(){
+  const q = String(transient.shopSearch || '').trim();
+  if (!q) return products.length ? 'Tap a picture to open it full size — then hold it to save or send it on.' : '';
+  const n = shopSearchResults().length;
+  if (n === 0) return 'Nothing matches “' + q + '”.';
+  return n + ' of ' + products.length + ' products match “' + q + '”.';
+}
+
+function shopManagerGridHtml(){
+  const list = shopSearchResults();
+  if (!products.length) return `<p class="bh-empty" style="grid-column:1/-1">No products added yet.</p>`;
+  if (!list.length) return `<p class="bh-empty" style="grid-column:1/-1">No product matches that. Try part of the name on its own.</p>`;
+  return list.map(p => `
         <div class="bh-product">
-          ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async">` : `<div style="aspect-ratio:1;background:var(--blushp)"></div>`}
+          ${p.has_image
+            ? `<a href="${productImageUrl(p,'full')}" target="_blank" rel="noopener" title="Open the full-size picture"><img src="${productImageUrl(p,'thumb')}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async"></a>`
+            : `<div style="aspect-ratio:1;background:var(--blushp)"></div>`}
           <div class="body">
             <div class="name">${escapeHtml(p.name)}</div>
             ${p.category ? `<div class="bh-shop-sizes" style="color:var(--plum);font-weight:700">${escapeHtml(p.category)}</div>` : ''}
@@ -5019,15 +5126,31 @@ function renderShopManager(){
             ${productSizes(p).length ? `<div class="bh-shop-sizes">In stock: ${productSizes(p).map(escapeHtml).join(', ')}</div>` : ''}
             ${orderOnlySizes(p).length ? `<div class="bh-shop-sizes" style="color:#a6752f">To order: ${orderOnlySizes(p).map(escapeHtml).join(', ')}</div>` : ''}
             <div style="display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap">
+              ${p.has_image ? `<a class="bh-btn-ghost" style="font-size:.75rem;text-decoration:none" href="${productImageUrl(p,'full')}" target="_blank" rel="noopener">🖼 Picture</a>` : ''}
               <button class="bh-btn-ghost" style="font-size:.75rem" onclick="editProduct('${p.id}')">✏️ Edit</button>
               <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" onclick="removeProduct('${p.id}')">🗑 Remove</button>
             </div>
             ${productLinkRow(p)}
           </div>
         </div>
-      `).join('')}
-    </div>
-  `;
+      `).join('');
+}
+
+// Rewrites only the grid, never the whole screen — a full render() would
+// take the keyboard down and empty the search box on every letter typed.
+function filterShopManager(value){
+  transient.shopSearch = value;
+  const grid = document.getElementById('shopManagerGrid');
+  if (grid) grid.innerHTML = shopManagerGridHtml();
+  const count = document.getElementById('shopSearchCount');
+  if (count) count.textContent = shopSearchCountText();
+}
+
+function clearShopSearch(){
+  const box = document.getElementById('shopSearchBox');
+  if (box) box.value = '';
+  filterShopManager('');
+  if (box) box.focus();
 }
 
 // Up to 4 pictures. The first is the one shown in the shop grid.
@@ -5325,7 +5448,7 @@ const LEAD_GROUPS = [
 
 function leadSummary(l){
   const total = l.total || l.price || '';
-  const method = l.delivery_method || l.deliveryMethod || 'Collection';
+  const method = deliveryMethodDef(l.delivery_method || l.deliveryMethod || 'Collection').label;
   return `
     <div class="bh-ord-top">
       <div>
@@ -6100,8 +6223,10 @@ function renderSettings(){
     <div class="bh-card" style="margin-bottom:18px">
       <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:14px">Delivery &amp; payment</h3>
       ${field('announcement', 'Announcement bar', 'The strip of text right at the top of every page. Leave it empty to hide the bar.')}
-      ${field('shippingCost', 'Shipping cost (R)', 'What customers pay for delivery. Collection is always free.')}
-      ${field('freeShippingOver', 'Free shipping over (R)', 'Orders above this amount ship free. Set it to 0 to always charge.')}
+      ${field('shippingCost', 'Shipping to the door (R)', 'What customers pay for courier delivery to their own address.')}
+      ${field('pudoCost', 'Pudo locker (R)', 'What customers pay to collect from a Pudo locker.')}
+      ${field('cgKioskCost', 'Courier Guy kiosk (R)', 'What customers pay to collect from a Courier Guy kiosk.')}
+      ${field('freeShippingOver', 'Free delivery over (R)', 'Orders above this amount get any delivery option free. Set it to 0 to always charge. Collection is always free.')}
       <div class="bh-set-block">
         <label class="bh-label">Shop departments</label>
         <p class="bh-set-help">The departments in the shop, and what she picks from when adding a product. Renaming one moves every product already in it.</p>
@@ -6168,7 +6293,7 @@ function renderSettings(){
   `;
 }
 
-const SETTING_KEYS = ['notifyPrefs','maskOnCards','maskOnSite','maskWordsStrong','maskWordsExplicit','shippingCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','shopCategories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage','reminderMessage','updateMessage'];
+const SETTING_KEYS = ['notifyPrefs','maskOnCards','maskOnSite','maskWordsStrong','maskWordsExplicit','shippingCost','pudoCost','cgKioskCost','freeShippingOver','announcement','leadTimeLabel','storyCardTag','cardTheme','categories','shopCategories','bankDetails','collectionDetails','orderMessage','receiptMessage','shippingMessage','collectionMessage','reminderMessage','updateMessage'];
 
 function readCategoryInputs(){
   return Array.from(document.querySelectorAll('.bh-cat-input'))
@@ -6261,10 +6386,13 @@ async function saveSettings(){
   updates.shopCategories = JSON.stringify(shopCats);
   // Notification choices live in state, not an input, so carry them through.
   updates.notifyPrefs = JSON.stringify(notifyPrefs());
-  if (updates.shippingCost !== undefined && isNaN(parseFloat(updates.shippingCost))){
-    status.style.color = 'var(--risk)';
-    status.textContent = 'Shipping cost must be a number, like 99.';
-    return;
+  const rateLabels = { shippingCost: 'Shipping to the door', pudoCost: 'Pudo locker', cgKioskCost: 'Courier Guy kiosk', freeShippingOver: 'Free delivery over' };
+  for (const key of Object.keys(rateLabels)){
+    if (updates[key] !== undefined && updates[key] !== '' && isNaN(parseFloat(updates[key]))){
+      status.style.color = 'var(--risk)';
+      status.textContent = rateLabels[key] + ' must be a number, like 80.';
+      return;
+    }
   }
   transient.notifyDirty = false;
   status.style.color = 'var(--grey)';
