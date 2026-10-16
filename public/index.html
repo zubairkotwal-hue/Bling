@@ -577,6 +577,30 @@
   .bh-shop-card .name{ font-family:var(--f-display); font-weight:500; font-size:.95rem; color:var(--ink); line-height:1.25; }
   .bh-shop-card .price{ font-size:.86rem; color:var(--grey); font-weight:500; margin-top:5px; letter-spacing:.01em; }
   .bh-wa-btn{ background:#25d366; color:#fff; font-weight:700; padding:11px 20px; border-radius:9px; font-size:.86rem; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+  /* The basket and the checkout summary referenced these classes but none of
+     them had ever been written, so every line rendered as unstyled inline text
+     ("SubtotalR1598"). */
+  .bh-cart-item{ display:flex; align-items:center; gap:12px; background:#fff;
+    border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:10px; }
+  .bh-cart-info{ flex:1; min-width:0; }
+  .bh-cart-name{ font-weight:600; font-size:.92rem; color:var(--ink); line-height:1.35; }
+  .bh-cart-size{ font-size:.75rem; color:var(--grey); margin-top:2px; }
+  .bh-cart-price{ font-size:.8rem; color:var(--ink); margin-top:4px; }
+  .bh-qty{ display:flex; align-items:center; gap:2px; border:1px solid var(--line);
+    border-radius:8px; overflow:hidden; flex:none; }
+  .bh-qty button{ width:34px; height:34px; background:#fff; border:none; color:var(--plum);
+    font-size:1rem; font-weight:600; cursor:pointer; font-family:var(--f-ui); }
+  .bh-qty button:active{ background:var(--blushp); }
+  .bh-qty span{ min-width:26px; text-align:center; font-size:.88rem; font-weight:600; }
+  .bh-cart-line{ display:flex; justify-content:space-between; align-items:baseline; gap:14px;
+    font-size:.88rem; color:var(--ink); padding:5px 0; }
+  .bh-cart-line > span:last-child{ flex:none; font-variant-numeric:tabular-nums; }
+  .bh-cart-total{ font-size:1.02rem; font-weight:700; color:var(--plum);
+    border-top:1px solid var(--line); margin-top:8px; padding-top:11px; }
+  /* Native radios and tickboxes default to system blue, which fights the palette. */
+  .bh-root input[type=radio], .bh-root input[type=checkbox]{ accent-color:var(--plum); width:18px; height:18px; }
+
+  .bh-cart-summary{ margin-bottom:20px; }
   .bh-prodsearch{ display:flex; gap:8px; align-items:center; margin-bottom:6px; }
   .bh-prodsearch .bh-input{ margin-bottom:0; }
   .bh-prodsearch-count{ font-size:.75rem; color:var(--grey); margin:0 0 12px; min-height:1.05em; }
