@@ -73,3 +73,45 @@ receive an order alert.
 the page) and `customers-db.js` (77, the server functions against a fake
 database, including "the order still goes through if the update has not run"
 and "an offer is never sent twice").
+
+---
+
+# Later on 16 November 2026
+
+## The prompt
+
+- Inside Instagram's browser the main action is one button, "Open in Safari"
+  (or "Open in my browser" on Android). The menu route is the fallback.
+- Ignoring the prompt counts as an answer: it stays away for a week, stops for
+  good after being ignored three times, and slides away by itself after 20
+  seconds (40 for the iPhone's written steps).
+- After notifications are switched on, a thank-you stays up until tapped. It
+  says a secret code will be sent, and that the code is how to enter the
+  competition.
+
+## Analytics
+
+Admin -> More -> Analytics. Visits per day, people, screens opened, the split
+between stories-only / shop-only / both / home page only, the shop step by
+step (including baskets left behind), where visits came from, and the most
+opened products and stories. 7, 30 or 90 days.
+
+| File | Change |
+|---|---|
+| `public/index.html` | Counting, the Analytics tab, the thank-you |
+| `netlify/functions/track.js` | **New.** Receives the anonymous counts (public) |
+| `netlify/functions/analytics.js` | **New.** The totals for the tab (admin only) |
+| `netlify/functions/migrate.js` | Adds `visits` and `view_counts`. Run once, then deleted again |
+
+How it counts: each browser makes up a random id. The server stores one row
+per browser per day with yes/no flags, and plain tallies of product and story
+opens with no id on them. No IP address, name, number or email, and nothing
+links a person to an order or to what they read. Phones that have logged into
+the admin are left out. Counting starts from the day this went live; there is
+no history before it.
+
+`migrate.js` also had two statements in the wrong order (altering
+`product_images` before creating it). Harmless on the live database, fatal on
+a blank one. Fixed, and now tested against a real Postgres.
+
+Tests: 26 suites. `analytics.js` (75) and `analytics-db.js` (59, real Postgres).

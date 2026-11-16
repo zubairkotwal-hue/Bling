@@ -638,6 +638,68 @@
   body.bh-menu-open .bh-prompt, body.bh-filters-open .bh-prompt, body.kb-open .bh-prompt{ display:none; }
   @media (prefers-reduced-motion: reduce){ .bh-prompt{ transition:opacity .2s ease, visibility 0s linear .2s; transform:none; } }
 
+  /* Admin: analytics. Charts follow one rule throughout: the marks carry the
+     colour, and every number and label stays in ordinary text colours. */
+  .bh-an-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+  .bh-an-head h3{ font-size:1.25rem; color:var(--plum); margin:0; }
+  .bh-an-ranges{ display:flex; gap:3px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:3px; }
+  .bh-an-ranges button{ border:none; background:none; padding:7px 12px; border-radius:7px; font-family:var(--f-ui);
+    font-size:.78rem; font-weight:500; color:var(--grey); cursor:pointer; min-height:34px; }
+  .bh-an-ranges button.on{ background:var(--plum); color:#fff; }
+  .bh-an-since{ font-size:.78rem; color:var(--grey); margin:0 0 12px; }
+  .bh-an-tiles{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .bh-an-tile{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 14px 12px; min-width:0; }
+  .bh-an-tile .lbl{ display:block; font-size:.72rem; font-weight:500; letter-spacing:.04em; text-transform:uppercase; color:var(--grey); }
+  .bh-an-tile .val{ display:block; font-family:var(--f-ui); font-size:1.75rem; font-weight:500; color:var(--ink); line-height:1.15; margin:4px 0 2px; }
+  .bh-an-tile .sub{ display:block; font-size:.74rem; color:var(--grey); line-height:1.35; }
+  .bh-an-card{ margin-bottom:14px; padding:18px 16px; }
+  .bh-an-card h4{ font-family:var(--f-display); font-weight:600; font-size:1.1rem; color:var(--plum); margin:0 0 4px; }
+  .bh-an-lede{ font-size:.76rem; color:var(--grey); margin:0 0 14px; line-height:1.45; }
+  .bh-an-readout{ font-size:.82rem; color:var(--grey); margin:0 0 12px; min-height:2.5em; line-height:1.4; }
+  .bh-an-readout b{ font-weight:600; color:var(--ink); font-size:1rem; }
+  .bh-an-readout span{ display:block; font-size:.76rem; }
+  .bh-an-chart{ position:relative; padding-top:14px; }
+  .bh-an-max{ position:absolute; top:0; left:0; font-size:.66rem; color:var(--grey); font-variant-numeric:tabular-nums; }
+  .bh-an-cols{ display:flex; align-items:stretch; height:130px; border-top:1px dashed var(--line); border-bottom:1px solid var(--line); }
+  /* Each button is the full height of the plot, so a short day is as easy to
+     tap as a busy one; the bar inside is the thin part. */
+  .bh-an-cols button{ flex:1 1 0; min-width:0; display:flex; align-items:flex-end; justify-content:center; padding:0 1px;
+    background:none; border:none; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .bh-an-cols button i{ display:block; width:100%; max-width:24px; background:var(--plum2); border-radius:4px 4px 0 0; }
+  .bh-an-cols button:hover i, .bh-an-cols button.on i{ background:var(--plum); }
+  .bh-an-cols button.on{ background:rgba(61,30,58,.06); }
+  .bh-an-cols button:focus-visible{ outline:2px solid var(--plum); outline-offset:-2px; }
+  .bh-an-axis{ display:flex; justify-content:space-between; font-size:.68rem; color:var(--grey); margin-top:6px; }
+  .bh-an-table{ margin-top:14px; }
+  .bh-an-table summary{ font-size:.78rem; color:var(--plum); font-weight:500; cursor:pointer; padding:6px 0; }
+  .bh-an-table table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:.78rem; font-variant-numeric:tabular-nums; }
+  .bh-an-table th{ text-align:right; font-weight:500; color:var(--grey); padding:6px 4px; border-bottom:1px solid var(--line); }
+  .bh-an-table td{ text-align:right; padding:6px 4px; border-bottom:1px solid var(--blushp); color:var(--ink); }
+  .bh-an-table th:first-child, .bh-an-table td:first-child{ text-align:left; }
+  .bh-an-split{ display:flex; gap:2px; height:8px; margin:0 0 14px; }
+  .bh-an-split span{ min-width:3px; border-radius:4px; }
+  .bh-an-leg{ display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--blushp); font-size:.86rem; }
+  .bh-an-leg:last-of-type{ border-bottom:none; }
+  .bh-an-leg i{ flex:none; width:10px; height:10px; border-radius:3px; }
+  .bh-an-leg .nm{ flex:1; color:var(--ink); }
+  .bh-an-leg .fig{ color:var(--grey); font-variant-numeric:tabular-nums; }
+  .bh-an-leg .fig b{ font-weight:600; color:var(--ink); }
+  .bh-an-leg .fig em{ font-style:normal; display:inline-block; min-width:3.2ch; text-align:right; }
+  .bh-an-meter{ display:grid; grid-template-columns:1fr auto; gap:3px 10px; padding:8px 0; }
+  .bh-an-meter .nm{ font-size:.86rem; color:var(--ink); }
+  .bh-an-meter .fig{ font-size:.8rem; color:var(--grey); text-align:right; font-variant-numeric:tabular-nums; }
+  .bh-an-meter .fig b{ font-weight:600; color:var(--ink); font-size:.9rem; }
+  .bh-an-meter .fig i{ font-style:normal; }
+  .bh-an-meter .track{ grid-column:1 / -1; height:8px; background:#f1e6ee; border-radius:4px; overflow:hidden; }
+  .bh-an-meter .fill{ display:block; height:100%; background:var(--plum2); border-radius:4px; }
+  .bh-an-rank{ display:flex; align-items:baseline; gap:10px; padding:8px 0; border-bottom:1px solid var(--blushp); font-size:.86rem; }
+  .bh-an-rank:last-of-type{ border-bottom:none; }
+  .bh-an-rank .i{ flex:none; width:1.4em; color:var(--grey); font-size:.76rem; font-variant-numeric:tabular-nums; }
+  .bh-an-rank .nm{ flex:1; min-width:0; color:var(--ink); line-height:1.4; }
+  .bh-an-rank b{ flex:none; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .bh-an-foot{ font-size:.78rem; color:var(--grey); margin:12px 0 0; line-height:1.45; }
+  .bh-an-none{ font-size:.82rem; color:var(--grey); margin:6px 0 0; }
+
   /* Admin: how an offer will look on a lock screen. */
   .bh-pushprev{ display:flex; gap:12px; align-items:flex-start; background:#f3eef2; border-radius:16px; padding:13px 14px; margin-bottom:10px; }
   .bh-pushprev img{ flex:none; width:38px; height:38px; border-radius:9px; }
@@ -1956,6 +2018,8 @@ let transient = {
   offerConfirm: false,
   offerSending: false,
   promptFromMenu: false,
+  analyticsDays: 30,
+  analyticsPick: -1,   // which column of the chart is being looked at
   shopSeeAll: '',
   // Colour, size and availability are multi-select (tick boxes), like KAAL.
   filterColour: [],
@@ -2042,6 +2106,7 @@ function addToCart(productId, size, toOrder){
   if (existing) existing.qty += 1;
   else cart.push({ productId, name: p.name, price: p.price, size: size || '', qty: 1, toOrder: !!toOrder });
   saveCart();
+  trackEvent('cart');
 }
 function changeQty(idx, delta){
   if (!cart[idx]) return;
@@ -2333,6 +2398,8 @@ function render(){
   // spacing could stay switched on with no keyboard open.
   const active = document.activeElement;
   if (!(active && /^(TEXTAREA|INPUT|SELECT)$/.test(active.tagName))) document.body.classList.remove('kb-open');
+
+  trackScreen();
 }
 
 function renderCurrentView(){
@@ -2703,6 +2770,7 @@ async function submitReply(){
     const pseudonym = readPseudonym('replyAnonMode','replyPseudonym');
     await apiFetch('/replies', { method: 'POST', body: JSON.stringify({ storyId: story.id, text, pseudonym }) });
     el.value = '';
+    trackEvent('reply');
     statusEl.textContent = "Sent — it'll appear here once it's been read and approved.";
   } catch (e) {
     statusEl.textContent = failureText(e, "Couldn't send that");
@@ -2766,6 +2834,7 @@ async function submitStory(){
   try {
     const pseudonym = readPseudonym('submitAnonMode','submitPseudonym');
     await apiFetch('/stories', { method: 'POST', body: JSON.stringify({ text, category, pseudonym }) });
+    trackEvent('submit');
     transient.submitSent = true;
     transient.loadError = '';
   } catch (e) {
@@ -3587,6 +3656,7 @@ async function submitOrder(){
       }),
     });
     clearCart();
+    trackEvent('order');
     transient.discountCode = ''; transient.discountAmount = 0; transient.discountNote = '';
     transient.orderSent = true;
     transient.loadError = '';
@@ -3962,6 +4032,7 @@ function renderAdmin(){
     ${nav.adminTab === 'reviews' ? renderReviewsAdmin() : ''}
     ${nav.adminTab === 'gifts' ? renderGiftsAdmin() : ''}
     ${nav.adminTab === 'discounts' ? renderDiscountsAdmin() : ''}
+    ${nav.adminTab === 'analytics' ? renderAnalyticsAdmin() : ''}
     ${nav.adminTab === 'customers' ? renderCustomersAdmin() : ''}
     ${nav.adminTab === 'offers' ? renderOffersAdmin() : ''}
     ${nav.adminTab === 'help' ? renderHelpAdmin() : ''}
@@ -3981,6 +4052,7 @@ const ADMIN_NAV = [
   { tab:'shop',  label:'Shop',      icon:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/>' },
 ];
 const ADMIN_MORE = [
+  { tab:'analytics', label:'Analytics' },
   { tab:'bulk',      label:'Bulk import' },
   { tab:'reviews',   label:'Reviews' },
   { tab:'gifts',     label:'Gift cards' },
@@ -4057,6 +4129,7 @@ function setAdminTab(tab){
   // The Post tab was folded into the queue; old links still work.
   if (tab === 'post'){ transient.qState = 'ready'; tab = 'queue'; }
   if (tab === 'settings') setTimeout(checkNotifyState, 0);
+  if (tab === 'analytics'){ transient.analyticsPick = -1; setTimeout(loadAnalytics, 0); }
   if (tab === 'customers'){ transient.custStatus = ''; setTimeout(loadCustomers, 0); }
   if (tab === 'offers'){ transient.offerConfirm = false; setTimeout(loadOffers, 0); }
   nav.adminTab = tab;
@@ -6813,6 +6886,10 @@ async function boot(){
   }
 
   openDeepLink();
+  // Counting starts only now, once a shared link has been followed to the
+  // screen it points at. Starting earlier would count a home page view for
+  // someone who never saw the home page.
+  tracker.ready = true;
   render();
 
   // After the page is up and readable: offer the home-screen icon (or, once
@@ -6823,6 +6900,10 @@ async function boot(){
 
 async function onAdminLogin(){
   nav.adminUnlocked = true;
+  // From now on this phone is left out of the visit counts, logged in or not,
+  // and anything it had queued up to report is thrown away.
+  store('bh_admin_device', '1');
+  tracker.views = 0; tracker.flags = {}; tracker.items = [];
   try {
     await Promise.all([
       fetchStories().catch(()=>{}), fetchReplies().catch(()=>{}), fetchLeads().catch(()=>{}),
@@ -7434,7 +7515,11 @@ function promptHtml(step){
 
   if (step === 'working') return head('One moment…', 'Setting that up.');
 
-  if (step === 'done') return head('You’re in', 'We’ll let you know when there is something worth knowing.');
+  // Stays up until it is tapped away: it carries a promise (the competition
+  // code), and a message that vanishes after two seconds is one nobody reads.
+  if (step === 'done') return head('Thank you — you’re in',
+      'Keep an eye on your notifications. We’ll be sending you a secret code, and that code is how you enter our competition.')
+    + `<button type="button" class="bh-prompt-go" onclick="hidePrompt()">Got it</button>`;
 
   if (step === 'on') return head('Notifications are on', 'You will hear about new arrivals and specials on this phone.')
     + `<button type="button" class="bh-prompt-go quiet" onclick="promptTurnOff()">Turn them off</button>` + later(true);
@@ -7643,7 +7728,6 @@ function promptEnablePush(){
     if (!sub) return showPrompt('failed');
     transient.promptFromMenu = true;   // stops syncPrompt clearing the thank-you
     showPrompt('done');
-    setTimeout(() => { if (promptStepShown === 'done') hidePrompt(); }, 2600);
   }).catch(() => showPrompt('failed'));
 }
 
@@ -7662,6 +7746,369 @@ window.addEventListener('beforeinstallprompt', (event) => {
   if (!promptStepShown) schedulePrompt();
 });
 window.addEventListener('appinstalled', () => { deferredInstall = null; });
+
+// ---- Counting visits (for the admin Analytics tab) ----
+//
+// Anonymous by design. This browser makes up a random id and keeps it; the
+// server is told that id, how many screens were opened, and a few yes/no facts
+// (read stories, opened the shop, added to basket...). It is never told who
+// the person is, and the id is never attached to an order, a reply or a story.
+//
+// Not counted at all: the admin, any phone that has ever logged into the
+// admin (so Sabihah's own visits do not inflate the numbers), browsers that
+// ask not to be tracked, and search-engine robots.
+const tracker = { views: 0, flags: {}, items: [], timer: null, lastScreen: '', ready: false, memoryId: '' };
+
+function localDay(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function trackingAllowed(){
+  if (nav.adminUnlocked || nav.view === 'admin' || stored('bh_admin_device') === '1') return false;
+  if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) return false;
+  if (/bot|crawl|spider|headless|lighthouse|preview|monitor/i.test(navigator.userAgent || '')) return false;
+  return true;
+}
+
+function visitorId(){
+  let id = stored('bh_vid') || tracker.memoryId;
+  if (!/^[a-z0-9]{10,40}$/.test(id || '')){
+    id = '';
+    const letters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 20; i++) id += letters[Math.floor(Math.random() * letters.length)];
+    store('bh_vid', id);
+    store('bh_first', localDay());
+  }
+  // Where storage is blocked the id cannot be kept between visits, but it can
+  // at least stay the same for this one.
+  tracker.memoryId = id;
+  return id;
+}
+
+function visitSource(){
+  const ua = navigator.userAgent || '';
+  let ref = '';
+  try { ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) { ref = ''; }
+  if (/Instagram/i.test(ua) || /instagram\.com$/.test(ref)) return 'instagram';
+  if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua) || /facebook\.com$|fb\.com$/.test(ref)) return 'facebook';
+  if (/whatsapp|wa\.me$/i.test(ref) || /WhatsApp/i.test(ua)) return 'whatsapp';
+  if (/google\./.test(ref)) return 'google';
+  if (!ref || ref === window.location.hostname) return 'direct';
+  return 'other';
+}
+
+function visitDevice(){
+  const ua = navigator.userAgent || '';
+  if (isIOS()) return 'iphone';
+  if (/Android/i.test(ua)) return 'android';
+  if (/Windows|Macintosh|Linux|CrOS/i.test(ua)) return 'computer';
+  return 'other';
+}
+
+// What is on screen, as a short key (so the same screen re-rendering is not
+// counted twice) plus what it says about the visit.
+function currentScreen(){
+  if (nav.view === 'shop'){
+    if (transient.checkingOut){
+      return transient.orderSent ? { key: 'shop:ordered', flags: ['shop'] }
+                                 : { key: 'shop:checkout', flags: ['shop', 'checkout'] };
+    }
+    if (transient.viewingCart) return { key: 'shop:cart', flags: ['shop'] };
+    if (transient.viewingProductId){
+      return { key: 'shop:product:' + transient.viewingProductId, flags: ['shop', 'product'],
+               item: { k: 'product', id: transient.viewingProductId } };
+    }
+    return { key: 'shop:' + (transient.shopSeeAll || ''), flags: ['shop'] };
+  }
+  if (nav.view === 'gift') return { key: 'gift', flags: ['shop'] };
+  if (nav.view === 'story'){
+    return { key: 'story:' + nav.activeStoryId, flags: ['stories'], item: { k: 'story', id: nav.activeStoryId } };
+  }
+  if (nav.view === 'folder') return { key: 'folder:' + nav.activeFolder, flags: ['stories'] };
+  if (nav.view === 'submit') return { key: 'submit', flags: ['stories'] };
+  if (nav.view === 'help') return { key: 'help', flags: [] };
+  return { key: 'home', flags: [] };
+}
+
+// Called on every render. Only does anything when the screen has changed.
+function trackScreen(){
+  try {
+    if (!tracker.ready || !trackingAllowed()) return;
+    const screen = currentScreen();
+    if (screen.key === tracker.lastScreen) return;
+    tracker.lastScreen = screen.key;
+    tracker.views += 1;
+    screen.flags.forEach(f => { tracker.flags[f] = true; });
+    if (screen.item && screen.item.id && tracker.items.length < 20) tracker.items.push(screen.item);
+    scheduleTrackFlush();
+  } catch (e) { /* counting must never break the page */ }
+}
+
+// Things that happen without the screen changing: adding to the basket,
+// placing an order, posting a reply, sending in a story.
+function trackEvent(flag){
+  try {
+    if (!tracker.ready || !trackingAllowed()) return;
+    tracker.flags[flag] = true;
+    scheduleTrackFlush(flag === 'order' ? 0 : undefined);
+  } catch (e) {}
+}
+
+function scheduleTrackFlush(delay){
+  // An order is reported at once. The screen change that follows it must not
+  // push that back behind the usual short wait.
+  if (tracker.urgent) return;
+  if (delay === 0) tracker.urgent = true;
+  clearTimeout(tracker.timer);
+  tracker.timer = setTimeout(() => flushTracking(false), delay == null ? 2500 : delay);
+}
+
+function flushTracking(leaving){
+  try {
+    clearTimeout(tracker.timer);
+    tracker.urgent = false;
+    if (!tracker.views && !Object.keys(tracker.flags).length) return;
+    if (!trackingAllowed()){ tracker.views = 0; tracker.flags = {}; tracker.items = []; return; }
+    const id = visitorId();
+    const body = JSON.stringify({
+      v: id, views: tracker.views, flags: tracker.flags, items: tracker.items,
+      isNew: stored('bh_first') === localDay(), src: visitSource(), dev: visitDevice(), pwa: isStandalone(),
+    });
+    tracker.views = 0; tracker.flags = {}; tracker.items = [];
+    // While the page is closing an ordinary request is cancelled; a beacon is not.
+    if (leaving && navigator.sendBeacon){
+      navigator.sendBeacon(API + '/track', new Blob([body], { type: 'application/json' }));
+      return;
+    }
+    fetch(API + '/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true })
+      .catch(() => {});
+  } catch (e) {}
+}
+
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushTracking(true); });
+window.addEventListener('pagehide', () => flushTracking(true));
+
+// ---- Admin: analytics ----
+let analyticsData = { ready: null, error: '' };
+
+async function loadAnalytics(){
+  const days = transient.analyticsDays || 30;
+  try {
+    const r = await apiFetch('/analytics?days=' + days);
+    analyticsData = Object.assign({ error: '' }, r);
+  } catch (e) {
+    analyticsData = { ready: false, error: e.message || '' };
+  }
+  if (nav.view === 'admin' && nav.adminTab === 'analytics') render();
+}
+
+function setAnalyticsDays(days){
+  transient.analyticsDays = days;
+  transient.analyticsPick = -1;
+  render();
+  loadAnalytics();
+}
+
+const anNum = n => (Number(n) || 0).toLocaleString('en-ZA');
+const anPct = (part, whole) => whole > 0 ? Math.round((part / whole) * 100) : 0;
+function anDayLabel(day, long){
+  const [y, m, d] = String(day).split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-ZA',
+    long ? { weekday: 'short', day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short' });
+}
+
+// Every day in the range, including the ones with no visits at all — a gap in
+// the chart has to look like a gap, not be skipped over.
+function analyticsDays(){
+  const a = analyticsData;
+  const byDay = {};
+  (a.daily || []).forEach(d => { byDay[d.day] = d; });
+  const [y, m, d] = String(a.today).split('-').map(Number);
+  const out = [];
+  for (let i = a.days - 1; i >= 0; i--){
+    const dt = new Date(y, m - 1, d - i);
+    const key = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+    out.push(byDay[key] || { day: key, visits: 0, views: 0, new_people: 0, shop: 0, stories: 0, orders: 0 });
+  }
+  return out;
+}
+
+function analyticsReadout(days, i){
+  if (i < 0 || !days[i]){
+    const total = days.reduce((s, d) => s + d.visits, 0);
+    const counted = days.filter(d => d.day >= (analyticsData.since || d.day)).length || days.length;
+    return `<b>${anNum(Math.round(total / counted))}</b> a day on average`;
+  }
+  const d = days[i];
+  return `<b>${anNum(d.visits)}</b> ${d.visits === 1 ? 'visit' : 'visits'} · ${escapeHtml(anDayLabel(d.day, true))}`
+    + (d.visits ? ` <span>${anNum(d.stories)} read stories, ${anNum(d.shop)} browsed the shop</span>` : '');
+}
+
+// Tapping or hovering a column. Updates in place: a render() here would
+// rebuild the chart under the finger.
+function pickAnalyticsDay(i){
+  transient.analyticsPick = i;
+  const days = analyticsDays();
+  const out = document.getElementById('anReadout');
+  if (out) out.innerHTML = analyticsReadout(days, i);
+  document.querySelectorAll('#anCols button').forEach((b, n) => b.classList.toggle('on', n === i));
+}
+
+function meterRows(rows, total, colour){
+  const max = Math.max(1, ...rows.map(r => r.n));
+  return rows.map(r => `
+    <div class="bh-an-meter">
+      <span class="nm">${escapeHtml(r.name)}</span>
+      <span class="fig"><b>${anNum(r.n)}</b>${r.note ? ` <i>${escapeHtml(r.note)}</i>` : (total ? ` <i>${anPct(r.n, total)}%</i>` : '')}</span>
+      <span class="track"><span class="fill" style="width:${r.n ? Math.max(1.5, (r.n / max) * 100) : 0}%${colour ? ';background:' + colour : ''}"></span></span>
+    </div>`).join('');
+}
+
+const SOURCE_NAMES = { instagram: 'Instagram', direct: 'Typed in, bookmark or home screen', google: 'Google',
+  whatsapp: 'WhatsApp', facebook: 'Facebook', other: 'Somewhere else' };
+const DEVICE_NAMES = { iphone: 'iPhone', android: 'Android', computer: 'Computer', other: 'Other' };
+// Validated together for colour-blind separation and contrast on white. "Home
+// page only" is grey on purpose: it is the absence of either, not a third thing.
+const SPLIT = [
+  { key: 'stories_only', name: 'Stories only',    colour: '#8a4877' },
+  { key: 'both',         name: 'Stories and shop', colour: '#0091ad' },
+  { key: 'shop_only',    name: 'Shop only',        colour: '#b8893a' },
+  { key: 'neither',      name: 'Home page only',   colour: '#cbbfc7' },
+];
+
+function renderAnalyticsAdmin(){
+  const a = analyticsData;
+  const days = transient.analyticsDays || 30;
+  const ranges = `
+    <div class="bh-an-ranges" role="group" aria-label="Period">
+      ${[7, 30, 90].map(n => `<button class="${days === n ? 'on' : ''}" onclick="setAnalyticsDays(${n})">${n} days</button>`).join('')}
+    </div>`;
+  const head = `
+    <div class="bh-an-head">
+      <h3 class="bh-serif">Analytics</h3>
+      ${ranges}
+    </div>`;
+
+  if (a.ready === null) return head + `<p class="bh-empty">Loading the numbers…</p>`;
+  if (!a.ready){
+    return head + `
+      <div class="bh-card">
+        <p style="font-size:.85rem;color:var(--grey);margin:0;line-height:1.55">
+          Visits are not being counted yet. The one-off database update needs to be run first.
+        </p>
+      </div>`;
+  }
+
+  const p = a.people || {};
+  const series = analyticsDays();
+  const top = Math.max(1, ...series.map(d => d.visits));
+  const pick = typeof transient.analyticsPick === 'number' ? transient.analyticsPick : -1;
+  const startedInside = a.since && a.since > series[0].day;
+  const nothing = !a.totals.visits;
+
+  const tile = (label, value, sub) => `
+    <div class="bh-an-tile">
+      <span class="lbl">${label}</span>
+      <span class="val">${value}</span>
+      <span class="sub">${sub}</span>
+    </div>`;
+
+  const product = id => { const x = products.find(q => q.id === id); return x ? x.name : ''; };
+  const story = id => { const x = stories.find(q => q.id === id); if (!x) return '';
+    const t = String(x.text || '').trim(); return t.length > 70 ? t.slice(0, 68).trim() + '…' : t; };
+  const ranked = (rows, nameOf, unit) => {
+    const named = rows.map(r => ({ name: nameOf(r.ref), n: r.n })).filter(r => r.name);
+    return named.length ? named.map((r, i) => `
+      <div class="bh-an-rank"><span class="i">${i + 1}</span><span class="nm">${escapeHtml(r.name)}</span><b>${anNum(r.n)}</b></div>`).join('')
+      : `<p class="bh-an-none">Nothing ${unit} in this period yet.</p>`;
+  };
+
+  const split = SPLIT.map(s => ({ ...s, n: Number(p[s.key]) || 0 }));
+  const abandoned = Math.max(0, (p.cart || 0) - (p.ordered || 0));
+  const step = (n, prev) => prev ? anPct(n, prev) + '% of the step before' : '';
+
+  return head + `
+    ${startedInside ? `<p class="bh-an-since">Counting started on ${escapeHtml(anDayLabel(a.since))}, so the days before that are empty.</p>` : ''}
+    ${nothing ? `<div class="bh-card" style="margin-bottom:14px"><p style="font-size:.85rem;color:var(--grey);margin:0;line-height:1.55">No visits have been counted in this period yet. Numbers appear here within a few seconds of someone opening the site.</p></div>` : ''}
+
+    <div class="bh-an-tiles">
+      ${tile('People', anNum(p.people), anNum(p.new_people) + ' here for the first time')}
+      ${tile('Visits', anNum(a.totals.visits), 'one per person per day')}
+      ${tile('Screens opened', anNum(a.totals.views), (a.totals.visits ? (a.totals.views / a.totals.visits).toFixed(1).replace('.', ',') : '0') + ' per visit')}
+      ${tile('Orders placed', anNum(p.ordered), p.browsed ? anPct(p.ordered, p.browsed) + '% of shop browsers' : 'on the site')}
+    </div>
+
+    <div class="bh-card bh-an-card">
+      <h4>Visits per day</h4>
+      <p class="bh-an-readout" id="anReadout" aria-live="polite">${analyticsReadout(series, pick)}</p>
+      <div class="bh-an-chart">
+        <span class="bh-an-max">${anNum(top)}</span>
+        <div class="bh-an-cols" id="anCols" style="--n:${series.length}">
+          ${series.map((d, i) => `<button type="button" class="${pick === i ? 'on' : ''}" aria-label="${escapeHtml(anDayLabel(d.day, true))}: ${d.visits} ${d.visits === 1 ? 'visit' : 'visits'}"
+              onpointerenter="pickAnalyticsDay(${i})" onfocus="pickAnalyticsDay(${i})" onclick="pickAnalyticsDay(${i})"><i style="height:${d.visits ? Math.max(2, (d.visits / top) * 100) : 0}%"></i></button>`).join('')}
+        </div>
+        <div class="bh-an-axis"><span>${escapeHtml(anDayLabel(series[0].day))}</span><span>${escapeHtml(anDayLabel(series[Math.floor(series.length / 2)].day))}</span><span>Today</span></div>
+      </div>
+      <details class="bh-an-table">
+        <summary>Show as a table</summary>
+        <table>
+          <thead><tr><th>Day</th><th>Visits</th><th>Stories</th><th>Shop</th><th>Orders</th></tr></thead>
+          <tbody>${series.slice().reverse().map(d => `<tr><td>${escapeHtml(anDayLabel(d.day, true))}</td><td>${anNum(d.visits)}</td><td>${anNum(d.stories)}</td><td>${anNum(d.shop)}</td><td>${anNum(d.orders)}</td></tr>`).join('')}</tbody>
+        </table>
+      </details>
+    </div>
+
+    <div class="bh-card bh-an-card">
+      <h4>What people came for</h4>
+      <p class="bh-an-lede">Each person counted once, by everything they opened in this period.</p>
+      <div class="bh-an-split" role="img" aria-label="${split.map(s => s.name + ' ' + anPct(s.n, p.people) + '%').join(', ')}">
+        ${split.filter(s => s.n > 0).map(s => `<span style="flex:${s.n} 1 0;background:${s.colour}" title="${escapeHtml(s.name)}: ${s.n}"></span>`).join('')}
+      </div>
+      ${split.map(s => `
+        <div class="bh-an-leg">
+          <i style="background:${s.colour}"></i><span class="nm">${s.name}</span>
+          <span class="fig"><b>${anNum(s.n)}</b> <em>${anPct(s.n, p.people)}%</em></span>
+        </div>`).join('')}
+      <p class="bh-an-foot">${anNum(p.replied)} ${p.replied === 1 ? 'person' : 'people'} replied to a story · ${anNum(p.submitted)} sent one in</p>
+    </div>
+
+    <div class="bh-card bh-an-card">
+      <h4>The shop, step by step</h4>
+      <p class="bh-an-lede">How far the people who opened the shop got.</p>
+      ${meterRows([
+        { name: 'Opened the shop',    n: p.browsed || 0,  note: p.people ? anPct(p.browsed, p.people) + '% of everyone' : '' },
+        { name: 'Opened a product',   n: p.product || 0,  note: step(p.product, p.browsed) },
+        { name: 'Added to basket',    n: p.cart || 0,     note: step(p.cart, p.product) },
+        { name: 'Started checkout',   n: p.checkout || 0, note: step(p.checkout, p.cart) },
+        { name: 'Placed an order',    n: p.ordered || 0,  note: step(p.ordered, p.checkout) },
+      ], 0)}
+      <p class="bh-an-foot">${abandoned ? anNum(abandoned) + (abandoned === 1 ? ' person' : ' people') + ' added something to their basket and did not order.' : 'Nobody has left a basket behind in this period.'}</p>
+    </div>
+
+    <div class="bh-card bh-an-card">
+      <h4>Where visits came from</h4>
+      ${(a.sources || []).length ? meterRows(a.sources.map(s => ({ name: SOURCE_NAMES[s.name] || 'Somewhere else', n: s.n })), a.totals.visits)
+        : `<p class="bh-an-none">Nothing counted yet.</p>`}
+      <h4 style="margin-top:20px">On what</h4>
+      ${(a.devices || []).length ? meterRows(a.devices.map(s => ({ name: DEVICE_NAMES[s.name] || 'Other', n: s.n })), a.totals.visits)
+        : `<p class="bh-an-none">Nothing counted yet.</p>`}
+      <p class="bh-an-foot">${anNum(p.installed)} ${p.installed === 1 ? 'person has' : 'people have'} opened Bling from their home screen.</p>
+    </div>
+
+    <div class="bh-card bh-an-card">
+      <h4>Most opened products</h4>
+      ${ranked(a.topProducts || [], product, 'opened')}
+      <h4 style="margin-top:20px">Most read stories</h4>
+      ${ranked(a.topStories || [], story, 'read')}
+    </div>
+
+    <p class="bh-note">
+      Counted anonymously: no names, numbers or addresses, and nothing links a person to what they read.
+      Phones that have logged into this admin are left out, so your own visits do not inflate the numbers.
+      Someone who clears their browser, or switches phone, is counted as a new person.
+    </p>`;
+}
 
 // ---- Admin login/recovery handling ----
 // Netlify's login widget auto-detects recovery/invite links in the URL and
