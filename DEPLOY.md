@@ -1,135 +1,75 @@
-# Deploying this update
+# This update — 16 November 2026
 
-Everything in the zip. Nothing here touches the login code — `_utils.js`,
-`admin-login.js`, `settings.js`, `discounts.js` and `giftcards.js` are
-byte-identical to what is running on the site right now.
+Shop search for customers, a required email at checkout with a customer list,
+an "add to home screen" prompt that leads into offer notifications, and an
+admin screen for sending offers.
 
----
+## What was deployed
 
-## Step 1 — add two keys to Netlify (do this FIRST)
-
-Netlify → your site → **Site configuration** → **Environment variables** → **Add a variable**.
-
-Add these two:
-
-| Key | Value |
+| File | Change |
 |---|---|
-| `VAPID_PUBLIC_KEY` | `BGHxNRsSS3ALmyB45uOmgrBHjREFiAPRcslGDaEQtoBqWBR-2fz8vYGc_oUeydTlCq3ryHd8ndzJSuJ17EHTlf8` |
-| `VAPID_PRIVATE_KEY` | `xRKNOOH93uZkmlCtVF6VqwHrZ5cwb8MqPeJMv1H2Bcc` |
+| `public/index.html` | All four features |
+| `public/sw.js` | **New to the repo.** It was never uploaded in September, so notifications could not work at all |
+| `netlify.toml` | Adds the two-hourly schedule for batched admin alerts (also missed in September) and correct headers for `sw.js` and the manifest |
+| `netlify/functions/leads.js` | Saves the email; adds the buyer to the customer list |
+| `netlify/functions/customers.js` | **New.** The customer list (admin only) |
+| `netlify/functions/subscribe.js` | **New.** Customers signing up for offers (public) |
+| `netlify/functions/broadcast.js` | **New.** Sending an offer (admin only) |
+| `netlify/functions/migrate.js` | Four additions, appended. Run once, then deleted |
 
-They prove notifications really came from your site — Google will not deliver
-them otherwise. Keep the private one secret, like the admin password.
+Not touched: `_utils.js`, `admin-login.js`, `settings.js`, `discounts.js`,
+`giftcards.js`, `_push.js`, `push.js` — everything to do with logging in and
+with the admin's own order alerts.
 
-Do this before pushing. If you push first, just hit **Trigger deploy** →
-**Clear cache and deploy site** afterwards, or the functions will not see them.
+## Order of events
 
-## Step 2 — copy the files in
+1. Code deployed. Every new feature checks whether the database update has run
+   and carries on without it if not, so orders kept working throughout.
+2. `/.netlify/functions/migrate` visited once. Adds `leads.email` and the
+   tables `customers`, `customer_push_subscriptions`, `broadcasts`.
+3. `migrate.js` deleted and deployed again. It has no password on it.
 
-Unzip over your local project folder, replacing what is there.
+## If something looks wrong
 
-## Step 3 — commit and push
+Netlify → Deploys → the previous deploy → **Publish deploy**. About 30 seconds.
+The database additions are harmless to leave in place: the older code simply
+ignores them.
 
-GitHub Desktop, as usual. Wait for Netlify to say **Published**.
+## How the pieces behave
 
-At this point the site is fully working. Notifications will not arrive yet
-because the database table does not exist — everything else is live.
+**Shop search** — a box at the top of the shop. Matches name, department,
+colour and size; every word must match. It searches the whole shop even when
+opened from inside one department.
 
-## Step 4 — run the migration once
+**Email at checkout** — required, with a ticked "Email me new arrivals and
+offers" box the customer can untick. Their answer is stored. Gift card orders
+are unchanged (`giftcards.js` is one of the files left alone).
 
-Open this in a browser:
+**Customers** — Admin → More → Customers. Search, copy the addresses of people
+who said yes to offers, download the whole list as a spreadsheet, switch one
+person's offers off, or remove them.
 
-```
-blinghappiness.netlify.app/.netlify/functions/migrate
-```
+**The prompt** — appears a few seconds after someone arrives:
 
-Look for `"ok": true`. This adds the table that remembers which phones want
-notifications, plus the columns for multiple product pictures and for recording
-when a story card was made.
+- iPhone in Safari: three steps for adding to the home screen
+- Android: an "Add to home screen" button
+- Inside Instagram's browser: asks them to open the real browser first, because
+  Instagram's can do neither
+- Once opened from the home screen icon: "Turn on notifications"
 
-## Step 5 — delete migrate.js
+"Not now" hides it for a week. "Don't show this again" hides it for good on
+that device. It stays out of the way during checkout, story writing and the
+admin. The menu has an "App & offer notifications" link for anyone who changes
+their mind, and for switching notifications off again.
 
-Delete `netlify/functions/migrate.js`, commit, push again. It rebuilds database
-tables and has no password on it, so it must not stay on a live site.
-
-## Step 6 — turn notifications on
-
-Admin → **Settings** → Notifications → **Turn on** → allow the browser popup →
-**Send a test**.
-
-Do this on each phone that should get them. Only turn it on for phones that
-belong to you or Sabihah: a phone stays subscribed after logging out, and can
-only be turned off from that same phone.
-
----
-
-## Check it worked
-
-- Admin → Shop: every product has its link underneath with a Copy button
-- Open a product link in a browser: it opens that product
-- Open a story from an Instagram DM, tap the reply box: it scrolls above the keyboard
-- Admin → Settings: Notifications section, five types, quiet hours
-- Add a product: you can pick up to 4 pictures at once
-- Make a story card: text is upright, not italic, and bigger on long stories
-
----
-
-## What is in this update
-
-**New**
-- Admin push notifications — orders, help, replies, reviews, stories. Each set
-  to Straight away / Every 2 hours / Never, with quiet hours. No message
-  content is ever shown on the lock screen.
-- A copy-able link for every product, for Instagram link stickers
-  (`?item=<id>` opens that product).
-- Up to 4 pictures per product, with a swipeable gallery on the product page.
-- A trim box on the round-up card for shortening a long story.
-
-**Fixed**
-- The reply box could not be reached when the keyboard opened in the Instagram
-  in-app browser. That browser reports no keyboard at all, so the page now
-  reserves space unconditionally on focus.
-- Story text was italic, tightly spaced and shrank to unreadable sizes on long
-  stories. Card body text is now Inter, upright, with a minimum size, and the
-  website's story text matches.
-- All three Send buttons on an order sent the same message — receipt and
-  delivery both sent the order-and-banking text. **This has been wrong on the
-  live site.**
-
-**Files changed:** `public/index.html`, `netlify.toml`, and in
-`netlify/functions/`: `leads.js`, `help.js`, `replies.js`, `reviews.js`,
-`stories.js` (two lines each — one import, one notify call), plus
-`products.js`, `image.js`, `migrate.js`.
-
-**Files added:** `public/sw.js`, `netlify/functions/_push.js`,
-`netlify/functions/push.js`, `netlify/functions/notify-digest.js`.
-
-**Not changed:** everything to do with logging in.
-
----
-
-## If something goes wrong
-
-**Test notification does not arrive** — check both keys are in Netlify and that
-you deployed after adding them; check step 4 returned `ok: true`; check you
-tapped Allow. If you tapped Block, Android will not ask again — clear it in the
-browser's site settings for blinghappiness.netlify.app.
-
-**Migration page shows an error** — send me the message. Do not delete
-`migrate.js` until it says `ok: true`.
-
-**Anything looks broken after deploying** — Netlify → Deploys → the previous
-deploy → **Publish deploy**. That puts the old version back in about
-30 seconds. Then tell me what you saw.
-
----
+**Send an offer** — Admin → More → Send an offer. Title, message, where it
+opens, a preview, "Send to this phone first", then a confirm step. Customers'
+devices are kept in a separate table from the admin's, so a customer can never
+receive an order alert.
 
 ## Tests
 
-`tests/` holds 15 suites, ~390 checks, run against the real `index.html`:
-
-```
-cd tests && npm install jsdom && bash run-all.sh
-```
-
-They render markup but cannot see the screen, so they would not catch something
-pushed off the edge of a phone. Tap through the admin once after deploying.
+`tests/` holds 24 suites, about 820 checks. Two are new: `customers.js` (97,
+the page) and `customers-db.js` (77, the server functions against a fake
+database, including "the order still goes through if the update has not run"
+and "an offer is never sent twice").
