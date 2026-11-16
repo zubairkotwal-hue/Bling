@@ -2,6 +2,32 @@ const { getPool, json, isAdmin, newId } = require('./_utils');
 const { notify } = require('./_push');
 const { lookupCode, discountAmount } = require('./discounts');
 
+// The email column and the customers table arrive with a migration. Until it
+// has run, orders must keep working exactly as before, so both are checked
+// (and the answer cached for a minute) rather than assumed.
+const ready = {};
+async function exists(pool, key, sql){
+  const now = Date.now();
+  if (ready[key] && now - ready[key].at < 60000) return ready[key].ok;
+  let ok = false;
+  try { ok = (await pool.query(sql)).rows.length > 0; } catch (e) { ok = false; }
+  ready[key] = { ok, at: now };
+  return ok;
+}
+const emailColumnReady = (pool) => exists(pool, 'email',
+  `SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'email' LIMIT 1`);
+const customersReady = (pool) => exists(pool, 'customers',
+  `SELECT 1 FROM information_schema.tables WHERE table_name = 'customers' LIMIT 1`);
+
+// Lower-cased and trimmed, or null if it does not look like an address.
+// Deliberately loose: the browser has already checked it, and a strict
+// pattern here would only ever reject a real customer.
+function cleanEmail(value){
+  const e = String(value || '').trim().toLowerCase();
+  if (!e || e.length > 254) return null;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) ? e : null;
+}
+
 exports.handler = async (event, context) => {
   const pool = getPool();
   const admin = isAdmin(event);
@@ -18,7 +44,7 @@ exports.handler = async (event, context) => {
     // Placing an order (from the storefront, or added manually by the admin)
     // is the one write anyone can do without being logged in.
     if (event.httpMethod === 'POST'){
-      const { buyer, phone, item, price, deliveryMethod, address, size, items, total, shipping, subtotal, leadTime, discountCode } = JSON.parse(event.body || '{}');
+      const { buyer, phone, item, price, deliveryMethod, address, size, items, total, shipping, subtotal, leadTime, discountCode, email, marketing } = JSON.parse(event.body || '{}');
       if (!buyer) return json(400, { error: 'buyer is required' });
       if (!item && !(Array.isArray(items) && items.length)) return json(400, { error: 'at least one item is required' });
 
@@ -50,10 +76,41 @@ exports.handler = async (event, context) => {
       }
 
       const id = newId();
-      await pool.query(
-        'INSERT INTO leads (id, buyer, phone, item, price, delivery_method, address, status, size, items, total, shipping, subtotal, lead_time, discount_code, discount_amount) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)',
-        [id, buyer, phone || null, summary, price || null, deliveryMethod || 'Collection', address || null, 'Enquired', size || null, basket.length ? JSON.stringify(basket) : null, total || null, shipping || null, subtotal || null, leadTime || null, appliedCode, appliedAmount ? String(appliedAmount) : null]
-      );
+      const orderEmail = cleanEmail(email);
+      const values = [id, buyer, phone || null, summary, price || null, deliveryMethod || 'Collection', address || null, 'Enquired', size || null, basket.length ? JSON.stringify(basket) : null, total || null, shipping || null, subtotal || null, leadTime || null, appliedCode, appliedAmount ? String(appliedAmount) : null];
+      if (await emailColumnReady(pool)){
+        await pool.query(
+          'INSERT INTO leads (id, buyer, phone, item, price, delivery_method, address, status, size, items, total, shipping, subtotal, lead_time, discount_code, discount_amount, email) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)',
+          values.concat([orderEmail])
+        );
+      } else {
+        await pool.query(
+          'INSERT INTO leads (id, buyer, phone, item, price, delivery_method, address, status, size, items, total, shipping, subtotal, lead_time, discount_code, discount_amount) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)',
+          values
+        );
+      }
+
+      // Add them to the customer list, or bump the count if they have ordered
+      // before. The order is already saved by this point, so a failure here is
+      // logged and swallowed: a customer must never see "couldn't place that
+      // order" because of bookkeeping.
+      if (orderEmail && await customersReady(pool)){
+        try {
+          await pool.query(
+            `INSERT INTO customers (id, email, name, phone, marketing_ok, orders, first_order_at, last_order_at)
+             VALUES ($1,$2,$3,$4,$5,1,NOW(),NOW())
+             ON CONFLICT (email) DO UPDATE SET
+               name = COALESCE(EXCLUDED.name, customers.name),
+               phone = COALESCE(EXCLUDED.phone, customers.phone),
+               marketing_ok = EXCLUDED.marketing_ok,
+               orders = customers.orders + 1,
+               last_order_at = NOW()`,
+            [newId(), orderEmail, buyer || null, phone || null, marketing === true]
+          );
+        } catch (e) {
+          console.error('customer list update failed', e.message);
+        }
+      }
       await notify(pool, 'orders', 'New order \u2014 R' + (total || price || '?'),
         buyer + ' \u00b7 ' + summary, '/?admin=1');
       return json(201, { id });

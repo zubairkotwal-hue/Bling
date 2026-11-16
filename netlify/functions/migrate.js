@@ -4,8 +4,8 @@ const { getPool, json } = require('./_utils');
 // IF NOT EXISTS. Visit this function's URL in your browser, then delete this file.
 //
 // This creates help_messages, gift_cards, discount_codes, reviews,
-// product_images and settings, and adds the extra products/leads/stories
-// columns. If any of those are missing, the matching feature fails with a
+// product_images, settings, customers, customer_push_subscriptions and
+// broadcasts, and adds the extra products/leads/stories columns. If any of those are missing, the matching feature fails with a
 // 500 — the help form and story submissions are the usual symptoms.
 exports.handler = async () => {
   const pool = getPool();
@@ -118,6 +118,48 @@ exports.handler = async () => {
       CREATE TABLE IF NOT EXISTS settings (
         key   TEXT PRIMARY KEY,
         value TEXT
+      );
+
+      -- Email address on every order.
+      ALTER TABLE leads ADD COLUMN IF NOT EXISTS email TEXT;
+
+      -- The customer list. One row per email address, kept even after the
+      -- order itself is archived or deleted. marketing_ok records whether
+      -- they left the "email me offers" box ticked at checkout.
+      CREATE TABLE IF NOT EXISTS customers (
+        id             TEXT PRIMARY KEY,
+        email          TEXT NOT NULL UNIQUE,
+        name           TEXT,
+        phone          TEXT,
+        marketing_ok   BOOLEAN NOT NULL DEFAULT FALSE,
+        orders         INTEGER NOT NULL DEFAULT 0,
+        first_order_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        last_order_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+      );
+
+      -- Customers who asked for offer notifications. Deliberately a separate
+      -- table from push_subscriptions: that one receives "New order" alerts
+      -- with a buyer's name in them, and must only ever hold admin devices.
+      CREATE TABLE IF NOT EXISTS customer_push_subscriptions (
+        id         TEXT PRIMARY KEY,
+        endpoint   TEXT NOT NULL UNIQUE,
+        p256dh     TEXT NOT NULL,
+        auth       TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      -- A record of every offer sent, so the admin can see what went out.
+      CREATE TABLE IF NOT EXISTS broadcasts (
+        id         TEXT PRIMARY KEY,
+        title      TEXT NOT NULL,
+        body       TEXT NOT NULL,
+        url        TEXT,
+        audience   INTEGER NOT NULL DEFAULT 0,
+        sent       INTEGER NOT NULL DEFAULT 0,
+        failed     INTEGER NOT NULL DEFAULT 0,
+        removed    INTEGER NOT NULL DEFAULT 0,
+        finished   BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
       );
     `);
     const cols = await pool.query(`

@@ -601,6 +601,63 @@
   .bh-root input[type=radio], .bh-root input[type=checkbox]{ accent-color:var(--plum); width:18px; height:18px; }
 
   .bh-cart-summary{ margin-bottom:20px; }
+  /* The add-to-home-screen / notifications sheet. It is appended to <body>,
+     outside .bh-root, so the palette is written out here rather than read
+     from the variables. */
+  .bh-prompt{ position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom, 0px)); z-index:90;
+    max-width:440px; margin:0 auto; background:#fff; color:#241521; border:1px solid #ead9dc; border-radius:18px;
+    padding:18px 18px 12px; box-shadow:0 18px 48px rgba(36,21,33,.28);
+    font-family:'Jost', -apple-system, sans-serif; font-weight:400; -webkit-font-smoothing:antialiased;
+    transform:translateY(calc(100% + 40px)); opacity:0; visibility:hidden;
+    transition:transform .34s cubic-bezier(.2,.8,.2,1), opacity .2s ease, visibility 0s linear .34s; }
+  .bh-prompt.show{ transform:none; opacity:1; visibility:visible; transition-delay:0s; }
+  .bh-prompt *{ box-sizing:border-box; }
+  .bh-prompt-top{ display:flex; gap:14px; align-items:flex-start; }
+  .bh-prompt-top img{ flex:none; width:46px; height:46px; border-radius:11px; }
+  .bh-prompt h2{ font-family:'Cormorant Garamond', Georgia, serif; font-weight:600; font-size:1.3rem; line-height:1.15;
+    color:#3d1e3a; margin:1px 0 5px; }
+  .bh-prompt p{ font-size:.86rem; line-height:1.5; color:#6b5a67; margin:0; }
+  .bh-prompt-steps{ margin:14px 0 2px; padding:12px 14px 12px 34px; background:#fbf1ef; border-radius:12px;
+    font-size:.86rem; line-height:1.5; color:#241521; }
+  .bh-prompt-steps li{ margin:0 0 6px; padding-left:2px; }
+  .bh-prompt-steps li:last-child{ margin-bottom:0; }
+  .bh-prompt-steps b{ font-weight:600; color:#3d1e3a; }
+  .bh-prompt-steps .ico{ display:inline-flex; vertical-align:-4px; }
+  .bh-prompt-steps .ico svg{ width:18px; height:18px; fill:none; stroke:#3d1e3a; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .bh-prompt-go{ display:block; width:100%; margin-top:14px; padding:13px 16px; border:none; border-radius:11px; cursor:pointer;
+    background:linear-gradient(135deg,#e4c989,#c9a15a); color:#241521; font-family:inherit; font-size:.92rem; font-weight:600; }
+  .bh-prompt-go.quiet{ background:#fff; border:1.5px solid #3d1e3a; color:#3d1e3a; }
+  .bh-prompt-foot{ display:flex; justify-content:space-between; gap:10px; margin-top:6px; }
+  .bh-prompt-foot button{ background:none; border:none; padding:10px 4px; min-height:44px; cursor:pointer;
+    font-family:inherit; font-size:.8rem; font-weight:500; color:#6b5a67; }
+  .bh-prompt-foot button:first-child{ color:#3d1e3a; }
+  body.bh-menu-open .bh-prompt, body.bh-filters-open .bh-prompt, body.kb-open .bh-prompt{ display:none; }
+  @media (prefers-reduced-motion: reduce){ .bh-prompt{ transition:opacity .2s ease, visibility 0s linear .2s; transform:none; } }
+
+  /* Admin: how an offer will look on a lock screen. */
+  .bh-pushprev{ display:flex; gap:12px; align-items:flex-start; background:#f3eef2; border-radius:16px; padding:13px 14px; margin-bottom:10px; }
+  .bh-pushprev img{ flex:none; width:38px; height:38px; border-radius:9px; }
+  .bh-pushprev .t{ font-weight:600; font-size:.86rem; color:var(--ink); line-height:1.3; }
+  .bh-pushprev .b{ font-size:.84rem; color:var(--ink); line-height:1.4; margin-top:1px; overflow-wrap:anywhere; }
+  .bh-offerconfirm{ border:1px solid var(--gold); background:#fdf8ee; border-radius:12px; padding:14px; }
+  .bh-offerconfirm p{ font-size:.86rem; color:var(--ink); margin:0 0 12px; line-height:1.45; }
+
+  .bh-shopsearch{ position:relative; margin:0 0 16px; }
+  .bh-shopsearch svg{ position:absolute; left:14px; top:50%; transform:translateY(-50%); width:18px; height:18px;
+    stroke:var(--grey); fill:none; stroke-width:1.6; stroke-linecap:round; pointer-events:none; }
+  /* 16px, not the usual .88rem: anything smaller makes an iPhone zoom the
+     whole page in when the box is tapped. */
+  .bh-shopsearch input{ width:100%; padding:12px 42px 12px 42px; border:1px solid var(--line); border-radius:999px;
+    font-family:var(--f-ui); font-size:16px; font-weight:400; color:var(--ink); background:#fff;
+    -webkit-appearance:none; appearance:none; }
+  .bh-shopsearch input::-webkit-search-cancel-button{ -webkit-appearance:none; display:none; }
+  .bh-shopsearch input:focus{ outline:none; border-color:var(--plum2); box-shadow:0 0 0 3px rgba(107,53,96,.12); }
+  .bh-shopsearch button{ position:absolute; right:6px; top:50%; transform:translateY(-50%); width:34px; height:34px;
+    border:none; background:none; color:var(--grey); font-size:.8rem; cursor:pointer; border-radius:50%; }
+  .bh-check{ display:flex; align-items:flex-start; gap:10px; font-size:.82rem; color:var(--grey);
+    line-height:1.45; margin:0 0 16px; cursor:pointer; }
+  .bh-check input{ flex:none; margin:1px 0 0; }
+
   .bh-prodsearch{ display:flex; gap:8px; align-items:center; margin-bottom:6px; }
   .bh-prodsearch .bh-input{ margin-bottom:0; }
   .bh-prodsearch-count{ font-size:.75rem; color:var(--grey); margin:0 0 12px; min-height:1.05em; }
@@ -1875,6 +1932,26 @@ let transient = {
   deliveryMethod: 'Collection',
   filterCategory: '',
   shopSearch: '',
+  // What a shopper has typed into the search box on the public shop.
+  shopQuery: '',
+  // Checkout boxes are kept here as they are typed. Applying a discount code
+  // re-renders the page, and used to empty the name and number with it.
+  orderBuyer: '',
+  orderPhone: '',
+  orderEmail: '',
+  orderAddress: '',
+  orderMarketing: true,
+  // Admin: customers and offers. Kept here so typing survives a re-render.
+  custSearch: '',
+  custStatus: '',
+  offerTitle: 'Bling Happiness',
+  offerBody: '',
+  offerLink: '/',
+  offerItem: '',
+  offerStatus: '',
+  offerConfirm: false,
+  offerSending: false,
+  promptFromMenu: false,
   shopSeeAll: '',
   // Colour, size and availability are multi-select (tick boxes), like KAAL.
   filterColour: [],
@@ -2085,6 +2162,16 @@ function openDeepLink(){
     return true;
   }
 
+  // Links used by offer notifications: straight to the shop, or a department.
+  const dept = params.get('dept');
+  if (dept && shopCategories().includes(dept)){
+    nav.view = 'shop';
+    transient.filterCategory = dept;
+    transient.shopSeeAll = dept;
+    return true;
+  }
+  if (params.get('view') === 'shop'){ nav.view = 'shop'; return true; }
+
   const id = params.get('story');
   if (!id) return false;
   const story = stories.find(s => s.id === id && s.status === 'approved');
@@ -2134,7 +2221,8 @@ function renderMenu(){
         <li onclick="closeMenu(); goGiftCard()">Gift Cards</li>
         <li onclick="closeMenu(); goHelp()">Help</li>
       </ul>
-      <div class="bh-menu-foot" onclick="closeMenu(); goAdmin()">\uD83D\uDD12 &nbsp;Admin</div>
+      <div class="bh-menu-foot" style="color:rgba(255,255,255,.8)" onclick="toggleMenu(); openPromptFromMenu()">\uD83D\uDD14 &nbsp;App &amp; offer notifications</div>
+      <div class="bh-menu-foot" style="margin-top:14px" onclick="closeMenu(); goAdmin()">\uD83D\uDD12 &nbsp;Admin</div>
     </div>`;
 }
 
@@ -2203,6 +2291,7 @@ function render(){
     transient.filterDraft = null;
   }
   document.body.classList.toggle('bh-filters-open', !!transient.filterOpen);
+  syncPrompt();
 
   const root = document.getElementById('root');
   root.innerHTML = `
@@ -2234,6 +2323,12 @@ function render(){
       <canvas id="exportCanvas" width="1080" height="1920" style="display:none"></canvas>
     </div>
   `;
+
+  // Rebuilding the page can remove the box someone was typing in, and browsers
+  // do not always report that as losing focus. Without this the keyboard
+  // spacing could stay switched on with no keyboard open.
+  const active = document.activeElement;
+  if (!(active && /^(TEXTAREA|INPUT|SELECT)$/.test(active.tagName))) document.body.classList.remove('kb-open');
 }
 
 function renderCurrentView(){
@@ -2705,18 +2800,28 @@ function renderShop(){
         </div>
         <p id="discountNote" style="font-size:.78rem;min-height:1.1em;margin:0 0 14px;color:${transient.discountAmount ? 'var(--ok)' : 'var(--risk)'}">${escapeHtml(transient.discountNote)}</p>
 
-        <label class="bh-label">Your name</label>
-        <input id="orderBuyer" class="bh-input" placeholder="Full name" style="margin-bottom:14px">
-        <label class="bh-label">WhatsApp number</label>
-        <input id="orderPhone" class="bh-input" placeholder="e.g. 082 123 4567" style="margin-bottom:14px">
+        <label class="bh-label" for="orderBuyer">Your name</label>
+        <input id="orderBuyer" class="bh-input" placeholder="Full name" autocomplete="name" style="margin-bottom:14px"
+               value="${escapeHtml(transient.orderBuyer)}" oninput="transient.orderBuyer = this.value">
+        <label class="bh-label" for="orderPhone">WhatsApp number</label>
+        <input id="orderPhone" class="bh-input" type="tel" inputmode="tel" autocomplete="tel" placeholder="e.g. 082 123 4567" style="margin-bottom:14px"
+               value="${escapeHtml(transient.orderPhone)}" oninput="transient.orderPhone = this.value">
+        <label class="bh-label" for="orderEmail">Email address</label>
+        <input id="orderEmail" class="bh-input" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false"
+               placeholder="you@example.com" style="margin-bottom:8px"
+               value="${escapeHtml(transient.orderEmail)}" oninput="transient.orderEmail = this.value">
+        <label class="bh-check">
+          <input type="checkbox" id="orderMarketing" ${transient.orderMarketing ? 'checked' : ''} onchange="transient.orderMarketing = this.checked">
+          <span>Email me new arrivals and offers. Untick if you would rather not.</span>
+        </label>
         <label class="bh-label">How would you like to get it?</label>
         <div class="bh-radio-row bh-radio-stack">
           ${DELIVERY_METHODS.map(m => `
           <label><input type="radio" name="deliveryMethod" value="${escapeHtml(m.value)}" ${transient.deliveryMethod === m.value ? 'checked' : ''} onchange="toggleShippingField()"> ${escapeHtml(m.label)} <span style="color:var(--grey);font-size:.78rem">${m.rateKey ? `(+R${deliveryRate(m.value)})` : '(free)'}</span></label>`).join('')}
         </div>
-        <div id="shippingAddressWrap" style="display:none">
-          <label class="bh-label" id="shippingAddressLabel">Shipping address</label>
-          <textarea id="orderAddress" class="bh-textarea" style="min-height:70px;margin-bottom:14px" placeholder="Where should we send it?"></textarea>
+        <div id="shippingAddressWrap" style="display:${isCollection(transient.deliveryMethod) ? 'none' : 'block'}">
+          <label class="bh-label" id="shippingAddressLabel">${escapeHtml(deliveryMethodDef(transient.deliveryMethod).addressTitle || 'Shipping address')}</label>
+          <textarea id="orderAddress" class="bh-textarea" style="min-height:70px;margin-bottom:14px" placeholder="Where should we send it?" oninput="transient.orderAddress = this.value">${escapeHtml(transient.orderAddress)}</textarea>
         </div>
         <p class="bh-note">Payment is by EFT — we'll send banking details and confirm your order over WhatsApp.</p>
         <p id="orderError" style="color:var(--risk);font-size:.8rem;min-height:1.1em;margin:8px 0 0"></p>
@@ -2854,10 +2959,43 @@ function renderShop(){
   }
 
   // 4. THE SHOP
-  const cols = coloursInShop();
-  const sizes = sizesInShop();
-  const filtering = anyFilterActive();
-  const seeAll = transient.shopSeeAll;
+  // The search box sits outside #shopBody on purpose. Typing rewrites only
+  // what is underneath it; a full render() on every letter would take the
+  // keyboard down and move the cursor.
+  return `${shopSearchBoxHtml()}<div id="shopBody">${shopBodyHtml()}</div>`;
+}
+
+function shopSearchBoxHtml(){
+  const q = transient.shopQuery || '';
+  return `
+    <div class="bh-shopsearch">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+      <input id="shopQueryBox" type="search" enterkeyhint="search" autocomplete="off" autocorrect="off"
+             spellcheck="false" aria-label="Search the shop" placeholder="Search the shop"
+             value="${escapeHtml(q)}" oninput="searchShop(this.value)">
+      <button id="shopQueryClear" type="button" aria-label="Clear search" onclick="clearShopQuery()"
+              style="${q ? '' : 'display:none'}">\u2715</button>
+    </div>`;
+}
+
+function searchShop(value){
+  transient.shopQuery = value;
+  const body = document.getElementById('shopBody');
+  if (body) body.innerHTML = shopBodyHtml();
+  const x = document.getElementById('shopQueryClear');
+  if (x) x.style.display = value ? '' : 'none';
+}
+
+function clearShopQuery(){
+  const box = document.getElementById('shopQueryBox');
+  if (box) box.value = '';
+  searchShop('');
+  if (box) box.focus();
+}
+
+function shopBodyHtml(){
+  const query = String(transient.shopQuery || '').trim();
+  const seeAll = query ? '' : transient.shopSeeAll;
 
   const productCard = (p) => `
     <div class="bh-railcard" onclick="viewProduct('${p.id}')">
@@ -2870,7 +3008,7 @@ function renderShop(){
       </div>
     </div>`;
 
-  const shownCount = visibleProducts(filterScope()).length;
+  const shownCount = visibleProducts(query ? products.slice() : filterScope()).length;
   const nActive = activeFilterCount();
   const controls = `
     <div class="bh-filterbar">
@@ -2909,14 +3047,17 @@ function renderShop(){
   }
 
   // ---- filtering by colour/size cuts across categories: show one grid ----
-  if (anyFilterActive()){
+  if (query || anyFilterActive()){
     const shown = visibleProducts();
+    const nothing = query
+      ? `<p class="bh-empty">Nothing matches \u201c${escapeHtml(query)}\u201d${activeFilterCount() ? ' with those filters' : ''}. Try one word of the name on its own. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearShopQuery()">Clear search</button></p>`
+      : `<p class="bh-empty">Nothing matches those filters. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearFilters()">Clear them</button></p>`;
     return `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
-        <h2 class="bh-serif" style="font-size:1.35rem;color:var(--plum);margin:0">${escapeHtml(transient.filterCategory || 'Shop')}</h2>
+        <h2 class="bh-serif" style="font-size:1.35rem;color:var(--plum);margin:0">${query ? 'Results for \u201c' + escapeHtml(query) + '\u201d' : escapeHtml(transient.filterCategory || 'Shop')}</h2>
       </div>
       ${controls}
-      ${shown.length === 0 ? `<p class="bh-empty">Nothing matches those filters. <button class="bh-btn-ghost" style="display:inline;font-size:.85rem" onclick="clearFilters()">Clear them</button></p>` : ''}
+      ${shown.length === 0 ? nothing : ''}
       <div class="bh-shop-grid">${shown.map(p => `
         <div class="bh-shop-card" onclick="viewProduct('${p.id}')">
           ${p.has_image ? `<img src="${productImageUrl(p,'thumb')}" alt="${escapeHtml(p.name)}" loading="lazy">` : `<div class="noimg"></div>`}
@@ -2988,7 +3129,12 @@ function inStockCount(p){ return productSizes(p).length; }
 function visibleProducts(list){
   let out = (list || products).slice();
 
-  if (transient.filterCategory) out = out.filter(p => p.category === transient.filterCategory);
+  // A search looks across the whole shop, so it takes the place of the
+  // department rather than narrowing inside it: someone who opened Sleepwear
+  // and types the name of a bodysuit should still find it.
+  const query = String(transient.shopQuery || '').trim();
+  if (query) out = out.filter(p => matchesShopSearch(p, query));
+  else if (transient.filterCategory) out = out.filter(p => p.category === transient.filterCategory);
   if (transient.filterAvail.length)
     out = out.filter(p => transient.filterAvail.includes(availabilityOf(p)));
   if (transient.filterColour.length)
@@ -3246,6 +3392,7 @@ function clearFilters(){
   transient.priceMin = '';
   transient.priceMax = '';
   transient.shopSeeAll = '';
+  transient.shopQuery = '';
   render();
 }
 
@@ -3398,8 +3545,22 @@ async function submitOrder(){
   const deliveryMethod = document.querySelector('input[name=deliveryMethod]:checked').value;
   const address = isCollection(deliveryMethod) ? '' : document.getElementById('orderAddress').value.trim();
   const errEl = document.getElementById('orderError');
+  const emailBox = document.getElementById('orderEmail');
+  const email = (emailBox ? emailBox.value : '').trim();
+  const marketingBox = document.getElementById('orderMarketing');
+  const marketing = !!(marketingBox && marketingBox.checked);
 
   if (!buyer || !phone){ errEl.textContent = 'Please add your name and WhatsApp number.'; return; }
+  if (!email){
+    errEl.textContent = 'Please add your email address.';
+    if (emailBox) emailBox.focus();
+    return;
+  }
+  if (!looksLikeEmail(email)){
+    errEl.textContent = "That email address doesn't look right \u2014 please check it.";
+    if (emailBox) emailBox.focus();
+    return;
+  }
   if (!isCollection(deliveryMethod) && !address){
     errEl.textContent = 'Please add your ' + String(deliveryMethodDef(deliveryMethod).addressTitle).toLowerCase() + '.';
     return;
@@ -3412,6 +3573,7 @@ async function submitOrder(){
       method: 'POST',
       body: JSON.stringify({
         buyer, phone, deliveryMethod, address,
+        email, marketing,
         items: cart,
         leadTime: cart.some(i => i.toOrder) ? setting('leadTimeLabel') : '',
         subtotal: cartSubtotal().toFixed(0),
@@ -3429,6 +3591,13 @@ async function submitOrder(){
     return;
   }
   render();
+}
+
+// Loose on purpose: it only has to catch a missing @ or a missing dot, not
+// second-guess a real address.
+function looksLikeEmail(value){
+  const e = String(value || '').trim();
+  return e.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 }
 
 // ---- Gift cards (public) ----
@@ -3789,6 +3958,8 @@ function renderAdmin(){
     ${nav.adminTab === 'reviews' ? renderReviewsAdmin() : ''}
     ${nav.adminTab === 'gifts' ? renderGiftsAdmin() : ''}
     ${nav.adminTab === 'discounts' ? renderDiscountsAdmin() : ''}
+    ${nav.adminTab === 'customers' ? renderCustomersAdmin() : ''}
+    ${nav.adminTab === 'offers' ? renderOffersAdmin() : ''}
     ${nav.adminTab === 'help' ? renderHelpAdmin() : ''}
     ${nav.adminTab === 'settings' ? renderSettings() : ''}
     </div>
@@ -3810,6 +3981,8 @@ const ADMIN_MORE = [
   { tab:'reviews',   label:'Reviews' },
   { tab:'gifts',     label:'Gift cards' },
   { tab:'discounts', label:'Discounts' },
+  { tab:'customers', label:'Customers' },
+  { tab:'offers',    label:'Send an offer' },
   { tab:'help',      label:'Help messages' },
   { tab:'settings',  label:'Settings' },
 ];
@@ -3880,6 +4053,8 @@ function setAdminTab(tab){
   // The Post tab was folded into the queue; old links still work.
   if (tab === 'post'){ transient.qState = 'ready'; tab = 'queue'; }
   if (tab === 'settings') setTimeout(checkNotifyState, 0);
+  if (tab === 'customers'){ transient.custStatus = ''; setTimeout(loadCustomers, 0); }
+  if (tab === 'offers'){ transient.offerConfirm = false; setTimeout(loadOffers, 0); }
   nav.adminTab = tab;
   nav.adminMoreOpen = false;
   window.scrollTo({ top: 0, behavior: 'auto' });
@@ -5479,6 +5654,7 @@ function leadSummary(l){
         <span class="nm">${escapeHtml(l.buyer || 'No name')}</span>
         <span class="it">${escapeHtml(leadItemList(l)).replace(/\n/g, '<br>')}</span>
         <span class="mt">${l.phone ? escapeHtml(l.phone) + ' \u00b7 ' : ''}${escapeHtml(method)}${l.created_at ? ' \u00b7 ' + agoWords(l.created_at) : ''}</span>
+        ${l.email ? `<span class="mt">${escapeHtml(l.email)}</span>` : ''}
         ${l.address ? `<span class="mt">${escapeHtml(l.address)}</span>` : ''}
         ${l.lead_time ? `<span class="mt" style="color:#a6752f">${escapeHtml(l.lead_time)}</span>` : ''}
         ${l.discount_code ? `<span class="mt" style="color:var(--ok)">${escapeHtml(l.discount_code)} \u2212R${escapeHtml(l.discount_amount || '0')}</span>` : ''}
@@ -6634,6 +6810,11 @@ async function boot(){
 
   openDeepLink();
   render();
+
+  // After the page is up and readable: offer the home-screen icon (or, once
+  // that is done, notifications), and quietly keep an existing sign-up fresh.
+  schedulePrompt();
+  refreshCustomerPush();
 }
 
 async function onAdminLogin(){
@@ -6648,6 +6829,755 @@ async function onAdminLogin(){
   }
   render();
 }
+
+// ---- Small storage helpers ----
+// localStorage can be missing or throw (private windows, blocked site data),
+// so nothing here is allowed to break the page: a failed read is just "no".
+function stored(key){ try { return localStorage.getItem(key); } catch (e) { return null; } }
+function store(key, value){ try { localStorage.setItem(key, String(value)); } catch (e) {} }
+
+// ---- Admin: customers ----
+// Everyone who has ordered with an email address. Loaded when the tab is
+// opened rather than at login, because it holds personal details and most
+// visits to the admin never need it.
+let customerList = { ready: null, rows: [], error: '' };
+
+async function loadCustomers(){
+  try {
+    const r = await apiFetch('/customers');
+    customerList = { ready: !!r.ready, rows: r.customers || [], error: '' };
+  } catch (e) {
+    customerList = { ready: false, rows: [], error: e.message || 'Could not load the list.' };
+  }
+  if (nav.view === 'admin' && nav.adminTab === 'customers') render();
+}
+
+function customersShown(){
+  const q = String(transient.custSearch || '').trim().toLowerCase();
+  if (!q) return customerList.rows;
+  return customerList.rows.filter(c =>
+    [c.name, c.email, c.phone].filter(Boolean).join(' ').toLowerCase().indexOf(q) !== -1);
+}
+
+function customerRowsHtml(){
+  const rows = customersShown();
+  if (!customerList.rows.length) return `<p class="bh-empty">No customers yet. They appear here as orders come in.</p>`;
+  if (!rows.length) return `<p class="bh-empty">Nobody matches that.</p>`;
+  return rows.map(c => `
+    <div class="bh-lead">
+      <span class="who">
+        <strong>${escapeHtml(c.name || 'No name')}</strong>
+        <br>${escapeHtml(c.email)}${c.phone ? ' · ' + escapeHtml(c.phone) : ''}
+        <br><span style="font-size:.78rem;color:var(--grey)">
+          ${Number(c.orders) || 0} order${Number(c.orders) === 1 ? '' : 's'}${c.last_order_at ? ' · last ' + agoWords(c.last_order_at) : ''}
+        </span>
+      </span>
+      <button class="bh-statuspill" title="Tap to change" onclick="setCustomerOffers('${c.id}', ${c.marketing_ok ? 'false' : 'true'})">Offers: ${c.marketing_ok ? 'yes' : 'no'}</button>
+      <button class="bh-btn-ghost" style="color:var(--risk);font-size:.75rem" aria-label="Remove ${escapeHtml(c.email)}" onclick="removeCustomer('${c.id}')">🗑</button>
+    </div>`).join('');
+}
+
+function renderCustomersAdmin(){
+  if (customerList.ready === null){
+    return `<p class="bh-empty">Loading the customer list…</p>`;
+  }
+  if (!customerList.ready){
+    return `
+      <div class="bh-card">
+        <h3 class="bh-serif" style="font-size:1.05rem;color:var(--plum);margin-bottom:6px">Customers</h3>
+        <p style="font-size:.85rem;color:var(--grey);margin:0;line-height:1.55">
+          The customer list is not switched on yet. It needs the one-off database
+          update to be run — after that, every order with an email address lands here.
+        </p>
+      </div>`;
+  }
+  const all = customerList.rows;
+  const yes = all.filter(c => c.marketing_ok).length;
+  return `
+    <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:4px">Customers (${all.length})</h3>
+    <p style="font-size:.8rem;color:var(--grey);margin:0 0 12px;line-height:1.5">
+      Everyone who has ordered with an email address. ${yes} of ${all.length} left the offers box ticked —
+      those are the only ones who should be sent marketing.
+    </p>
+    <div class="bh-prodsearch">
+      <input id="custSearchBox" class="bh-input" type="search" autocomplete="off" placeholder="Search by name, email or number…"
+             value="${escapeHtml(transient.custSearch || '')}" oninput="filterCustomers(this.value)">
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px">
+      <button class="bh-btn-outline" style="font-size:.78rem;padding:9px 14px" onclick="copyCustomerEmails()">Copy emails for offers (${yes})</button>
+      <button class="bh-btn-outline" style="font-size:.78rem;padding:9px 14px" onclick="downloadCustomers()">Download the list</button>
+    </div>
+    <p id="custStatus" style="font-size:.78rem;color:var(--ok);min-height:1.1em;margin:0 0 10px">${escapeHtml(transient.custStatus || '')}</p>
+    <div id="custList">${customerRowsHtml()}</div>
+    <p class="bh-note">If someone asks to stop getting offers, tap their "Offers: yes" to switch it to no. If they ask for their details to be deleted, use the bin — it removes them from this list, not from their past orders.</p>`;
+}
+
+function filterCustomers(value){
+  transient.custSearch = value;
+  const list = document.getElementById('custList');
+  if (list) list.innerHTML = customerRowsHtml();
+}
+
+function setCustStatus(text){
+  transient.custStatus = text;
+  const el = document.getElementById('custStatus');
+  if (el) el.textContent = text;
+}
+
+async function setCustomerOffers(id, marketingOk){
+  try {
+    await apiFetch('/customers', { method: 'PATCH', body: JSON.stringify({ id, marketingOk }) });
+    transient.custStatus = '';
+  } catch (e) {
+    transient.custStatus = "Couldn't change that — try again.";
+  }
+  await loadCustomers();
+  render();
+}
+
+async function removeCustomer(id){
+  const c = customerList.rows.find(x => x.id === id);
+  if (!c) return;
+  if (!confirm('Remove ' + c.email + ' from the customer list? Their past orders stay as they are.')) return;
+  try {
+    await apiFetch('/customers', { method: 'DELETE', body: JSON.stringify({ id }) });
+    transient.custStatus = 'Removed.';
+  } catch (e) {
+    transient.custStatus = "Couldn't remove that — try again.";
+  }
+  await loadCustomers();
+  render();
+}
+
+async function copyText(text){
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    // Older in-app browsers have no clipboard API.
+    const box = document.createElement('textarea');
+    box.value = text; box.style.position = 'fixed'; box.style.opacity = '0';
+    document.body.appendChild(box); box.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    box.remove();
+    return ok;
+  }
+}
+
+async function copyCustomerEmails(){
+  const emails = customerList.rows.filter(c => c.marketing_ok).map(c => c.email);
+  if (!emails.length){ setCustStatus('Nobody has said yes to offers yet.'); return; }
+  const ok = await copyText(emails.join(', '));
+  setCustStatus(ok
+    ? emails.length + ' address' + (emails.length === 1 ? '' : 'es') + ' copied. Paste them into BCC, never To, so customers cannot see each other.'
+    : "Couldn't copy — use Download the list instead.");
+}
+
+function csvCell(value){
+  const v = String(value == null ? '' : value);
+  return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+}
+
+function customersCsv(){
+  const day = d => d ? new Date(d).toISOString().slice(0, 10) : '';
+  const lines = [['Name', 'Email', 'Phone', 'Orders', 'First order', 'Last order', 'Offers']];
+  customerList.rows.forEach(c => lines.push([
+    c.name, c.email, c.phone, c.orders, day(c.first_order_at), day(c.last_order_at), c.marketing_ok ? 'yes' : 'no',
+  ]));
+  return lines.map(row => row.map(csvCell).join(',')).join('\r\n');
+}
+
+function downloadCustomers(){
+  if (!customerList.rows.length){ setCustStatus('There is nobody on the list yet.'); return; }
+  const blob = new Blob(['﻿' + customersCsv()], { type: 'text/csv;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'bling-customers-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 4000);
+  setCustStatus('Downloaded. It opens in Excel or Google Sheets.');
+}
+
+// ---- Admin: sending an offer ----
+let offerInfo = { ready: null, configured: false, subscribers: 0, recent: [], error: '' };
+const OFFER_TITLE_MAX = 60;
+const OFFER_BODY_MAX = 180;
+
+async function loadOffers(){
+  try {
+    const r = await apiFetch('/broadcast');
+    offerInfo = { ready: !!r.ready, configured: !!r.configured, subscribers: r.subscribers || 0, recent: r.recent || [], error: '' };
+  } catch (e) {
+    offerInfo = { ready: false, configured: false, subscribers: 0, recent: [], error: e.message || '' };
+  }
+  if (nav.view === 'admin' && nav.adminTab === 'offers') render();
+}
+
+// Where the notification opens when it is tapped. A pasted product link wins
+// over the dropdown, and only ever resolves to a product that still exists.
+function offerUrl(){
+  const pasted = String(transient.offerItem || '').trim();
+  if (pasted){
+    const m = pasted.match(/[?&]item=([^&#\s]+)/);
+    const id = m ? decodeURIComponent(m[1]) : pasted;
+    if (products.some(p => p.id === id)) return '/?item=' + encodeURIComponent(id);
+  }
+  return transient.offerLink || '/';
+}
+
+function offerLinkProblem(){
+  const pasted = String(transient.offerItem || '').trim();
+  if (!pasted) return '';
+  return offerUrl().indexOf('/?item=') === 0 ? '' : "That doesn't match a product in the shop — copy the link from the Shop tab.";
+}
+
+function offerPreviewHtml(){
+  const title = String(transient.offerTitle || '').trim() || 'Title';
+  const body = String(transient.offerBody || '').trim() || 'Your message appears here.';
+  return `
+    <img src="/icon-192.png" alt="">
+    <div>
+      <div class="t">${escapeHtml(title)}</div>
+      <div class="b">${escapeHtml(body)}</div>
+    </div>`;
+}
+
+// Typing updates the preview and the counter in place. A full render() would
+// take the keyboard down on every letter.
+function offerTyped(){
+  const prev = document.getElementById('offerPreview');
+  if (prev) prev.innerHTML = offerPreviewHtml();
+  const count = document.getElementById('offerCount');
+  if (count) count.textContent = String(transient.offerBody || '').length + ' / ' + OFFER_BODY_MAX;
+  const warn = document.getElementById('offerLinkWarn');
+  if (warn) warn.textContent = offerLinkProblem();
+}
+
+function renderOffersAdmin(){
+  if (offerInfo.ready === null) return `<p class="bh-empty">Loading…</p>`;
+  if (!offerInfo.ready || !offerInfo.configured){
+    return `
+      <div class="bh-card">
+        <h3 class="bh-serif" style="font-size:1.05rem;color:var(--plum);margin-bottom:6px">Send an offer</h3>
+        <p style="font-size:.85rem;color:var(--grey);margin:0;line-height:1.55">
+          ${!offerInfo.ready
+            ? 'Offer notifications are not switched on yet. They need the one-off database update to be run.'
+            : 'The server has no notification keys set up yet, so nothing can be sent.'}
+        </p>
+      </div>`;
+  }
+
+  const n = offerInfo.subscribers;
+  const people = n === 1 ? '1 person has' : n + ' people have';
+  const busy = !!transient.offerSending;
+  const depts = shopCategories().filter(cat => products.some(p => p.category === cat));
+  const link = transient.offerLink || '/';
+
+  return `
+    <div class="bh-card" style="margin-bottom:18px">
+      <h3 class="bh-serif" style="font-size:1.05rem;color:var(--plum);margin-bottom:4px">Send an offer</h3>
+      <p style="font-size:.82rem;color:var(--grey);margin:0 0 16px;line-height:1.5">
+        ${n ? people + ' notifications switched on.' : 'Nobody has switched notifications on yet. They are offered it after adding the site to their home screen.'}
+      </p>
+
+      <label class="bh-label" for="offerTitle">Title</label>
+      <input id="offerTitle" class="bh-input" maxlength="${OFFER_TITLE_MAX}" style="margin-bottom:12px"
+             value="${escapeHtml(transient.offerTitle)}" oninput="transient.offerTitle = this.value; offerTyped()">
+
+      <label class="bh-label" for="offerBody">Message</label>
+      <textarea id="offerBody" class="bh-textarea" maxlength="${OFFER_BODY_MAX}" style="min-height:84px;margin-bottom:4px"
+                placeholder="e.g. 15% off everything this weekend with BLING15."
+                oninput="transient.offerBody = this.value; offerTyped()">${escapeHtml(transient.offerBody)}</textarea>
+      <p id="offerCount" style="font-size:.72rem;color:var(--grey);text-align:right;margin:0 0 12px">${String(transient.offerBody || '').length} / ${OFFER_BODY_MAX}</p>
+
+      <label class="bh-label" for="offerLink">Where it opens</label>
+      <select id="offerLink" class="bh-select" style="margin-bottom:10px" onchange="transient.offerLink = this.value">
+        <option value="/" ${link === '/' ? 'selected' : ''}>The home page</option>
+        <option value="/?view=shop" ${link === '/?view=shop' ? 'selected' : ''}>The shop</option>
+        ${depts.map(cat => {
+          const v = '/?dept=' + encodeURIComponent(cat);
+          return `<option value="${escapeHtml(v)}" ${link === v ? 'selected' : ''}>Shop — ${escapeHtml(cat)}</option>`;
+        }).join('')}
+      </select>
+      <input id="offerItem" class="bh-input" placeholder="Or paste one product's link" autocapitalize="off" autocomplete="off"
+             value="${escapeHtml(transient.offerItem || '')}" oninput="transient.offerItem = this.value; offerTyped()">
+      <p id="offerLinkWarn" style="font-size:.75rem;color:var(--risk);min-height:1.1em;margin:4px 0 12px">${escapeHtml(offerLinkProblem())}</p>
+
+      <label class="bh-label">How it will look</label>
+      <div class="bh-pushprev" id="offerPreview">${offerPreviewHtml()}</div>
+      <p class="bh-note" style="margin-bottom:16px">
+        This shows on the lock screen, where other people can read it. Keep the
+        wording as discreet as the packaging — "new arrivals" rather than what they are.
+      </p>
+
+      ${transient.offerConfirm ? `
+        <div class="bh-offerconfirm">
+          <p>This goes to ${n === 1 ? '1 phone' : n + ' phones'} straight away and cannot be taken back.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="bh-btn" onclick="sendOffer()">Yes, send it</button>
+            <button class="bh-btn-outline" onclick="transient.offerConfirm = false; render()">Cancel</button>
+          </div>
+        </div>` : `
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="bh-btn-outline" ${busy ? 'disabled' : ''} onclick="testOffer()">Send to this phone first</button>
+          <button class="bh-btn" ${busy || !n ? 'disabled style="opacity:.5"' : ''} onclick="askSendOffer()">Send to everyone${n ? ' (' + n + ')' : ''}</button>
+        </div>`}
+      <p id="offerStatus" style="font-size:.8rem;color:var(--plum);min-height:1.1em;margin:10px 0 0">${escapeHtml(transient.offerStatus || '')}</p>
+    </div>
+
+    <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:12px">Sent before (${offerInfo.recent.length})</h3>
+    ${offerInfo.recent.length === 0 ? `<p class="bh-empty">Nothing sent yet.</p>` : ''}
+    ${offerInfo.recent.map(b => `
+      <div class="bh-lead">
+        <span class="who">
+          <strong>${escapeHtml(b.title)}</strong>
+          <br>${escapeHtml(b.body)}
+          <br><span style="font-size:.78rem;color:var(--grey)">
+            Reached ${Number(b.sent) || 0} of ${Number(b.audience) || 0}${Number(b.removed) ? ' · ' + b.removed + ' had switched off' : ''}${Number(b.failed) ? ' · ' + b.failed + ' failed' : ''}${b.finished ? '' : ' · did not finish'}${b.created_at ? ' · ' + agoWords(b.created_at) : ''}
+          </span>
+        </span>
+      </div>`).join('')}`;
+}
+
+function offerInputProblem(){
+  const title = String(transient.offerTitle || '').trim();
+  const body = String(transient.offerBody || '').trim();
+  if (!title || !body) return 'Add a title and a message first.';
+  return offerLinkProblem();
+}
+
+function askSendOffer(){
+  const problem = offerInputProblem();
+  if (problem){ transient.offerStatus = problem; transient.offerConfirm = false; return render(); }
+  transient.offerStatus = '';
+  transient.offerConfirm = true;
+  render();
+}
+
+async function sendOffer(){
+  const problem = offerInputProblem();
+  if (problem){ transient.offerStatus = problem; transient.offerConfirm = false; return render(); }
+  // Guards a double tap on "Yes, send it" from sending the offer twice.
+  if (transient.offerSending) return;
+  transient.offerConfirm = false;
+  transient.offerSending = true;
+  transient.offerStatus = 'Sending…';
+  render();
+
+  try {
+    let r = await apiFetch('/broadcast', { method: 'POST', body: JSON.stringify({
+      title: transient.offerTitle.trim(), body: transient.offerBody.trim(), url: offerUrl(),
+    }) });
+    // A long list is sent in slices; keep asking until the server says done.
+    let rounds = 0;
+    while (!r.done && rounds < 400){
+      rounds += 1;
+      transient.offerStatus = 'Sending… ' + (r.broadcast.sent || 0) + ' of ' + (r.broadcast.audience || 0);
+      const el = document.getElementById('offerStatus');
+      if (el) el.textContent = transient.offerStatus;
+      r = await apiFetch('/broadcast', { method: 'POST', body: JSON.stringify({ broadcastId: r.broadcast.id, cursor: r.cursor }) });
+    }
+    const b = r.broadcast || {};
+    transient.offerStatus = r.done
+      ? 'Sent to ' + (b.sent || 0) + (Number(b.sent) === 1 ? ' phone.' : ' phones.')
+        + (Number(b.removed) ? ' ' + b.removed + ' had switched notifications off and were removed.' : '')
+        + (Number(b.failed) ? ' ' + b.failed + " couldn't be reached this time." : '')
+      : 'This is taking longer than expected — check "Sent before" in a minute.';
+    if (r.done){ transient.offerBody = ''; transient.offerItem = ''; }
+  } catch (e) {
+    transient.offerStatus = "Couldn't send — " + (e.message || 'try again');
+  }
+  transient.offerSending = false;
+  await loadOffers();
+  render();
+}
+
+async function testOffer(){
+  const problem = offerInputProblem();
+  if (problem){ transient.offerStatus = problem; return render(); }
+  transient.offerStatus = 'Sending to this phone…';
+  render();
+  try {
+    if (!pushSupported()){
+      transient.offerStatus = "This browser can't show notifications. On an iPhone, open the site from your home screen icon and try again.";
+      return render();
+    }
+    // Asked before anything else is awaited: Safari only allows the question
+    // while the tap is still fresh.
+    const permission = Notification.permission === 'default'
+      ? await Notification.requestPermission() : Notification.permission;
+    if (permission !== 'granted'){
+      transient.offerStatus = 'Notifications are not allowed on this phone, so there is nothing to preview on.';
+      return render();
+    }
+    const sub = await ensureCustomerSubscription();
+    if (!sub){ transient.offerStatus = "Couldn't sign this phone up — try again."; return render(); }
+    const r = await apiFetch('/broadcast', { method: 'POST', body: JSON.stringify({
+      testEndpoint: sub.endpoint, title: transient.offerTitle.trim(), body: transient.offerBody.trim(), url: offerUrl(),
+    }) });
+    transient.offerStatus = r.sent
+      ? 'Sent to this phone only. Nobody else has received it.'
+      : "It didn't go through — try once more.";
+  } catch (e) {
+    transient.offerStatus = "Couldn't send — " + (e.message || 'try again');
+  }
+  await loadOffers();
+  render();
+}
+
+// ---- Customers: add to home screen, then offer notifications ----
+//
+// Two steps, in this order, because of the iPhone: it only allows
+// notifications for a site that has been added to the home screen. So the
+// first thing offered is the home-screen icon; the notification question is
+// only asked once the site is running from that icon (or, on Android and
+// computers, straight after installing).
+//
+// It can be put off ("Not now", comes back in a week) or switched off for
+// good ("Don't show this again"). Either choice is remembered on that device.
+const PROMPT_KEY = 'bh_prompt';        // 'never', or a time to stay quiet until
+const PROMPT_SNOOZE_DAYS = 7;
+const PROMPT_DELAY = 3500;             // let them see the page first
+
+let deferredInstall = null;            // Android/desktop: the browser's own install prompt, held for our button
+let pushInfo = null;                   // { configured, publicKey } from the server
+let promptStepShown = '';
+let promptTimer = null;
+
+function pushSupported(){
+  return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+}
+function isStandalone(){
+  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+}
+function isIOS(){
+  const ua = navigator.userAgent || '';
+  // iPads report themselves as Macs, but Macs have no touch screen.
+  return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1);
+}
+// Instagram, Facebook and friends open links in their own cut-down browser,
+// which can neither add a site to the home screen nor show notifications.
+function inAppBrowser(){
+  return /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Line\/|musical_ly|TikTok|Snapchat|Pinterest/i.test(navigator.userAgent || '');
+}
+
+async function loadPushInfo(){
+  if (pushInfo) return pushInfo;
+  try {
+    const res = await fetch(API + '/subscribe');
+    const data = await res.json();
+    pushInfo = { configured: !!(data && data.configured && data.publicKey), publicKey: data && data.publicKey };
+  } catch (e) {
+    // Not deployed yet, or offline. Treated as "not available", and asked
+    // again next visit rather than remembered.
+    return { configured: false, publicKey: null };
+  }
+  return pushInfo;
+}
+
+function sameKey(a, b){
+  if (!a || !b) return false;
+  const x = new Uint8Array(a), y = new Uint8Array(b);
+  if (x.length !== y.length) return false;
+  for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return false;
+  return true;
+}
+
+// Signs this device up, or refreshes it. Assumes permission is already
+// granted — asking is done by the caller, inside the tap.
+async function ensureCustomerSubscription(){
+  const info = await loadPushInfo();
+  if (!info.configured) return null;
+  const reg = await navigator.serviceWorker.register('/sw.js');
+  await navigator.serviceWorker.ready;
+
+  const wanted = urlBase64ToUint8Array(info.publicKey);
+  let sub = await reg.pushManager.getSubscription();
+  // If the server's keys have been replaced since this device signed up, the
+  // old subscription is dead weight: nothing sent with the new keys reaches
+  // it. Swap it quietly rather than leave them thinking they are signed up.
+  if (sub && sub.options && sub.options.applicationServerKey && !sameKey(sub.options.applicationServerKey, wanted)){
+    try { await sub.unsubscribe(); } catch (e) {}
+    sub = null;
+  }
+  if (!sub){
+    sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: wanted });
+  }
+  await apiFetch('/subscribe', { method: 'POST', body: JSON.stringify({ subscription: sub.toJSON() }) });
+  store('bh_push', 'on');
+  store('bh_push_at', Date.now());
+  return sub;
+}
+
+// Once a day, for devices already signed up: makes sure the server still has
+// them, and picks up a key change. Silent, and never asks for anything.
+async function refreshCustomerPush(){
+  try {
+    if (!pushSupported() || stored('bh_push') !== 'on' || Notification.permission !== 'granted') return;
+    const last = Number(stored('bh_push_at')) || 0;
+    if (Date.now() - last < 24 * 3600 * 1000) return;
+    await ensureCustomerSubscription();
+  } catch (e) { /* try again tomorrow */ }
+}
+
+async function disableCustomerPush(){
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    const sub = reg && await reg.pushManager.getSubscription();
+    // Only the offers list is told. The browser subscription itself is left
+    // alone, because on Sabihah's phone the same one carries her order alerts.
+    if (sub) await apiFetch('/subscribe', { method: 'DELETE', body: JSON.stringify({ endpoint: sub.endpoint }) });
+  } catch (e) {}
+  store('bh_push', 'off');
+}
+
+function customerPushOn(){
+  return pushSupported() && stored('bh_push') === 'on' && Notification.permission === 'granted';
+}
+
+// Not while someone is paying, writing a story, typing, or in the admin.
+function promptWelcomeHere(){
+  if (nav.view === 'admin' || nav.view === 'submit') return false;
+  if (nav.menuOpen || transient.filterOpen) return false;
+  if (transient.checkingOut || transient.viewingCart) return false;
+  const active = document.activeElement;
+  if (active && /^(TEXTAREA|INPUT|SELECT)$/.test(active.tagName)) return false;
+  return true;
+}
+
+function promptSilenced(){
+  const v = stored(PROMPT_KEY);
+  if (v === 'never') return true;
+  const until = Number(v) || 0;
+  return until > Date.now();
+}
+
+// Which step applies to this device right now, or '' for none.
+async function nextPromptStep(){
+  if (customerPushOn()) return '';
+
+  if (isStandalone()){
+    // Already on the home screen: only the notification question is left.
+    if (!pushSupported() || Notification.permission !== 'default') return '';
+    return (await loadPushInfo()).configured ? 'notify' : '';
+  }
+  if (inAppBrowser()) return 'browser';
+  if (deferredInstall) return 'install';
+  if (isIOS()) return 'ios';
+  // Somewhere with no home-screen step to offer (Firefox, an already
+  // installed copy opened in a tab): go straight to notifications.
+  if (pushSupported() && Notification.permission === 'default'){
+    return (await loadPushInfo()).configured ? 'notify' : '';
+  }
+  return '';
+}
+
+const SHARE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>';
+
+function promptHtml(step){
+  const head = (title, text) => `
+    <div class="bh-prompt-top">
+      <img src="/icon-192.png" alt="" width="46" height="46">
+      <div>
+        <h2 id="bhPromptTitle">${title}</h2>
+        <p>${text}</p>
+      </div>
+    </div>`;
+  const later = (fromMenu) => fromMenu
+    ? `<div class="bh-prompt-foot"><button type="button" onclick="hidePrompt()">Close</button></div>`
+    : `<div class="bh-prompt-foot">
+         <button type="button" onclick="snoozePrompt()">Not now</button>
+         <button type="button" onclick="silencePrompt()">Don't show this again</button>
+       </div>`;
+  const fromMenu = !!transient.promptFromMenu;
+
+  if (step === 'install') return head('Keep Bling a tap away',
+      'Add it to your home screen and it opens like an app — no searching for the link.')
+    + `<button type="button" class="bh-prompt-go" onclick="promptInstall()">Add to home screen</button>` + later(fromMenu);
+
+  if (step === 'ios') return head('Keep Bling a tap away',
+      'Add it to your home screen and it opens like an app — no searching for the link.')
+    + `<ol class="bh-prompt-steps">
+         <li>Tap the <span class="ico">${SHARE_ICON}</span> <b>Share</b> button in your browser's toolbar.</li>
+         <li>Scroll down and choose <b>Add to Home Screen</b>.</li>
+         <li>Open Bling from the new icon.</li>
+       </ol>` + later(fromMenu);
+
+  if (step === 'browser') return head('Open this in your browser',
+      'You are inside ' + (/Instagram/i.test(navigator.userAgent || '') ? "Instagram's" : "an app's") + ' built-in browser, which cannot add Bling to your home screen.')
+    + `<ol class="bh-prompt-steps">
+         <li>Tap the <b>⋯</b> menu at the top right.</li>
+         <li>Choose <b>Open in browser</b>.</li>
+       </ol>
+       <button type="button" class="bh-prompt-go" onclick="promptOpenBrowser()">Try opening it for me</button>` + later(fromMenu);
+
+  if (step === 'notify') return head('Hear about offers first',
+      'New arrivals and specials, sent straight to your phone. You can turn it off from the menu whenever you like.')
+    + `<button type="button" class="bh-prompt-go" onclick="promptEnablePush()">Turn on notifications</button>` + later(fromMenu);
+
+  if (step === 'working') return head('One moment…', 'Setting that up.');
+
+  if (step === 'done') return head('You’re in', 'We’ll let you know when there is something worth knowing.');
+
+  if (step === 'on') return head('Notifications are on', 'You will hear about new arrivals and specials on this phone.')
+    + `<button type="button" class="bh-prompt-go quiet" onclick="promptTurnOff()">Turn them off</button>` + later(true);
+
+  if (step === 'off') return head('Notifications are off', 'You will not get any more from us on this phone.') + later(true);
+
+  if (step === 'blocked') return head('Notifications are blocked',
+      'This phone has them switched off for Bling. You can allow them again in your phone’s settings for this site.') + later(true);
+
+  if (step === 'failed') return head('That didn’t work', 'Something got in the way of setting it up. Please try again a little later.') + later(true);
+
+  // Nothing to offer on this device (from the menu only).
+  return head('Nothing to set up here', 'This browser cannot add Bling to the home screen or show notifications.') + later(true);
+}
+
+function promptElement(){
+  let el = document.getElementById('bhPrompt');
+  if (!el){
+    // Lives outside #root, so the page re-rendering never wipes it.
+    el = document.createElement('div');
+    el.id = 'bhPrompt';
+    el.className = 'bh-prompt';
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-labelledby', 'bhPromptTitle');
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+function showPrompt(step){
+  const el = promptElement();
+  promptStepShown = step;
+  el.innerHTML = promptHtml(step);
+  // Next frame, so the slide-up animates instead of appearing in place.
+  requestAnimationFrame(() => el.classList.add('show'));
+}
+
+function hidePrompt(){
+  const el = document.getElementById('bhPrompt');
+  if (el) el.classList.remove('show');
+  promptStepShown = '';
+  transient.promptFromMenu = false;
+}
+
+function snoozePrompt(){
+  store(PROMPT_KEY, Date.now() + PROMPT_SNOOZE_DAYS * 24 * 3600 * 1000);
+  hidePrompt();
+}
+function silencePrompt(){
+  store(PROMPT_KEY, 'never');
+  hidePrompt();
+}
+
+// The automatic one: a few seconds after arriving, if they have not said no.
+async function maybeShowPrompt(){
+  try {
+    if (promptStepShown || promptSilenced() || !promptWelcomeHere()) return;
+    const step = await nextPromptStep();
+    if (!step || promptStepShown || !promptWelcomeHere()) return;
+    // Android only tells the page it can be installed a moment after loading.
+    // Give it time, so the home-screen step is not skipped by asking about
+    // notifications too early.
+    const waited = (window.performance && performance.now()) || 0;
+    if (step === 'notify' && !isStandalone() && waited < 9000) return schedulePrompt(9000 - waited + 50);
+    showPrompt(step);
+  } catch (e) { /* never worth breaking the page for */ }
+}
+
+function schedulePrompt(delay){
+  clearTimeout(promptTimer);
+  promptTimer = setTimeout(maybeShowPrompt, delay == null ? PROMPT_DELAY : delay);
+}
+
+// Called on every render: takes the prompt away if they have moved somewhere
+// it should not follow them (checkout, the admin), without counting as a "no".
+function syncPrompt(){
+  if (!promptStepShown || transient.promptFromMenu) return;
+  if (!promptWelcomeHere()){
+    const el = document.getElementById('bhPrompt');
+    if (el) el.classList.remove('show');
+    promptStepShown = '';
+    schedulePrompt(PROMPT_DELAY * 2);
+  }
+}
+
+// From the menu: always answers, whatever was chosen before.
+async function openPromptFromMenu(){
+  transient.promptFromMenu = true;
+  let step = '';
+  if (customerPushOn()) step = 'on';
+  else if (pushSupported() && Notification.permission === 'denied' && (isStandalone() || !isIOS())) step = 'blocked';
+  else step = (await nextPromptStep()) || 'none';
+  showPrompt(step);
+}
+
+async function promptInstall(){
+  const ask = deferredInstall;
+  if (!ask) return hidePrompt();
+  deferredInstall = null;
+  try {
+    ask.prompt();
+    const choice = await ask.userChoice;
+    if (choice && choice.outcome === 'accepted'){
+      // Android can do notifications from the tab it is already in, so the
+      // second question follows straight on.
+      const next = (pushSupported() && Notification.permission === 'default' && (await loadPushInfo()).configured) ? 'notify' : '';
+      if (next) return showPrompt(next);
+      return hidePrompt();
+    }
+  } catch (e) {}
+  snoozePrompt();
+}
+
+function promptOpenBrowser(){
+  const here = window.location.href.replace(/^https?:\/\//, '');
+  // Neither of these is guaranteed — the written steps above are the real
+  // instruction, this just saves the taps where the phone allows it.
+  if (isIOS()) window.location.href = 'x-safari-https://' + here;
+  else window.location.href = 'intent://' + here + '#Intent;scheme=https;end';
+}
+
+function promptEnablePush(){
+  if (!pushSupported()) return showPrompt('none');
+  // The permission question must be the very first thing that happens in the
+  // tap. Safari forgets the tap across any await, and then refuses to ask.
+  let asking;
+  try { asking = Notification.requestPermission(); }
+  catch (e) { return showPrompt('failed'); }
+  showPrompt('working');
+  Promise.resolve(asking).then(async (permission) => {
+    if (permission === 'denied'){
+      // The phone will not ask twice, so there is nothing more to offer.
+      store(PROMPT_KEY, 'never');
+      return showPrompt('blocked');
+    }
+    if (permission !== 'granted') return snoozePrompt();
+    const sub = await ensureCustomerSubscription();
+    if (!sub) return showPrompt('failed');
+    transient.promptFromMenu = true;   // stops syncPrompt clearing the thank-you
+    showPrompt('done');
+    setTimeout(() => { if (promptStepShown === 'done') hidePrompt(); }, 2600);
+  }).catch(() => showPrompt('failed'));
+}
+
+async function promptTurnOff(){
+  showPrompt('working');
+  await disableCustomerPush();
+  transient.promptFromMenu = true;
+  showPrompt('off');
+}
+
+window.addEventListener('beforeinstallprompt', (event) => {
+  // Hold the browser's own banner so the offer comes from our button, at a
+  // moment of our choosing, instead of appearing over the hero on arrival.
+  event.preventDefault();
+  deferredInstall = event;
+  if (!promptStepShown) schedulePrompt();
+});
+window.addEventListener('appinstalled', () => { deferredInstall = null; });
 
 // ---- Admin login/recovery handling ----
 // Netlify's login widget auto-detects recovery/invite links in the URL and
