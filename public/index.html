@@ -669,6 +669,13 @@
   .bh-an-cols button:hover i, .bh-an-cols button.on i{ background:var(--plum); }
   .bh-an-cols button.on{ background:rgba(61,30,58,.06); }
   .bh-an-cols button:focus-visible{ outline:2px solid var(--plum); outline-offset:-2px; }
+  .bh-an-cols.small{ height:56px; border-top:none; }
+  .bh-an-hist{ margin-bottom:14px; }
+  .bh-an-hist-top{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .bh-an-hist-top .nm{ font-size:.86rem; color:var(--ink); }
+  .bh-an-hist-top .nm b{ font-weight:600; margin-left:4px; font-variant-numeric:tabular-nums; }
+  .bh-an-hist-top .rd{ font-size:.76rem; color:var(--grey); }
+  .bh-an-hist-top .rd b{ font-weight:600; color:var(--ink); }
   .bh-an-axis{ display:flex; justify-content:space-between; font-size:.68rem; color:var(--grey); margin-top:6px; }
   .bh-an-table{ margin-top:14px; }
   .bh-an-table summary{ font-size:.78rem; color:var(--plum); font-weight:500; cursor:pointer; padding:6px 0; }
@@ -7977,6 +7984,105 @@ const SPLIT = [
   { key: 'neither',      name: 'Home page only',   colour: '#cbbfc7' },
 ];
 
+// ---- Activity since launch ----
+// Visits were not counted before the Analytics tab existed, and nothing can
+// bring them back. But every story, reply and order already carries the date
+// it arrived, so what people DID is on record from the first day. This draws
+// that, week by week, from what the admin has already loaded.
+const HISTORY_SETS = [
+  { key: 'stories', name: 'Stories sent in', one: 'story',  many: 'stories', rows: () => stories },
+  { key: 'replies', name: 'Replies',         one: 'reply',  many: 'replies', rows: () => replies },
+  { key: 'orders',  name: 'Orders',          one: 'order',  many: 'orders',  rows: () => leads },
+];
+
+// Monday of the week a moment falls in, at midnight.
+function weekStartOf(time){
+  const d = new Date(time);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d;
+}
+
+function activityHistory(){
+  const stamps = HISTORY_SETS.map(set => (set.rows() || [])
+    .map(r => new Date(r.created_at).getTime()).filter(t => !isNaN(t) && t > 0));
+  let earliest = Infinity;
+  stamps.forEach(list => list.forEach(t => { if (t < earliest) earliest = t; }));
+  if (!isFinite(earliest)) return null;
+
+  const first = weekStartOf(earliest);
+  const last = weekStartOf(Date.now());
+  const weeks = [];
+  for (const d = new Date(first); d <= last; d.setDate(d.getDate() + 7)) weeks.push(new Date(d));
+  // Looked up by the week's own start date, so a clock change can never shift
+  // something into the neighbouring week.
+  const index = {};
+  weeks.forEach((w, i) => { index[w.getTime()] = i; });
+
+  return {
+    weeks,
+    sets: HISTORY_SETS.map((set, n) => {
+      const counts = weeks.map(() => 0);
+      stamps[n].forEach(t => { const i = index[weekStartOf(t).getTime()]; if (i != null) counts[i] += 1; });
+      return { key: set.key, name: set.name, one: set.one, many: set.many, counts, total: stamps[n].length };
+    }),
+  };
+}
+
+function historyReadout(h, s, i){
+  const set = h.sets[s];
+  if (i < 0 || i >= h.weeks.length){
+    const full = Math.max(1, h.weeks.length - 1);   // the current week is not over yet
+    const done = set.counts.slice(0, -1).reduce((a, b) => a + b, 0);
+    return h.weeks.length > 1 ? `about <b>${anNum(Math.round(done / full))}</b> a week` : 'first week';
+  }
+  const wk = h.weeks[i].toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
+  const n = set.counts[i];
+  return `<b>${anNum(n)}</b> ${n === 1 ? set.one : set.many} \u00b7 week of ${escapeHtml(wk)}${i === h.weeks.length - 1 ? ', so far' : ''}`;
+}
+
+function pickHistoryWeek(s, i){
+  const h = activityHistory();
+  if (!h) return;
+  const out = document.getElementById('anHist' + s);
+  if (out) out.innerHTML = historyReadout(h, s, i);
+  document.querySelectorAll('#anHistCols' + s + ' button').forEach((b, n) => b.classList.toggle('on', n === i));
+}
+
+function renderActivityHistory(){
+  const h = activityHistory();
+  if (!h) return '';
+  const label = d => d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
+  return `
+    <div class="bh-card bh-an-card">
+      <h4>Since launch</h4>
+      <p class="bh-an-lede">Week by week, from the dates already on every story, reply and order. This is what people did, not how many visited \u2014 visits are only counted from the day this tab was added.</p>
+      ${h.sets.map((set, s) => {
+        const top = Math.max(1, ...set.counts);
+        return `
+        <div class="bh-an-hist">
+          <div class="bh-an-hist-top">
+            <span class="nm">${set.name} <b>${anNum(set.total)}</b></span>
+            <span class="rd" id="anHist${s}" aria-live="polite">${historyReadout(h, s, -1)}</span>
+          </div>
+          <div class="bh-an-cols small" id="anHistCols${s}">
+            ${set.counts.map((n, i) => `<button type="button" aria-label="Week of ${escapeHtml(label(h.weeks[i]))}: ${n} ${n === 1 ? set.one : set.many}"
+                onpointerenter="pickHistoryWeek(${s},${i})" onfocus="pickHistoryWeek(${s},${i})" onclick="pickHistoryWeek(${s},${i})"><i style="height:${n ? Math.max(3, (n / top) * 100) : 0}%"></i></button>`).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+      <div class="bh-an-axis"><span>${escapeHtml(label(h.weeks[0]))}</span><span>This week</span></div>
+      <details class="bh-an-table">
+        <summary>Show as a table</summary>
+        <table>
+          <thead><tr><th>Week of</th><th>Stories</th><th>Replies</th><th>Orders</th></tr></thead>
+          <tbody>${h.weeks.map((w, i) => `<tr><td>${escapeHtml(label(w))}</td>${h.sets.map(set => `<td>${anNum(set.counts[i])}</td>`).join('')}</tr>`).reverse().join('')}</tbody>
+        </table>
+      </details>
+      <p class="bh-an-foot">Each chart has its own scale, so compare the shape of one with another, not the heights. Orders that were deleted for good are not here.</p>
+    </div>`;
+}
+
 function renderAnalyticsAdmin(){
   const a = analyticsData;
   const days = transient.analyticsDays || 30;
@@ -7997,7 +8103,9 @@ function renderAnalyticsAdmin(){
         <p style="font-size:.85rem;color:var(--grey);margin:0;line-height:1.55">
           Visits are not being counted yet. The one-off database update needs to be run first.
         </p>
-      </div>`;
+      </div>
+      <div style="height:14px"></div>
+      ${renderActivityHistory()}`;
   }
 
   const p = a.people || {};
@@ -8102,6 +8210,8 @@ function renderAnalyticsAdmin(){
       <h4 style="margin-top:20px">Most read stories</h4>
       ${ranked(a.topStories || [], story, 'read')}
     </div>
+
+    ${renderActivityHistory()}
 
     <p class="bh-note">
       Counted anonymously: no names, numbers or addresses, and nothing links a person to what they read.
