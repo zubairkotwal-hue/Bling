@@ -28,6 +28,12 @@ function cleanEmail(value){
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) ? e : null;
 }
 
+// "Black, M" for a line that has a colour and a size; either one alone; or ''.
+function variant(line){
+  return [line && line.colour, line && line.size]
+    .filter(v => typeof v === 'string' && v).join(', ');
+}
+
 exports.handler = async (event, context) => {
   const pool = getPool();
   const admin = isAdmin(event);
@@ -52,7 +58,7 @@ exports.handler = async (event, context) => {
       // summary in `item` so older screens and messages still make sense.
       const basket = Array.isArray(items) ? items : [];
       const summary = item || (basket.length === 1
-        ? basket[0].name + (basket[0].size ? ' (' + basket[0].size + ')' : '')
+        ? basket[0].name + (variant(basket[0]) ? ' (' + variant(basket[0]) + ')' : '')
         : basket.length + ' items');
       // Re-check any discount code HERE. Whatever the browser claims the
       // total is, the code has to be real, active and still have uses left.

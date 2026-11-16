@@ -115,3 +115,29 @@ no history before it.
 a blank one. Fixed, and now tested against a real Postgres.
 
 Tests: 26 suites. `analytics.js` (75) and `analytics-db.js` (59, real Postgres).
+
+---
+
+# 16 November 2026, late evening — colour picker
+
+On a product that comes in a choice of colours, the customer now has to pick
+one before adding it to her basket. The colour then shows in the basket, the
+checkout summary, the order in the admin, the WhatsApp messages and the PDFs.
+
+Nothing changes for any product until it is switched on. A product's colours
+can mean "comes in Black or Blush" or "is black and white" (one zebra-stripe
+piece), and the list alone cannot tell which. So:
+
+- **Admin -> Shop -> Colour choices** lists every product with more than one
+  colour ticked, each with a switch: "Customer picks" or "One piece".
+- The product form has a tick box that does the same for one product.
+
+| File | Change |
+|---|---|
+| `public/index.html` | The picker, the switches, colour on every order line |
+| `netlify/functions/leads.js` | The one-line order summary includes the colour |
+
+No database change: the list of switched-on products is stored as one more
+row in the existing settings table.
+
+Tests: 27 suites. `colour.js` is new (55 checks).
