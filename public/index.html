@@ -7243,11 +7243,23 @@ async function testOffer(){
 const PROMPT_KEY = 'bh_prompt';        // 'never', or a time to stay quiet until
 const PROMPT_SNOOZE_DAYS = 7;
 const PROMPT_DELAY = 3500;             // let them see the page first
+// Ignoring the sheet is an answer too. Once it has been on screen long enough
+// to have been seen, it stays away for the same week as "Not now"; if that
+// happens three times it stops for good; and it never sits over the page
+// indefinitely waiting for a tap.
+const PROMPT_SEEN_AFTER = 4000;        // on screen this long counts as seen
+const PROMPT_IGNORE_LIMIT = 3;         // seen and left unanswered this many times: stop asking
+const PROMPT_AUTOHIDE = 20000;         // slides away by itself if untouched
+const PROMPT_AUTOHIDE_STEPS = 40000;   // longer when there are written steps to follow
 
 let deferredInstall = null;            // Android/desktop: the browser's own install prompt, held for our button
 let pushInfo = null;                   // { configured, publicKey } from the server
 let promptStepShown = '';
 let promptTimer = null;
+let promptToken = 0;                   // which showing the timers below belong to
+let promptCounted = '';                // the stage this showing was counted as ignored for, if any
+let promptSeenTimer = null;
+let promptHideTimer = null;
 
 function pushSupported(){
   return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
@@ -7465,13 +7477,54 @@ function hidePrompt(){
   if (el) el.classList.remove('show');
   promptStepShown = '';
   transient.promptFromMenu = false;
+  clearTimeout(promptSeenTimer);
+  clearTimeout(promptHideTimer);
 }
 
+// The home-screen steps and the notification question are counted apart:
+// someone who ignored "add to home screen" three times, then added it anyway,
+// has not yet been asked about notifications at all.
+function promptStage(step){ return step === 'notify' ? 'notify' : 'home'; }
+function promptIgnoredOut(step){ return stored('bh_prompt_off_' + promptStage(step)) === '1'; }
+
+// Called once a showing has been on screen long enough to have been seen.
+// Assumes it will be ignored; a tap on any button takes the count back off.
+function markPromptSeen(token){
+  if (token !== promptToken || !promptStepShown || transient.promptFromMenu) return;
+  const stage = promptStage(promptStepShown);
+  const seen = (Number(stored('bh_prompt_seen_' + stage)) || 0) + 1;
+  store('bh_prompt_seen_' + stage, seen);
+  if (seen >= PROMPT_IGNORE_LIMIT) store('bh_prompt_off_' + stage, '1');
+  // Only ever extends a quiet period; never shortens "Don't show this again".
+  if (stored(PROMPT_KEY) !== 'never') store(PROMPT_KEY, Date.now() + PROMPT_SNOOZE_DAYS * 24 * 3600 * 1000);
+  promptCounted = stage;
+}
+
+// Any button counts as an answer, so this showing was not ignored after all.
+function promptAnswered(){
+  if (!promptCounted) return;
+  const stage = promptCounted;
+  promptCounted = '';
+  const seen = Math.max(0, (Number(stored('bh_prompt_seen_' + stage)) || 0) - 1);
+  store('bh_prompt_seen_' + stage, seen);
+  if (seen < PROMPT_IGNORE_LIMIT) store('bh_prompt_off_' + stage, '0');
+}
+
+function autoHidePrompt(token){
+  if (token !== promptToken || !promptStepShown || transient.promptFromMenu) return;
+  // Someone part-way through reading or tapping it keeps it.
+  if (promptTouched) return;
+  hidePrompt();
+}
+let promptTouched = false;
+
 function snoozePrompt(){
+  promptAnswered();
   store(PROMPT_KEY, Date.now() + PROMPT_SNOOZE_DAYS * 24 * 3600 * 1000);
   hidePrompt();
 }
 function silencePrompt(){
+  promptAnswered();
   store(PROMPT_KEY, 'never');
   hidePrompt();
 }
@@ -7487,7 +7540,20 @@ async function maybeShowPrompt(){
     // notifications too early.
     const waited = (window.performance && performance.now()) || 0;
     if (step === 'notify' && !isStandalone() && waited < 9000) return schedulePrompt(9000 - waited + 50);
+    if (promptIgnoredOut(step)) return;
     showPrompt(step);
+
+    const token = ++promptToken;
+    promptCounted = '';
+    promptTouched = false;
+    const el = document.getElementById('bhPrompt');
+    if (el && !el.dataset.watched){
+      el.dataset.watched = '1';
+      el.addEventListener('pointerdown', () => { promptTouched = true; });
+    }
+    clearTimeout(promptSeenTimer); clearTimeout(promptHideTimer);
+    promptSeenTimer = setTimeout(() => markPromptSeen(token), PROMPT_SEEN_AFTER);
+    promptHideTimer = setTimeout(() => autoHidePrompt(token), step === 'ios' ? PROMPT_AUTOHIDE_STEPS : PROMPT_AUTOHIDE);
   } catch (e) { /* never worth breaking the page for */ }
 }
 
@@ -7519,6 +7585,7 @@ async function openPromptFromMenu(){
 }
 
 async function promptInstall(){
+  promptAnswered();
   const ask = deferredInstall;
   if (!ask) return hidePrompt();
   deferredInstall = null;
@@ -7544,6 +7611,8 @@ function browserEscapeUrl(){
 }
 
 function promptOpenBrowser(){
+  promptAnswered();
+  promptTouched = true;
   // If the phone honours this, the page is no longer in front a moment later.
   // If it is still here, the tap did nothing (older iPhones), so draw the eye
   // to the menu route instead of leaving them on a button that seems broken.
@@ -7555,6 +7624,7 @@ function promptOpenBrowser(){
 }
 
 function promptEnablePush(){
+  promptAnswered();
   if (!pushSupported()) return showPrompt('none');
   // The permission question must be the very first thing that happens in the
   // tap. Safari forgets the tap across any await, and then refuses to ask.
