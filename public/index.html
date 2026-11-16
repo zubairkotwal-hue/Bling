@@ -626,6 +626,10 @@
   .bh-prompt-steps .ico svg{ width:18px; height:18px; fill:none; stroke:#3d1e3a; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
   .bh-prompt-go{ display:block; width:100%; margin-top:14px; padding:13px 16px; border:none; border-radius:11px; cursor:pointer;
     background:linear-gradient(135deg,#e4c989,#c9a15a); color:#241521; font-family:inherit; font-size:.92rem; font-weight:600; }
+  .bh-prompt-fallback{ font-size:.8rem !important; text-align:center; margin:10px 0 0 !important; padding:8px 10px; border-radius:10px;
+    transition:background .25s ease, color .25s ease; }
+  .bh-prompt-fallback b{ font-weight:600; color:#3d1e3a; }
+  .bh-prompt-fallback.on{ background:#fbf1ef; color:#241521 !important; }
   .bh-prompt-go.quiet{ background:#fff; border:1.5px solid #3d1e3a; color:#3d1e3a; }
   .bh-prompt-foot{ display:flex; justify-content:space-between; gap:10px; margin-top:6px; }
   .bh-prompt-foot button{ background:none; border:none; padding:10px 4px; min-height:44px; cursor:pointer;
@@ -7404,13 +7408,13 @@ function promptHtml(step){
          <li>Open Bling from the new icon.</li>
        </ol>` + later(fromMenu);
 
-  if (step === 'browser') return head('Open this in your browser',
-      'You are inside ' + (/Instagram/i.test(navigator.userAgent || '') ? "Instagram's" : "an app's") + ' built-in browser, which cannot add Bling to your home screen.')
-    + `<ol class="bh-prompt-steps">
-         <li>Tap the <b>⋯</b> menu at the top right.</li>
-         <li>Choose <b>Open in browser</b>.</li>
-       </ol>
-       <button type="button" class="bh-prompt-go" onclick="promptOpenBrowser()">Try opening it for me</button>` + later(fromMenu);
+  // One tap out of the in-app browser is the main action. The menu route is
+  // kept underneath as the fallback, because older iPhones ignore the tap.
+  if (step === 'browser') return head('Keep Bling a tap away',
+      (/Instagram/i.test(navigator.userAgent || '') ? "Instagram's" : "This app's") + ' browser cannot add Bling to your home screen. Open it in '
+      + (isIOS() ? 'Safari' : 'your own browser') + ' first \u2014 it takes one tap.')
+    + `<button type="button" class="bh-prompt-go" onclick="promptOpenBrowser()">${isIOS() ? 'Open in Safari' : 'Open in my browser'}</button>
+       <p class="bh-prompt-fallback" id="bhPromptFallback">Nothing happened? Tap <b>\u22ef</b> at the top right, then <b>Open in browser</b>.</p>` + later(fromMenu);
 
   if (step === 'notify') return head('Hear about offers first',
       'New arrivals and specials, sent straight to your phone. You can turn it off from the menu whenever you like.')
@@ -7532,12 +7536,22 @@ async function promptInstall(){
   snoozePrompt();
 }
 
-function promptOpenBrowser(){
+// The address that hands this page to the phone's real browser: Safari on an
+// iPhone, whatever is set as the default on Android.
+function browserEscapeUrl(){
   const here = window.location.href.replace(/^https?:\/\//, '');
-  // Neither of these is guaranteed — the written steps above are the real
-  // instruction, this just saves the taps where the phone allows it.
-  if (isIOS()) window.location.href = 'x-safari-https://' + here;
-  else window.location.href = 'intent://' + here + '#Intent;scheme=https;end';
+  return isIOS() ? 'x-safari-https://' + here : 'intent://' + here + '#Intent;scheme=https;end';
+}
+
+function promptOpenBrowser(){
+  // If the phone honours this, the page is no longer in front a moment later.
+  // If it is still here, the tap did nothing (older iPhones), so draw the eye
+  // to the menu route instead of leaving them on a button that seems broken.
+  setTimeout(() => {
+    const help = document.getElementById('bhPromptFallback');
+    if (help && document.visibilityState !== 'hidden') help.classList.add('on');
+  }, 2200);
+  try { window.location.href = browserEscapeUrl(); } catch (e) {}
 }
 
 function promptEnablePush(){
