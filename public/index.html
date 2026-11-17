@@ -564,6 +564,28 @@
   .bh-swatch{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); color:var(--plum); font-size:.74rem; font-weight:700; padding:4px 11px 4px 5px; border-radius:20px; cursor:pointer; font-family:var(--f-ui); }
   .bh-swatch span{ width:15px; height:15px; border-radius:50%; border:1px solid rgba(0,0,0,.15); display:block; }
   .bh-swatch.on{ background:var(--plum); color:#fff; border-color:var(--plum); }
+  /* The customer-facing version of the swatch: big enough to tap. */
+  .bh-swatch-pick{ font-size:.82rem; padding:8px 16px 8px 9px; min-height:42px; border-width:1.5px; gap:8px; }
+  .bh-swatch-pick span{ width:20px; height:20px; }
+  .bh-swatch-pick:hover{ border-color:var(--gold); background:var(--blushp); }
+  .bh-swatch-pick.on, .bh-swatch-pick.on:hover{ background:var(--plum); color:#fff; border-color:var(--plum); }
+  .bh-swatch-pick.on span{ border-color:rgba(255,255,255,.7); }
+  .bh-colrev summary{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; cursor:pointer; list-style:none; }
+  .bh-colrev summary::-webkit-details-marker{ display:none; }
+  .bh-colrev summary .bh-serif{ font-size:1.05rem; color:var(--plum); }
+  .bh-colrev summary .bh-serif::before{ content:'\25B8'; display:inline-block; margin-right:8px; font-size:.8em; transition:transform .15s ease; }
+  .bh-colrev[open] summary .bh-serif::before{ transform:rotate(90deg); }
+  .bh-colrev summary .n{ font-size:.78rem; color:var(--grey); }
+  .bh-colrev .lede{ font-size:.82rem; color:var(--grey); line-height:1.5; margin:12px 0 4px; }
+  .bh-colrev .lede b{ font-weight:600; color:var(--ink); }
+  .bh-colrev .st{ font-size:.78rem; color:var(--risk); min-height:1.1em; margin:0 0 4px; }
+  .bh-colrev-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 0; border-top:1px solid var(--blushp); }
+  .bh-colrev-row .who{ min-width:0; font-size:.86rem; color:var(--ink); line-height:1.35; }
+  .bh-colrev-row .who strong{ display:block; font-weight:600; }
+  .bh-colrev-row .bh-card-swatches{ display:inline-flex; vertical-align:middle; margin:3px 6px 0 0; }
+  .bh-colrev-row .cols{ font-size:.76rem; color:var(--grey); }
+  .bh-colrev-row .bh-statuspill{ flex:none; }
+  .bh-colrev-row .bh-statuspill.on{ background:var(--plum); color:#fff; border-color:var(--plum); }
   .bh-sort{ border:1px solid var(--line); border-radius:20px; padding:6px 11px; font-size:.78rem; font-family:var(--f-ui); color:var(--plum); background:#fff; font-weight:600; }
   .bh-card-swatches{ display:flex; gap:4px; margin-top:5px; }
   .bh-card-swatches i{ width:11px; height:11px; border-radius:50%; border:1px solid rgba(0,0,0,.15); display:block; }
@@ -776,6 +798,9 @@
 const DEFAULT_SETTINGS = {
   shippingCost: '99',
   pudoCost: '80',
+  // Ids of the products where the customer picks one colour, as a JSON list.
+  // Not on the Settings screen: it is switched per product in the Shop tab.
+  colourChoice: '[]',
   cgKioskCost: '80',
   freeShippingOver: '1500',
   announcement: 'Free shipping over R1500 \u00b7 Share your story',
@@ -1422,7 +1447,7 @@ async function drawDocCard(canvas, order, kind){
     ctx.font = `400 ${sz}px ${CARD_BODY_FONT}`;
     let total = 0;
     const rows = basket.map(i => {
-      const label = `${i.qty} x ${i.name}${i.size ? ' (' + i.size + ')' : ''}`;
+      const label = `${i.qty} x ${i.name}${variantOf(i) ? ' (' + variantOf(i) + ')' : ''}`;
       const lines = wrapCanvasText(ctx, label, contentWidth - 220);
       total += lines.length * (sz * 1.28) + 10;
       return { lines, i };
@@ -1720,7 +1745,9 @@ async function makeOrderPDF(order, kind){
   basketOf(order).forEach(i => {
     const nameLines = doc.wrap(String(i.name || ''), W - M - 95, 10, false);
     nameLines.forEach((l, idx) => doc.text(l, M, y + idx * 5, { size: 10 }));
-    doc.text(String(i.size || '-'), W - M - 60, y, { size: 10 });
+    // The column is narrow: a colour and a size together drop a point size.
+    const variant = variantOf(i, ' / ') || '-';
+    doc.text(String(variant), W - M - 60, y, { size: variant.length > 10 ? 8 : 10 });
     doc.text(String(i.qty || 1), W - M - 32, y, { size: 10, align: 'right' });
     if (kind !== 'delivery'){
       doc.text('R' + ((parseFloat(i.price) || 0) * (i.qty || 1)).toFixed(2), W - M, y, { size: 10, align: 'right' });
@@ -1882,7 +1909,7 @@ function leadItemList(lead){
   try {
     const items = typeof lead.items === 'string' ? JSON.parse(lead.items || 'null') : lead.items;
     if (Array.isArray(items) && items.length){
-      return items.map(i => `${i.qty} x ${i.name}${i.size ? ' (' + i.size + ')' : ''}${i.toOrder ? ' [' + setting('leadTimeLabel') + ']' : ''} — R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}`).join('\n');
+      return items.map(i => `${i.qty} x ${i.name}${variantOf(i) ? ' (' + variantOf(i) + ')' : ''}${i.toOrder ? ' [' + setting('leadTimeLabel') + ']' : ''} — R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}`).join('\n');
     }
   } catch (e) {}
   return `${lead.item}${lead.size ? ' (' + lead.size + ')' : ''}${lead.price ? ' — R' + lead.price : ''}`;
@@ -2025,6 +2052,10 @@ let transient = {
   offerConfirm: false,
   offerSending: false,
   promptFromMenu: false,
+  chosenColour: '',          // product page: the colour tapped
+  colourChoice: false,       // product form: "customers choose one of these"
+  colourReviewOpen: false,   // Shop tab: is the colour-choices list unfolded
+  colourStatus: '',
   analyticsDays: 30,
   analyticsPick: -1,   // which column of the chart is being looked at
   shopSeeAll: '',
@@ -2106,12 +2137,45 @@ function shippingFor(method){
 }
 function cartTotal(method){ return Math.max(0, cartSubtotal() - (transient.discountAmount || 0)) + shippingFor(method || transient.deliveryMethod); }
 
-function addToCart(productId, size, toOrder){
+// ---- Colour choice ----
+// A product's colours mean one of two things, and the list alone cannot say
+// which: "comes in Black or Blush" (the customer must pick), or "is black and
+// white" (one zebra-stripe piece, nothing to pick). So the choice is switched
+// on per product, and everything stays exactly as it was until it is.
+function colourChoiceIds(){
+  try { const v = JSON.parse(setting('colourChoice') || '[]'); return Array.isArray(v) ? v : []; }
+  catch (e) { return []; }
+}
+function hasColourChoice(p){
+  return !!p && !isVoucher(p) && productColours(p).length > 1 && colourChoiceIds().includes(p.id);
+}
+async function saveColourChoice(ids){
+  let clean = Array.from(new Set(ids));
+  // Drop products that have since been deleted — but only when the product
+  // list is actually loaded, or a failed load would wipe every choice.
+  if (products.length) clean = clean.filter(id => products.some(p => p.id === id));
+  const value = JSON.stringify(clean);
+  await apiFetch('/settings', { method: 'PATCH', body: JSON.stringify({ colourChoice: value }) });
+  settings.colourChoice = value;
+}
+async function setColourChoice(id, on){
+  const ids = colourChoiceIds().filter(x => x !== id);
+  if (on) ids.push(id);
+  await saveColourChoice(ids);
+}
+// "Black, M" / "M" / "Black" — how one line of an order describes itself.
+function variantOf(item, sep){
+  return [item && item.colour, item && item.size].filter(Boolean).join(sep || ', ');
+}
+
+function addToCart(productId, size, toOrder, colour){
   const p = products.find(x => x.id === productId);
   if (!p) return;
-  const existing = cart.find(i => i.productId === productId && i.size === (size || ''));
+  // The same piece in two colours is two lines in the basket, not one with a
+  // quantity of two.
+  const existing = cart.find(i => i.productId === productId && i.size === (size || '') && (i.colour || '') === (colour || ''));
   if (existing) existing.qty += 1;
-  else cart.push({ productId, name: p.name, price: p.price, size: size || '', qty: 1, toOrder: !!toOrder });
+  else cart.push({ productId, name: p.name, price: p.price, size: size || '', colour: colour || '', qty: 1, toOrder: !!toOrder });
   saveCart();
   trackEvent('cart');
 }
@@ -2919,6 +2983,7 @@ function renderShop(){
           <div class="bh-cart-item">
             <div class="bh-cart-info">
               <div class="bh-cart-name">${escapeHtml(i.name)}</div>
+              ${i.colour ? `<div class="bh-cart-size">Colour ${escapeHtml(i.colour)}</div>` : ''}
               ${i.size ? `<div class="bh-cart-size">Size ${escapeHtml(i.size)}</div>` : ''}
               ${i.toOrder ? `<div class="bh-cart-size" style="color:var(--gold);font-weight:700">${escapeHtml(setting('leadTimeLabel'))}</div>` : ''}
               <div class="bh-cart-price">R${escapeHtml(i.price)} each</div>
@@ -2981,6 +3046,12 @@ function renderShop(){
 
           ${!isVoucher(product) && product.stock_status === 'made_to_order' ? `
             <div class="bh-leadtime-banner">${escapeHtml(setting('leadTimeLabel'))} \u2014 made to order</div>` : ''}
+
+          ${hasColourChoice(product) ? `
+            <label class="bh-label">Choose a colour</label>
+            <div class="bh-size-grid" id="detailColourGrid" role="group" aria-label="Colour" style="margin-bottom:14px">
+              ${productColours(product).map(c => `<button type="button" class="bh-swatch bh-swatch-pick ${transient.chosenColour === c ? 'on' : ''}" aria-pressed="${transient.chosenColour === c}" onclick="chooseColour('${escapeHtml(c)}', this)"><span style="background:${colourHex(c)}"></span>${escapeHtml(c)}</button>`).join('')}
+            </div>` : ''}
 
           ${!isVoucher(product) && sizeInfo.all.length > 1 ? `
             <label class="bh-label">Choose a size</label>
@@ -3493,6 +3564,7 @@ function viewProduct(id){
   transient.viewingCart = false;
   transient.checkingOut = false;
   transient.chosenSize = '';
+  transient.chosenColour = '';
   nav.view = 'shop';
   render();
 }
@@ -3534,6 +3606,17 @@ function chooseSize(s, btn, toOrder){
   if (err) err.textContent = '';
 }
 
+function chooseColour(colour, btn){
+  transient.chosenColour = colour;
+  const grid = document.getElementById('detailColourGrid');
+  if (grid) grid.querySelectorAll('.bh-swatch').forEach(b => {
+    b.classList.toggle('on', b === btn);
+    b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+  });
+  const err = document.getElementById('detailError');
+  if (err) err.textContent = '';
+}
+
 function addToCartFromDetail(productId){
   const product = products.find(p => p.id === productId);
   const err = document.getElementById('detailError');
@@ -3548,13 +3631,22 @@ function addToCartFromDetail(productId){
   }
 
   const sizeInfo = allSizesFor(product);
+  const needsColour = hasColourChoice(product);
+  // Only a colour this product really comes in counts as chosen.
+  const colour = needsColour && productColours(product).includes(transient.chosenColour) ? transient.chosenColour : '';
+  if (needsColour && !colour){
+    if (err) err.textContent = sizeInfo.all.length > 1 && !transient.chosenSize
+      ? 'Please choose a colour and a size first.' : 'Please choose a colour first.';
+    return;
+  }
   if (sizeInfo.all.length > 1 && !transient.chosenSize){
     if (err) err.textContent = 'Please choose a size first.';
     return;
   }
   const size = transient.chosenSize || (sizeInfo.all.length === 1 ? sizeInfo.all[0] : '');
-  addToCart(productId, size, isMadeToOrder(product, size));
+  addToCart(productId, size, isMadeToOrder(product, size), colour);
   transient.chosenSize = '';
+  transient.chosenColour = '';
   viewCart();
 }
 
@@ -3562,7 +3654,7 @@ function renderCheckoutSummary(){
   const method = transient.deliveryMethod;
   const ship = shippingFor(method);
   return `
-    ${cart.map(i => `<div class="bh-cart-line"><span>${i.qty} \u00d7 ${escapeHtml(i.name)}${i.size ? ' (' + escapeHtml(i.size) + ')' : ''}${i.toOrder ? ' \u2014 ' + escapeHtml(setting('leadTimeLabel')) : ''}</span><span>R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}</span></div>`).join('')}
+    ${cart.map(i => `<div class="bh-cart-line"><span>${i.qty} \u00d7 ${escapeHtml(i.name)}${variantOf(i) ? ' (' + escapeHtml(variantOf(i)) + ')' : ''}${i.toOrder ? ' \u2014 ' + escapeHtml(setting('leadTimeLabel')) : ''}</span><span>R${((parseFloat(i.price)||0) * i.qty).toFixed(0)}</span></div>`).join('')}
     <div class="bh-cart-line"><span>Subtotal</span><span>R${cartSubtotal().toFixed(0)}</span></div>
     ${transient.discountAmount ? `<div class="bh-cart-line" style="color:var(--ok)"><span>Discount (${escapeHtml(transient.discountCode)})</span><span>\u2212R${transient.discountAmount.toFixed(0)}</span></div>` : ''}
     <div class="bh-cart-line"><span>${escapeHtml(deliveryMethodDef(method).label)}</span><span>${ship ? 'R' + ship.toFixed(0) : 'Free'}</span></div>
@@ -5311,9 +5403,13 @@ function renderShopManager(){
             <div class="bh-note" style="margin-bottom:14px">This is a gift voucher \u2014 customers choose their own amount in steps of R${VOUCHER_STEP}, so no price, sizes or colours are needed.</div>
           ` : `
           <label class="bh-label">Colours available</label>
-          <div class="bh-size-grid" style="margin-bottom:14px">
+          <div class="bh-size-grid" style="margin-bottom:10px">
             ${COLOURS.map(col => `<button class="bh-swatch ${transient.colours.includes(col.name) ? 'on' : ''}" onclick="toggleColour('${escapeHtml(col.name)}', this)"><span style="background:${col.hex}"></span>${escapeHtml(col.name)}</button>`).join('')}
           </div>
+          <label class="bh-check" style="margin-bottom:14px">
+            <input type="checkbox" id="shopColourChoice" ${transient.colourChoice ? 'checked' : ''} onchange="transient.colourChoice = this.checked">
+            <span>It comes in a choice of these colours \u2014 ask the customer which one. Leave unticked if it is one piece with several colours in it.</span>
+          </label>
           `}
 
           <label class="bh-label">Stock</label>
@@ -5350,6 +5446,7 @@ function renderShopManager(){
         </div>
       </div>
     </div>
+    ${colourReviewHtml()}
     <h3 class="bh-serif" style="font-size:1rem;color:var(--plum);margin-bottom:12px">Current products (${products.length})</h3>
     <div class="bh-prodsearch">
       <input id="shopSearchBox" class="bh-input" type="search" autocomplete="off"
@@ -5362,6 +5459,43 @@ function renderShopManager(){
       ${shopManagerGridHtml()}
     </div>
   `;
+}
+
+// Every product with more than one colour ticked, with a switch each. This is
+// where a whole catalogue gets sorted in a few minutes instead of by opening
+// each product in turn.
+function colourReviewHtml(){
+  const multi = products.filter(p => !isVoucher(p) && productColours(p).length > 1);
+  if (!multi.length) return '';
+  const on = multi.filter(hasColourChoice).length;
+  return `
+    <details class="bh-card bh-colrev" style="margin-bottom:18px" ${transient.colourReviewOpen ? 'open' : ''} ontoggle="transient.colourReviewOpen = this.open">
+      <summary>
+        <span class="bh-serif" style="font-size:1.05rem">Colour choices</span>
+        <span class="n">${on} of ${multi.length} ask the customer</span>
+      </summary>
+      <p class="lede">These ${multi.length} products have more than one colour ticked. Switch on the ones that come <b>in a choice</b> of colours, and the customer will have to pick one before adding it to her basket. Leave off the ones that are a single piece with several colours in it.</p>
+      <p id="colourStatus" class="st">${escapeHtml(transient.colourStatus || '')}</p>
+      ${multi.map(p => `
+        <div class="bh-colrev-row">
+          <span class="who">
+            <strong>${escapeHtml(p.name)}</strong>
+            <span class="bh-card-swatches">${productColours(p).map(col => `<i title="${escapeHtml(col)}" style="background:${colourHex(col)}"></i>`).join('')}</span>
+            <span class="cols">${productColours(p).map(escapeHtml).join(', ')}</span>
+          </span>
+          <button class="bh-statuspill ${hasColourChoice(p) ? 'on' : ''}" aria-pressed="${hasColourChoice(p)}" onclick="toggleColourChoice('${p.id}')">${hasColourChoice(p) ? 'Customer picks' : 'One piece'}</button>
+        </div>`).join('')}
+    </details>`;
+}
+
+async function toggleColourChoice(id){
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  transient.colourStatus = '';
+  try { await setColourChoice(id, !hasColourChoice(p)); }
+  catch (e) { transient.colourStatus = "Couldn't save that \u2014 try again."; }
+  transient.colourReviewOpen = true;
+  render();
 }
 
 // Searching 100+ products by name is how an order gets put together for the
@@ -5623,6 +5757,7 @@ function editProduct(id){
   transient.selectedSizes = productSizes(p).slice();
   transient.orderSizes    = orderOnlySizes(p).slice();
   transient.colours   = productColours(p).slice();
+  transient.colourChoice = hasColourChoice(p);
   transient.stockStatus = p.stock_status === 'made_to_order' ? 'made_to_order' : 'in_stock';
   transient.category  = p.category || '';
   // A new picture is optional — the existing one stays unless one is chosen.
@@ -5647,6 +5782,7 @@ function resetProductForm(){
   transient.selectedSizes = transient.sizeType === 'freesize' ? ['Free size'] : [];
   transient.orderSizes = [];
   transient.colours = [];
+  transient.colourChoice = false;
 }
 
 function cancelEditProduct(){
@@ -5698,11 +5834,14 @@ async function addProduct(){
   if (pics.length) payload.images = pics;
   else if (!editingId) payload.images = null;
 
+  const wantsChoice = !!transient.colourChoice && transient.colours.length > 1;
+  let savedId = editingId;
   try {
-    await apiFetch('/products', {
+    const saved = await apiFetch('/products', {
       method: editingId ? 'PATCH' : 'POST',
       body: JSON.stringify(editingId ? Object.assign({ id: editingId }, payload) : payload),
     });
+    if (!savedId && saved && saved.id) savedId = saved.id;
   } catch (err) {
     // Keep everything typed in so the work isn't lost on a failed save.
     transient.loadError = editingId
@@ -5714,6 +5853,13 @@ async function addProduct(){
 
   resetProductForm();
   await fetchProducts();
+  // The product itself is saved by now. If recording the colour choice fails
+  // it can be switched on from the list below, so it must not look like the
+  // product failed to save.
+  if (savedId && wantsChoice !== colourChoiceIds().includes(savedId)){
+    try { await setColourChoice(savedId, wantsChoice); }
+    catch (e) { transient.colourStatus = "The product saved, but the colour choice didn't \u2014 switch it on in the list below."; }
+  }
   render();
 }
 async function removeProduct(id){ await apiFetch('/products', { method: 'DELETE', body: JSON.stringify({ id }) }); await fetchProducts(); render(); }
