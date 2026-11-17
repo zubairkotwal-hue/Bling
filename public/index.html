@@ -800,7 +800,26 @@ const DEFAULT_SETTINGS = {
   pudoCost: '80',
   // Ids of the products where the customer picks one colour, as a JSON list.
   // Not on the Settings screen: it is switched per product in the Shop tab.
-  colourChoice: '[]',
+  //
+  // This starting list is the result of going through all 33 multi-colour
+  // products by name, description and photographs on 17 November 2026. It
+  // applies until someone flips a switch in the Shop tab; from then on the
+  // saved list (which starts from this one) is what counts.
+  colourChoice: JSON.stringify([
+    '1790969206493-mzwh45',   // Bling for his eyes only — black set and red set both photographed
+    '1788957499439-du5ne0',   // Solene Sheer Lace Teddy & Gloves — burgundy and black both photographed
+    '1788878162083-ptvhj3',   // "It's giving summer sleepwear" — black, ivory, blush and blue photographed
+    '1788873768871-9dazkb',   // Classic Satin Pyjama Set — "In blush, red or hot pink"
+    '1788873762859-isegxe',   // Marabou Feather-Cuff Pyjama Set — "In red, black or white"
+    // Four of the five identically named "Satin 3 piece summer sets" listings.
+    // Each shows one colour but all are ticked with the same four, so without
+    // a choice an order cannot say which colour was meant. The fifth (the
+    // champagne one) is left out: champagne is not among its ticked colours.
+    '1789021583575-zzynxq',
+    '1789021581976-tkatkc',
+    '1789021581330-8ja768',
+    '1789021580263-4ik0w7',
+  ]),
   cgKioskCost: '80',
   freeShippingOver: '1500',
   announcement: 'Free shipping over R1500 \u00b7 Share your story',
